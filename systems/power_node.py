@@ -10,17 +10,25 @@ class PowerNode:
 
         if self.rebalance_count >= 4 and self.status != "STABLE":
             self.status = "STABLE"
-            return "Node rebalanced. Status → STABLE"
 
-        return f"Rebalance called ({self.rebalance_count}). Status: {self.status}"
+        msg = f"    Rebalance #{self.rebalance_count} — load {self.load:.2f} — Status: {self.status}"
+        print(msg)
+        return msg
 
     def is_goal_met(self):
         """Contract 1 goal: node is stable (4+ rebalances)."""
         return self.status == "STABLE"
 
     def get_status_text(self):
-        return f"""Block 7 Power Node
-Status:     {self.status}
-Load:       {self.load:.2f}
-Rebalances: {self.rebalance_count}
+        if self.status == "FLICKERING":
+            indicator = "[!!]"
+        elif self.status == "STABLE":
+            indicator = "[OK]"
+        else:
+            indicator = "[??]"
+
+        return f"""  BLOCK 7 POWER NODE
+  Status:     {indicator} {self.status}
+  Load:       {self.load:.2f}
+  Rebalances: {self.rebalance_count}
 """
