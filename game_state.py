@@ -24,6 +24,11 @@ class GameState:
     def is_contract_completed(self, contract_id):
         return contract_id in self.completed_contracts
 
+    def unlock_all(self, contract_defs):
+        self.unlocked_features = set(self.UNLOCK_SEQUENCE)
+        for cdef in contract_defs:
+            self.completed_contracts.add(cdef["id"])
+
     def retire_commands(self, commands):
         for name in commands:
             self.retired_commands[name] = self._make_retired(name)

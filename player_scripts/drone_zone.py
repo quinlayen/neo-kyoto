@@ -7,4 +7,7 @@
 #   reroute_next()   — fix the next misrouted drone
 #
 # ────────────────────────────────────────────────
+scan_drones()
 
+while True:
+    reroute_next()

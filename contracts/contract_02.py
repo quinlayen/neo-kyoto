@@ -38,35 +38,57 @@ class Contract02(BaseContract):
     Good work on Block 7. Word travels fast — Sector 12
     needs your help now.
 
-    The automated delivery drones in this sector are flying
-    wrong routes. Packages are arriving at the wrong
-    buildings, or not arriving at all. The routing table
-    got corrupted and the drones need manual correction.
+    The automated delivery drones in this sector are
+    flying wrong routes. Packages are arriving at the
+    wrong buildings, or not arriving at all. The routing
+    table got corrupted and the drones need manual
+    correction.
 
-    ─── WHAT YOU HAVE LEARNED ───
+    ─── YOUR LOOP ───
 
-    Last contract, you learned that a program is a list of
-    instructions, read from top to bottom. You also unlocked
-    a new tool: while loops.
+    Last contract, you unlocked the while loop. This is
+    your chance to put it to real use.
 
-    A while loop repeats instructions automatically.
+    Remember how a while loop works: the computer checks
+    the condition, and if it is true, it runs the
+    indented instructions underneath. Then it goes back
+    to the top and checks the condition again. This
+    cycle repeats until the condition becomes false —
+    or, if the condition is always true, the sandbox
+    stops it safely after enough cycles.
 
-    ─── YOUR NEW TOOLS ───
+    This contract has more work than the last one.
+    Writing every command by hand would be tedious.
+    A loop is the right tool here.
+
+    ─── YOUR NEW COMMANDS ───
 
     You have two new commands for this job:
 
         scan_drones()   — shows the status of all drones
         reroute_next()  — fixes the next misrouted drone
 
-    scan_drones() lets you see which drones need help.
-    reroute_next() corrects one drone each time you call it.
+    scan_drones() prints a table of every drone in the
+    sector, showing its ID, priority level, and whether
+    it is MISROUTED or CORRECTED. Use it to see the
+    current state of things.
+
+    reroute_next() finds the next misrouted drone and
+    corrects its route. Each call fixes exactly one
+    drone. If all drones are already corrected, it
+    tells you so.
 
     ─── YOUR GOAL ───
 
     Correct all 8 misrouted drones in the sector.
 
     You could call reroute_next() eight times by hand.
-    But remember — you have a better tool now.
+    But you have a better tool now — think about how
+    to let the computer handle the repetition for you.
+
+    The sandbox will stop your program safely after
+    enough command calls, so do not worry about it
+    running out of control.
 
     ─── HOW TO WORK ───
 
@@ -90,39 +112,114 @@ class Contract02(BaseContract):
 
     ─── WHAT YOU JUST DID ───
 
-    You used a loop to automate a repetitive task. Instead
-    of writing the same command eight times, you let the
-    computer handle the repetition.
+    You used a loop to automate a repetitive task.
+    Instead of writing the same command eight times,
+    you wrote it once inside a loop and let the computer
+    handle the repetition. That is a fundamental idea
+    in programming: write the pattern once, repeat it
+    as many times as needed.
 
     ─── THE LIMITATION ───
 
-    Notice what scan_drones() showed you: each drone has
-    an ID and a priority level. Some were CRITICAL, some
-    were LOW priority. But reroute_next() just fixes drones
-    in order — you had no way to choose which one to fix
-    first, or to skip ones that were already done.
+    Your loop was powerful, but think about what it
+    could not do.
 
-    What if you could store information — like a drone's
-    ID — and pass it to a command? What if commands could
-    accept inputs so you could tell them exactly what to do?
+    Every command you have used so far works like a
+    button — you press it and something happens. But
+    you have no control over what it does. reroute_next()
+    picks which drone to fix. rebalance() just runs.
+    You cannot tell a command to work on a specific
+    item, or give it a number to use.
 
-    ─── NEW TOOLS UNLOCKED ───
+    And when scan_drones() showed you information — IDs,
+    priorities, statuses — you could read it on screen,
+    but your program could not do anything with it. The
+    data appeared and vanished. You had no way to grab
+    a value, hold on to it, and use it later.
 
-    You can now use variables and function arguments.
+    That is two problems:
+    1. You cannot give a command specific instructions.
+    2. You cannot remember or reuse information.
 
-    A variable lets you store a value and give it a name:
+    The next contract will need both of these abilities.
+
+    ─── NEW TOOL: VARIABLES ───
+
+    A variable is a name that holds a value. You create
+    one with the = sign:
 
         x = 5
 
-    The = sign means "store the value on the right under
-    the name on the left." You can use that name later.
+    After this line runs, the name x holds the number 5.
+    Anywhere you write x from now on, the computer sees 5.
 
-    Function arguments let you pass values to commands:
+    The value can be anything — a number, a piece of text,
+    or even the result that a command gives back:
 
-        some_command(value)
+        speed = 30
+        name = "Block 7"
+        count = 0
 
-    The value inside the parentheses tells the command
-    what to work on. Future contracts will use these.
+    You can change a variable by giving it a new value:
+
+        count = 0
+        count = count + 1
+
+    After the second line, count holds 1. The computer
+    reads the right side first (0 + 1 = 1), then stores
+    the result back into count.
+
+    This is especially useful inside a loop — each time
+    through, the value grows by 1, giving you a counter
+    that tracks how many times the loop has run.
+
+    ─── NEW TOOL: FUNCTION ARGUMENTS ───
+
+    Until now, your commands took no inputs — you just
+    wrote rebalance() or reroute_next() and they did
+    their thing. But some commands need to know *what*
+    to work on.
+
+    You tell a command what to work on by putting values
+    inside the parentheses:
+
+        some_command(3)
+
+    The value inside is called an argument. It is an
+    input that the command uses to do its job.
+
+    Some commands take more than one argument, separated
+    by commas:
+
+        some_command(3, 10)
+
+    You can also pass a variable as an argument. The
+    computer reads the variable's value and hands it
+    to the command:
+
+        slot = 3
+        some_command(slot)
+
+    This does the same thing as some_command(3), but
+    now you can change which slot to work on by changing
+    the variable — especially powerful inside a loop.
+
+    ─── GIVING BACK VALUES ───
+
+    Some commands give back a result when they run.
+    On their own, that result disappears — nobody
+    catches it. But with a variable, you can hold on
+    to it:
+
+        result = some_command(1)
+
+    Now result holds whatever the command gave back.
+    You can pass it to another command, print it, or
+    use it in a calculation.
+
+    This is how your programs start to work with real
+    data — not just repeating commands blindly, but
+    reading information and acting on it.
 """
 
     def get_completed_banner(self):

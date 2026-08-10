@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 from game_state import GameState
 from interpreter import RestrictedInterpreter
@@ -187,8 +188,16 @@ def run_contract(cdef, game_state):
 
 def main():
     _load_contracts()
-    show_title_screen()
     game_state = GameState()
+    dev_mode = "--dev" in sys.argv
+
+    if dev_mode:
+        game_state.unlock_all(CONTRACT_DEFS)
+        print("  [DEV] All contracts and features unlocked.\n")
+
+    if not dev_mode and not game_state.is_contract_completed("contract_01"):
+        show_title_screen()
+        run_contract(CONTRACT_DEFS[0], game_state)
 
     while True:
         cdef = show_contract_board(game_state)

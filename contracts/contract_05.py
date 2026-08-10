@@ -38,32 +38,46 @@ class Contract05(BaseContract):
 
     Contractor,
 
-    Your biggest job yet. An automated assembly cell in
-    the Industrial Zone has gone offline. The cell needs
-    to complete 10 full production cycles to fill a
-    backlogged order.
+    Your biggest job yet. An automated assembly cell
+    in the Industrial Zone has gone offline. The cell
+    needs to complete 10 full production cycles to
+    fill a backlogged order.
 
-    Each production cycle has four stages that must run
-    in exact order:
+    Each production cycle has four stages that must
+    run in exact order:
 
         1. harvest   — gather raw materials
         2. process   — refine the materials
         3. package   — prepare for shipping
         4. ship      — send the finished product
 
-    Calling a stage out of order will fail. The pipeline
-    is strict about sequence.
+    The pipeline is strict about sequence. If you try
+    to process before harvesting, or ship before
+    packaging, the system will reject the command and
+    tell you what step it expects next.
 
-    ─── YOUR FULL TOOLKIT ───
+    ─── THINKING ABOUT THE PROBLEM ───
 
-    You now have everything you have unlocked so far:
-    loops, variables, conditionals, lists, for loops,
-    range(), and len().
+    Before you start coding, think about the structure
+    of this job.
 
-    Think about which tools are right for this job.
-    The pipeline is repetitive and predictable — you
-    know exactly what needs to happen and how many
-    times.
+    What repeats? The whole cycle of four steps repeats
+    10 times. The steps within each cycle are always
+    the same and always in the same order.
+
+    What tool handles repeating something a known
+    number of times? You unlocked that in the last
+    contract.
+
+    What goes inside the loop? One complete cycle —
+    all four stages, called in order.
+
+    Start simple: try writing just one cycle first.
+    Once that works, wrap it in the right kind of
+    repetition.
+
+    Use check_pipeline() at any point to see how many
+    cycles have been completed.
 
     ─── YOUR COMMANDS ───
 
@@ -76,9 +90,6 @@ class Contract05(BaseContract):
     ─── YOUR GOAL ───
 
     Complete 10 full production cycles.
-
-    Each cycle is the same four steps in the same order.
-    Figure out how to automate the full run.
 
     ─── HOW TO WORK ───
 
@@ -103,51 +114,73 @@ class Contract05(BaseContract):
 
     ─── WHAT YOU JUST DID ───
 
-    You built a complete automated pipeline. Your program
-    coordinated multiple steps in the right sequence,
-    repeated them the exact number of times needed, and
-    finished the job without any manual intervention.
+    You built a complete automated pipeline. Your
+    program coordinated multiple steps in the right
+    sequence, repeated them the exact number of times
+    needed, and finished the job without any manual
+    intervention.
 
-    That is real automation. That is what keeps a city
-    like Neo-Kyoto running.
+    That is real automation. That is what keeps a
+    city like Neo-Kyoto running.
 
     ─── THE LIMITATION ───
 
-    Your pipeline code works, but look at it. Every
-    cycle is the same four steps written out. What if
-    you needed those same steps in a different script?
-    You would have to copy them all over again.
+    Your pipeline code works, but look at it. The
+    four steps of a production cycle are written out
+    inside the loop. What if you needed those same
+    four steps in a different script? You would have
+    to copy all of them again.
 
-    What if you could name a group of steps — give them
-    a label — and then call that label like a command?
+    What if the cycle had 20 steps instead of 4?
+    Your loop body would be enormous. And if you
+    needed to change one step, you would have to find
+    and fix it everywhere you copied it.
 
-    ─── NEW TOOLS UNLOCKED ───
+    What if you could take a group of steps, give
+    that group a name, and then call that name like
+    a command — just like calling rebalance() or
+    harvest()? Write the steps once, use them
+    wherever you need them.
 
-    You can now define your own commands using def.
+    ─── NEW TOOL: FUNCTION DEFINITIONS ───
 
-        def run_cycle():
-            harvest()
-            process()
-            package()
-            ship()
+    You can now create your own commands using def.
 
-    This creates a new command called run_cycle. The
-    indented code underneath is what happens when you
-    call it. Then you can write:
+    The keyword def is followed by a name you choose,
+    then (), then a colon. The indented lines underneath
+    are the instructions that run when you call it:
 
-        for i in range(10):
-            run_cycle()
+        def <your_name>():
+            <step 1>
+            <step 2>
+            <step 3>
 
-    You started with one command: rebalance(). Now you
-    can create your own. That is the power of functions.
+    Writing a def does not run the code inside it.
+    It just teaches the computer a new command. The
+    code only runs when you call the name later with
+    parentheses, just like any other command:
+
+        <your_name>()
+
+    You can name it anything that makes sense. Good
+    names describe what the group of steps does. Once
+    defined, you can call it as many times as you want,
+    from anywhere in your program — including inside
+    loops.
+
+    This is called a function. You have been using
+    functions since your very first contract — rebalance,
+    scan_drones, check_slot were all functions that
+    someone else wrote. Now you can write your own.
 
     ─── END OF CURRENT CONTRACTS ───
 
     You have completed all available contracts.
 
-    You started by pressing a single button over and over.
-    Now you write programs that store data, make decisions,
-    iterate over collections, and define reusable commands.
+    You started by pressing a single button over and
+    over. Now you write programs that store data, make
+    decisions, iterate over collections, and define
+    your own reusable commands.
 
     Neo-Kyoto's systems are in better hands with you
     on the job. More contracts will come.
