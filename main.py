@@ -22,9 +22,7 @@ def main():
         print(contract.node.get_status_text())
 
         if contract.completed:
-            print("★ CONTRACT COMPLETE ★")
-            print("Unlock: while True loops are now available.")
-            print("Try refactoring your script to use a loop.\n")
+            print(contract.get_completed_banner())
 
         print("Commands:  edit | run | status | quit")
         cmd = input("> ").strip().lower()
@@ -53,13 +51,15 @@ def main():
             result = interpreter.execute(code)
             print(result)
             print("---------------------\n")
+            print(contract.node.get_status_text())
 
-            if contract.check_completion():
+            # Goal met → full completion message exactly once, then pause
+            # so clear() on the next loop cannot wipe it unread.
+            if contract.consume_completion_announcement():
                 interpreter.unlock_loops()
-                print("Node held stable long enough!")
-                print("Contract complete. Loops unlocked.")
-            
-            input("Press Enter to continue...")
+                print(contract.get_completion_message(), flush=True)
+
+            input("\nPress Enter to continue...")
 
         else:
             print("Unknown command.")
