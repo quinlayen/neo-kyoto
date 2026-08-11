@@ -12,12 +12,17 @@ class Contract04(BaseContract):
         super().__init__()
         self.controller = AccessController()
 
+    MAX_CALLS = 40
+
     def get_commands(self):
         return {
             "get_state": self.controller.get_state,
             "reset_component": self.controller.reset_component,
             "set_watchdog": self.controller.set_watchdog,
         }
+
+    def reset_system(self):
+        self.controller = AccessController()
 
     def is_goal_met(self):
         return self.controller.is_goal_met()
@@ -36,45 +41,64 @@ class Contract04(BaseContract):
 
     Contractor,
 
-    The Midtown elevator grid is in trouble. Five elevator
-    components have entered various failure states and the
-    building's residents are trapped on their floors.
+    The Midtown elevator grid is in trouble. Eight
+    elevator components have entered various failure
+    states and the building's residents are trapped
+    on their floors.
 
-    Each component needs different treatment depending on
-    what went wrong. Some are STUCK — they need a hard
-    reset. Others are UNSTABLE — they need a watchdog
-    process to keep them steady.
+    Each component needs different treatment. Some
+    are STUCK — they need a hard reset. Others are
+    UNSTABLE — they need a watchdog process. At
+    least one may need more than one step.
 
-    ─── YOUR NEW TOOLS ───
+    ─── USING FOR LOOPS AND LISTS ───
 
-    You now have if/else conditionals. Your program can
-    inspect a value and choose what to do based on what
-    it finds.
+    You just unlocked for loops and lists. This
+    contract is where they pay off.
 
-    You also have comparison operators:
-        ==  (is equal to)     !=  (is not equal to)
-        >   (greater than)    <   (less than)
+    There are 8 components with IDs "E-01" through
+    "E-08". You could write the check-and-fix code
+    for each one individually — but that is 8 blocks
+    of nearly identical code. Last contract showed
+    you how painful that gets.
+
+    Instead, put the IDs in a list and use a for
+    loop to work through them:
+
+    A list holds multiple values under one name,
+    written with square brackets and commas.
+
+    A for loop walks through the list one item at
+    a time. Each time through, the loop variable
+    holds the current item. You use that variable
+    as the argument to your commands.
+
+    For each component: check its state with
+    get_state, then use if/else to decide whether
+    to reset it or set a watchdog. The for loop
+    handles moving to the next component.
 
     ─── YOUR COMMANDS ───
 
-        get_state(id)          — check a component's state
-                                 (returns the state as text)
-        reset_component(id)    — reset a STUCK component
-        set_watchdog(id)       — stabilize an UNSTABLE component
+        get_state(id)        — check a component's
+                               state (returns text)
+        reset_component(id)  — reset a STUCK one
+        set_watchdog(id)     — stabilize UNSTABLE
 
-    Component IDs are: "E-01", "E-02", "E-03", "E-04", "E-05"
+    Component IDs are text values in quotes:
+    "E-01" through "E-08"
+
+    The wrong fix does nothing harmful — the system
+    tells you it had no effect. Only the right fix
+    moves a component to NOMINAL.
 
     ─── YOUR GOAL ───
 
-    Bring all 5 components to NOMINAL state.
+    Bring all 8 components to NOMINAL state.
 
-    For each component: check its state, then take the
-    right action. Not every component needs the same fix,
-    and at least one may need more than one step.
-
-    Be careful — applying the wrong fix does nothing.
-    Check the status display to see what state each
-    component is in.
+    Some may change state after your first fix —
+    you may need to run your script more than once,
+    or handle that case in your code.
 
     ─── HOW TO WORK ───
 
@@ -84,9 +108,6 @@ class Contract04(BaseContract):
     2. Write your program
     3. Save the file
     4. Come back here and type  run
-
-    Hint: you may need to run your script more than once
-    if a component changes state after your first fix.
     """
 
     def get_completion_message(self):
@@ -96,55 +117,72 @@ class Contract04(BaseContract):
     ║   Midtown Elevator Grid — ALL NOMINAL       ║
     ╚══════════════════════════════════════════════╝
 
-    All elevators are running again. Midtown residents
-    can move freely between floors. Well done.
+    All elevators are running again. Midtown
+    residents can move freely. Well done.
 
     ─── WHAT YOU JUST DID ───
 
-    You wrote a program that inspects data and makes
-    decisions. Your code checked each component's state
-    and chose the right action — reset or watchdog.
-    That is the core of almost all real software:
-    look at data, decide what to do, act.
+    You combined a for loop with conditionals to
+    process 8 components automatically. Your
+    program iterated through a list, checked each
+    item's state, and took the right action.
+
+    That is a powerful pattern: iterate, inspect,
+    decide, act. Most real-world automation follows
+    this same structure.
 
     ─── THE LIMITATION ───
 
-    Look at your code. You probably wrote the same
-    if/else block five times — once for each component,
-    changing only the ID string each time.
+    Your code works, but look at the structure.
+    Inside your loop, you have a block of logic:
+    get the state, check if it is stuck, check if
+    it is unstable, take the right action. That
+    block is the "fix a component" procedure.
 
-    What if there were 50 components? 500? Writing the
-    same block hundreds of times is not practical. You
-    need a way to say "do this for each item in a list."
+    Now imagine you need that same procedure in a
+    different script, or in a different part of
+    this script. You would have to copy the whole
+    block again. If you later need to change how
+    fixing works, you would need to find and
+    update every copy.
 
-    ─── NEW TOOLS UNLOCKED ───
+    What if you could give that block a name and
+    call it whenever you need it — like a command
+    you wrote yourself?
 
-    You can now use for loops, lists, range(), and len().
+    ─── NEW TOOL: FUNCTION DEFINITIONS ───
 
-    A list is a collection of values:
+    You can now create your own commands using def.
 
-        ids = ["E-01", "E-02", "E-03"]
+    The keyword def is followed by a name you
+    choose, then (), then a colon. The indented
+    lines underneath are the instructions that run
+    when you call it:
 
-    A for loop repeats code once for each item:
+        def <your_name>():
+            <step 1>
+            <step 2>
+            <step 3>
 
-        for item in ids:
-            <do something with item>
+    Writing a def does not run the code inside it.
+    It teaches the computer a new command. The code
+    only runs when you call the name later with ():
 
-    The variable "item" takes on each value in the list,
-    one at a time.
+        <your_name>()
 
-    range() creates a sequence of numbers:
+    You can name it anything descriptive. Once
+    defined, you can call it as many times as you
+    want, from anywhere in your program — including
+    inside loops.
 
-        for i in range(10):
-            <runs 10 times, i goes from 0 to 9>
-
-    len() tells you how many items are in a list:
-
-        len(ids)   gives you 3
+    You have been using functions since your very
+    first contract. rebalance, scan_drones,
+    check_slot — those were all functions someone
+    else wrote. Now you can write your own.
 """
 
     def get_completed_banner(self):
         return (
             "★ CONTRACT #2480 COMPLETE — Elevators Nominal ★\n"
-            "New tools unlocked: for loops, lists, range(), len()\n"
+            "New tool unlocked: def (function definitions)\n"
         )

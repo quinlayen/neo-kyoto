@@ -12,6 +12,8 @@ class Contract05(BaseContract):
         super().__init__()
         self.line = AssemblyLine()
 
+    MAX_CALLS = 50
+
     def get_commands(self):
         return {
             "harvest": self.line.harvest,
@@ -20,6 +22,9 @@ class Contract05(BaseContract):
             "ship": self.line.ship,
             "check_pipeline": self.line.check_pipeline,
         }
+
+    def reset_system(self):
+        self.line = AssemblyLine()
 
     def is_goal_met(self):
         return self.line.is_goal_met()
@@ -38,32 +43,46 @@ class Contract05(BaseContract):
 
     Contractor,
 
-    Your biggest job yet. An automated assembly cell in
-    the Industrial Zone has gone offline. The cell needs
-    to complete 10 full production cycles to fill a
-    backlogged order.
+    Your biggest job yet. An automated assembly cell
+    in the Industrial Zone has gone offline. The cell
+    needs to complete 10 full production cycles to
+    fill a backlogged order.
 
-    Each production cycle has four stages that must run
-    in exact order:
+    Each production cycle has four stages that must
+    run in exact order:
 
         1. harvest   — gather raw materials
         2. process   — refine the materials
         3. package   — prepare for shipping
         4. ship      — send the finished product
 
-    Calling a stage out of order will fail. The pipeline
-    is strict about sequence.
+    The pipeline is strict about sequence. If you try
+    to process before harvesting, or ship before
+    packaging, the system will reject the command and
+    tell you what step it expects next.
 
-    ─── YOUR FULL TOOLKIT ───
+    ─── THINKING ABOUT THE PROBLEM ───
 
-    You now have everything you have unlocked so far:
-    loops, variables, conditionals, lists, for loops,
-    range(), and len().
+    Before you start coding, think about the structure
+    of this job.
 
-    Think about which tools are right for this job.
-    The pipeline is repetitive and predictable — you
-    know exactly what needs to happen and how many
-    times.
+    What repeats? The whole cycle of four steps repeats
+    10 times. The steps within each cycle are always
+    the same and always in the same order.
+
+    What tool handles repeating something a known
+    number of times? You unlocked that in the last
+    contract.
+
+    What goes inside the loop? One complete cycle —
+    all four stages, called in order.
+
+    Start simple: try writing just one cycle first.
+    Once that works, wrap it in the right kind of
+    repetition.
+
+    Use check_pipeline() at any point to see how many
+    cycles have been completed.
 
     ─── YOUR COMMANDS ───
 
@@ -76,9 +95,6 @@ class Contract05(BaseContract):
     ─── YOUR GOAL ───
 
     Complete 10 full production cycles.
-
-    Each cycle is the same four steps in the same order.
-    Figure out how to automate the full run.
 
     ─── HOW TO WORK ───
 
@@ -98,64 +114,53 @@ class Contract05(BaseContract):
     ╚══════════════════════════════════════════════╝
 
     10 production cycles completed. The backlog is
-    cleared. Industrial Zone management is impressed —
-    this was your most complex automation yet.
+    cleared. Industrial Zone management is impressed
+    — this was your most complex automation yet.
 
     ─── WHAT YOU JUST DID ───
 
-    You built a complete automated pipeline. Your program
-    coordinated multiple steps in the right sequence,
-    repeated them the exact number of times needed, and
-    finished the job without any manual intervention.
+    You built a complete automated pipeline. Your
+    program defined a reusable function, called it
+    inside a loop, and coordinated multiple steps
+    in sequence without any manual intervention.
 
-    That is real automation. That is what keeps a city
-    like Neo-Kyoto running.
+    That is real automation. That is what keeps a
+    city like Neo-Kyoto running.
 
-    ─── THE LIMITATION ───
+    ─── HOW FAR YOU HAVE COME ───
 
-    Your pipeline code works, but look at it. Every
-    cycle is the same four steps written out. What if
-    you needed those same steps in a different script?
-    You would have to copy them all over again.
+    Think back to your first contract. You wrote
+    one command on each line, over and over.
 
-    What if you could name a group of steps — give them
-    a label — and then call that label like a command?
+    Now you write programs that store data in
+    variables, make decisions with conditionals,
+    iterate over collections with for loops, and
+    organize logic into reusable functions.
 
-    ─── NEW TOOLS UNLOCKED ───
+    These are the fundamentals of programming.
+    Every language, every system, every tool you
+    will ever use builds on these ideas.
 
-    You can now define your own commands using def.
+    ─── WHAT COMES NEXT ───
 
-        def run_cycle():
-            harvest()
-            process()
-            package()
-            ship()
+    You have proven yourself as a programmer. But
+    Neo-Kyoto runs on more than scripts.
 
-    This creates a new command called run_cycle. The
-    indented code underneath is what happens when you
-    call it. Then you can write:
+    The city's infrastructure depends on terminals,
+    databases, and version control systems. There
+    are contractors who navigate file systems from
+    a command line, query city data with SQL, and
+    track system changes with Git.
 
-        for i in range(10):
-            run_cycle()
+    Those tools are coming. And when they arrive,
+    the programming skills you have built here will
+    be the foundation for everything else.
 
-    You started with one command: rebalance(). Now you
-    can create your own. That is the power of functions.
-
-    ─── END OF CURRENT CONTRACTS ───
-
-    You have completed all available contracts.
-
-    You started by pressing a single button over and over.
-    Now you write programs that store data, make decisions,
-    iterate over collections, and define reusable commands.
-
-    Neo-Kyoto's systems are in better hands with you
-    on the job. More contracts will come.
+    More contracts will come.
 """
 
     def get_completed_banner(self):
         return (
             "★ CONTRACT #2481 COMPLETE — Assembly Cell Online ★\n"
-            "New tools unlocked: def (function definitions)\n"
             "All current contracts complete.\n"
         )

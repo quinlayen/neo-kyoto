@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 from game_state import GameState
 from interpreter import RestrictedInterpreter
@@ -17,22 +18,22 @@ CONTRACT_DEFS = [
 def _load_contracts():
     try:
         from contracts.contract_02 import Contract02
-        CONTRACT_DEFS.append({"id": "contract_02", "class": Contract02, "title": "Drone Route Cleanup", "location": "Sector 12", "unlock_index": 1})
+        CONTRACT_DEFS.append({"id": "contract_02", "class": Contract02, "title": "Drone Route Cleanup", "location": "Sector 12", "unlock_index": 1})  # conditionals
     except ImportError:
         pass
     try:
         from contracts.contract_03 import Contract03
-        CONTRACT_DEFS.append({"id": "contract_03", "class": Contract03, "title": "Inventory Drift", "location": "Harbor District", "unlock_index": 2})
+        CONTRACT_DEFS.append({"id": "contract_03", "class": Contract03, "title": "Inventory Drift", "location": "Harbor District", "unlock_index": 2})  # for_loops
     except ImportError:
         pass
     try:
         from contracts.contract_04 import Contract04
-        CONTRACT_DEFS.append({"id": "contract_04", "class": Contract04, "title": "Elevator Recovery", "location": "Midtown", "unlock_index": 3})
+        CONTRACT_DEFS.append({"id": "contract_04", "class": Contract04, "title": "Elevator Recovery", "location": "Midtown", "unlock_index": 3})  # functions
     except ImportError:
         pass
     try:
         from contracts.contract_05 import Contract05
-        CONTRACT_DEFS.append({"id": "contract_05", "class": Contract05, "title": "Assembly Automation", "location": "Industrial Zone", "unlock_index": 4})
+        CONTRACT_DEFS.append({"id": "contract_05", "class": Contract05, "title": "Assembly Automation", "location": "Industrial Zone", "unlock_index": -1})  # capstone, no unlock
     except ImportError:
         pass
 
@@ -106,11 +107,7 @@ def show_contract_board(game_state):
 
 def run_contract(cdef, game_state):
     contract = cdef["class"]()
-    interpreter = RestrictedInterpreter(game_state)
-    interpreter.set_commands(
-        active_commands=contract.get_commands(),
-        retired_commands=game_state.retired_commands,
-    )
+    interpreter = RestrictedInterpreter(game_state, max_calls=contract.MAX_CALLS)
     script_path = contract.SCRIPT_FILE
 
     clear()
@@ -164,6 +161,12 @@ def run_contract(cdef, game_state):
             with open(script_path, "r") as f:
                 code = f.read()
 
+            contract.reset_system()
+            interpreter.set_commands(
+                active_commands=contract.get_commands(),
+                retired_commands=game_state.retired_commands,
+            )
+
             print()
             print("  ┌─ Running script ─────────────────────┐")
             result = interpreter.execute(code)
@@ -187,8 +190,16 @@ def run_contract(cdef, game_state):
 
 def main():
     _load_contracts()
-    show_title_screen()
     game_state = GameState()
+    dev_mode = "--dev" in sys.argv
+
+    if dev_mode:
+        game_state.unlock_all(CONTRACT_DEFS)
+        print("  [DEV] All contracts and features unlocked.\n")
+
+    if not dev_mode and not game_state.is_contract_completed("contract_01"):
+        show_title_screen()
+        run_contract(CONTRACT_DEFS[0], game_state)
 
     while True:
         cdef = show_contract_board(game_state)

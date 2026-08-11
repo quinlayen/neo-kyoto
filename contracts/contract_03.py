@@ -12,11 +12,19 @@ class Contract03(BaseContract):
         super().__init__()
         self.warehouse = Warehouse()
 
+    MAX_CALLS = 30
+
     def get_commands(self):
         return {
             "check_slot": self.warehouse.check_slot,
+            "get_slot_type": self.warehouse.get_slot_type,
             "adjust_slot": self.warehouse.adjust_slot,
+            "gentle_adjust": self.warehouse.gentle_adjust,
+            "unlock_slot": self.warehouse.unlock_slot,
         }
+
+    def reset_system(self):
+        self.warehouse = Warehouse()
 
     def is_goal_met(self):
         return self.warehouse.is_goal_met()
@@ -35,55 +43,101 @@ class Contract03(BaseContract):
 
     Contractor,
 
-    Harbor District Warehouse 7 has a problem. The
-    inventory management system drifted overnight —
-    slot counts no longer match the physical stock.
+    Harbor District Warehouse 7 has a problem.
 
-    Some slots have too many items, some too few. Each
-    one needs a specific correction. Your job is to
-    check each slot and apply the right adjustment.
+    The warehouse has 6 storage slots, numbered 1
+    through 6. Each slot is supposed to hold a
+    specific number of items, but the counts are
+    wrong. Some have too many, others too few.
 
-    ─── YOUR NEW TOOLS ───
+    Here is the complication: not all slots are the
+    same. Most are STANDARD — you can adjust them
+    normally. But one is FRAGILE — standard
+    adjustment is too rough and will fail. Another
+    is LOCKED — it must be unlocked before you can
+    adjust it at all.
 
-    You now have variables and function arguments.
+    If you use the wrong command on the wrong type
+    of slot, it will fail and tell you why. Your
+    program needs to check each slot's type and
+    choose the right approach.
 
-    A variable stores a value under a name:
+    ─── HOW CHECK_SLOT WORKS ───
 
-        correction = check_slot(1)
+    check_slot takes a slot number and gives back
+    the correction that slot needs — a number. For
+    example, if slot 1 has 4 too few items, check_slot
+    returns the number 4 (meaning "add 4"). If slot 2
+    has 3 too many, it returns -3 (meaning "remove 3").
 
-    The command check_slot gives back a number — the
-    correction that slot needs. The = sign catches that
-    number and stores it as "correction."
+    The output will show you both the situation and
+    the correction number. Catch the return value
+    in a variable, and that variable holds the exact
+    number you need to pass to the adjust command.
 
-    You can then pass that stored value to another command:
+    ─── LOOPING THROUGH ALL 6 SLOTS ───
 
-        adjust_slot(1, correction)
-
-    The values inside the parentheses are called arguments.
-    The first argument says which slot. The second says
-    how much to adjust.
-
-    You can also use a variable as a counter in a loop:
+    You need to process slots 1 through 6. You
+    can use a counter variable to track which slot
+    you are on, and increase it each time through
+    a while True loop. Remember the counter pattern
+    from the last contract:
 
         slot = 1
-        ...
+        (inside the loop)
         slot = slot + 1
 
-    This increases the counter by 1 each time.
+    Each time through the loop, slot goes from 1
+    to 2 to 3, and so on. When it goes past 6,
+    the system will report that the slot does not
+    exist, and the sandbox will stop the loop.
+
+    ─── USING CONDITIONALS ───
+
+    This is your first contract where you need to
+    make decisions. You just unlocked if and else.
+
+    get_slot_type gives back a piece of text — the
+    type of a slot: "STANDARD", "FRAGILE", or
+    "LOCKED". Catch it in a variable:
+
+        slot_type = get_slot_type(1)
+
+    Then use if to check what it is. Remember:
+    == asks the question "is the left equal to the
+    right?" A single = stores a value. A double ==
+    compares two values.
+
+    For each slot, you need to:
+    1. Check the type with get_slot_type
+    2. Get the correction with check_slot
+    3. Use if statements to choose the right action
+
+    STANDARD slots: use adjust_slot
+    FRAGILE slots: use gentle_adjust
+    LOCKED slots: call unlock_slot first, then
+                  adjust_slot
+
+    You can use multiple if statements in a row
+    to check for each type separately.
 
     ─── YOUR COMMANDS ───
 
-        check_slot(n)          — check slot n, returns
-                                 the correction needed
-        adjust_slot(n, amount) — adjust slot n by amount
+        check_slot(n)           — returns the
+                                  correction needed
+        get_slot_type(n)        — returns the slot type
+                                  as text
+        adjust_slot(n, amount)  — adjust a STANDARD or
+                                  unlocked slot
+        gentle_adjust(n, amount)— adjust a FRAGILE slot
+        unlock_slot(n)          — unlock a LOCKED slot
+
+    Slot numbers are 1 through 6.
 
     ─── YOUR GOAL ───
 
-    Balance all 6 slots. For each slot, you need to check
-    what correction it needs, then apply that correction.
-
-    Think about how to handle all 6 slots without writing
-    the same code six separate times.
+    Balance all 6 slots. Each needs the right
+    command for its type.
 
     ─── HOW TO WORK ───
 
@@ -107,49 +161,62 @@ class Contract03(BaseContract):
 
     ─── WHAT YOU JUST DID ───
 
-    You used variables to capture data from one command
-    and pass it to another. Your program made decisions
-    based on real values, not just blind repetition.
+    You wrote a program that inspects data and makes
+    decisions. Your code checked each slot's type and
+    chose the right action — standard adjust, gentle
+    adjust, or unlock first. Your programs can now
+    adapt to what they find.
 
     ─── THE LIMITATION ───
 
-    Did you notice the notes on some slots? Slot 3 was
-    marked FRAGILE, slot 5 was RESTRICTED. Your program
-    treated every slot the same way — and it worked this
-    time. But what if fragile slots needed gentler
-    adjustments? What if restricted slots needed a
-    different procedure entirely?
+    Look at your code. You probably wrote a similar
+    check-type-then-act block for each of the 6
+    slots, changing only the slot number each time.
+    The logic was identical. Only the data differed.
 
-    Right now your program cannot make choices. It does
-    the same thing every time, regardless of the situation.
+    What if there were 60 slots? 600? Writing the
+    same block hundreds of times is not practical.
+    You need a way to say "here is a collection of
+    items — do this same thing for each one."
 
-    ─── NEW TOOLS UNLOCKED ───
+    ─── NEW TOOL: FOR LOOPS AND LISTS ───
 
-    You can now use if and else to make decisions.
+    A list is a way to hold multiple values under
+    one name. You create one with square brackets:
 
-    The if keyword checks a condition and only runs the
-    indented code if the condition is true:
+        ids = ["E-01", "E-02", "E-03"]
 
-        if <condition>:
-            <do this>
+    After this line, ids holds all three values
+    together. A list can hold numbers, text, or
+    any mix of values, in order.
 
-    The else keyword handles the other case:
+    A for loop repeats code once for each item
+    in a collection:
 
-        if <condition>:
-            <do this>
-        else:
-            <do that instead>
+        for item in collection:
+            <do something with item>
 
-    You also have comparison operators:
+    The variable before "in" (here called item)
+    automatically takes on each value, one at a
+    time. First loop: item is the first value.
+    Second loop: the second value. And so on.
 
-        ==   means "is equal to"
-        !=   means "is not equal to"
-        >    means "is greater than"
-        <    means "is less than"
+    range() creates a sequence of numbers:
+
+        range(10)    gives you 0 through 9
+        range(1, 7)  gives you 1 through 6
+
+    Use it with a for loop to repeat code a
+    specific number of times, or to count through
+    a sequence of slot numbers, component IDs, etc.
+
+    len() tells you how many items are in a list:
+
+        len(ids)   gives you 3
 """
 
     def get_completed_banner(self):
         return (
             "★ CONTRACT #2479 COMPLETE — Warehouse Balanced ★\n"
-            "New tools unlocked: if/else conditionals\n"
+            "New tools unlocked: for loops, lists, range(), len()\n"
         )

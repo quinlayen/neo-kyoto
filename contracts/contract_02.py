@@ -18,6 +18,9 @@ class Contract02(BaseContract):
             "reroute_next": self.router.reroute_next,
         }
 
+    def reset_system(self):
+        self.router = DroneRouter()
+
     def is_goal_met(self):
         return self.router.is_goal_met()
 
@@ -35,38 +38,135 @@ class Contract02(BaseContract):
 
     Contractor,
 
-    Good work on Block 7. Word travels fast — Sector 12
-    needs your help now.
+    Good work on Block 7. Word travels fast —
+    Sector 12 needs your help now.
 
-    The automated delivery drones in this sector are flying
-    wrong routes. Packages are arriving at the wrong
-    buildings, or not arriving at all. The routing table
-    got corrupted and the drones need manual correction.
+    The automated delivery drones in this sector
+    are flying wrong routes. Packages are arriving
+    at the wrong buildings, or not arriving at all.
+    The routing table got corrupted and the drones
+    need manual correction.
 
-    ─── WHAT YOU HAVE LEARNED ───
+    ─── A NEW TOOL: VARIABLES ───
 
-    Last contract, you learned that a program is a list of
-    instructions, read from top to bottom. You also unlocked
-    a new tool: while loops.
+    Before we get to the drones, there is a
+    fundamental concept you need: variables.
 
-    A while loop repeats instructions automatically.
+    A variable is a name that holds a value. You
+    create one with the = sign:
 
-    ─── YOUR NEW TOOLS ───
+        speed = 30
 
-    You have two new commands for this job:
+    After this line runs, the name speed holds
+    the number 30. Anywhere you write speed from
+    now on, the computer reads it as 30.
 
-        scan_drones()   — shows the status of all drones
+    The name you choose matters. Pick something
+    that describes what the value represents.
+    "speed" is clear. "x" is not. When your
+    programs get longer, meaningful names help
+    you remember what each value is for.
+
+    The value can be anything — a number, text
+    in quotes, or the result a command gives back:
+
+        drone_count = 8
+        district = "Sector 12"
+        load = 0.5
+
+    ─── CATCHING RETURN VALUES ───
+
+    Some commands give back a value when they run.
+    This is called a return value.
+
+    For example, reroute_next() fixes a drone and
+    then gives back that drone's ID — a piece of
+    text like "D-01". If you just call reroute_next()
+    on its own, that ID appears and immediately
+    vanishes. The computer moves on and the value
+    is gone forever.
+
+    You can catch the return value by assigning it
+    to a variable:
+
+        fixed_drone = reroute_next()
+
+    Now the variable fixed_drone holds the ID that
+    reroute_next() gave back — for example, "D-01".
+    You can see it with print():
+
+        print(fixed_drone)
+
+    Remember print() from the last contract? You
+    can also print a command directly to see what
+    it gives back, without storing it:
+
+        print(reroute_next())
+
+    Both work. The first stores the value so you
+    can use it later. The second just displays it
+    and the value is lost.
+
+    ─── DEBUGGING WITH PRINT ───
+
+    print() is your best tool for understanding
+    what your program is doing. Try this pattern:
+
+    1. Call scan_drones() to see the current state
+    2. Call reroute_next() to fix one drone
+    3. Call scan_drones() again to see what changed
+
+    Each scan shows you the full table. By comparing
+    before and after, you can see exactly what your
+    commands are doing. This is called debugging —
+    watching your program step by step to understand
+    its behavior.
+
+    ─── COUNTERS ───
+
+    You can change a variable by assigning it a
+    new value. A common pattern is using a variable
+    as a counter:
+
+        count = 0
+        count = count + 1
+
+    Here is what happens on the second line: the
+    computer looks at the right side first. It
+    finds count (which is 0) and adds 1 to it,
+    getting 1. Then it takes that result and
+    stores it back into count, replacing the old
+    value. Now count holds 1.
+
+    If that line runs again — say, inside a loop —
+    the computer reads count (now 1), adds 1 to
+    get 2, and stores 2 back into count. Each
+    time through the loop, count goes up by 1:
+    0, 1, 2, 3, 4...
+
+    You do not strictly need variables for this
+    contract, but practice using them. Try catching
+    what reroute_next() gives back. Try printing
+    it. These skills become essential starting
+    next contract.
+
+    ─── YOUR COMMANDS ───
+
+        scan_drones()   — shows all drone statuses
+                          (returns count of misrouted)
         reroute_next()  — fixes the next misrouted drone
-
-    scan_drones() lets you see which drones need help.
-    reroute_next() corrects one drone each time you call it.
+                          (returns the ID it fixed)
 
     ─── YOUR GOAL ───
 
     Correct all 8 misrouted drones in the sector.
 
-    You could call reroute_next() eight times by hand.
-    But remember — you have a better tool now.
+    You could call reroute_next() eight times by
+    hand. But you have a loop now — think about
+    how to let the computer handle the repetition.
+
+    The sandbox will stop your program safely
+    after enough calls.
 
     ─── HOW TO WORK ───
 
@@ -85,48 +185,105 @@ class Contract02(BaseContract):
     ║   Sector 12 Drone Grid — ALL CORRECTED      ║
     ╚══════════════════════════════════════════════╝
 
-    All drones are back on course. Deliveries are flowing
-    again. Sector 12 management sends their thanks.
+    All drones are back on course. Deliveries are
+    flowing again. Sector 12 management sends their
+    thanks.
 
     ─── WHAT YOU JUST DID ───
 
-    You used a loop to automate a repetitive task. Instead
-    of writing the same command eight times, you let the
+    You used a loop to automate a repetitive task.
+    Instead of writing the same command eight times,
+    you wrote it once inside a loop and let the
     computer handle the repetition.
+
+    If you used variables to catch what reroute_next()
+    gave back, or printed values to see what was
+    happening — good. Those skills will be critical
+    from here on.
 
     ─── THE LIMITATION ───
 
-    Notice what scan_drones() showed you: each drone has
-    an ID and a priority level. Some were CRITICAL, some
-    were LOW priority. But reroute_next() just fixes drones
-    in order — you had no way to choose which one to fix
-    first, or to skip ones that were already done.
+    Your loop fixed all 8 drones, but think about
+    what it could NOT do.
 
-    What if you could store information — like a drone's
-    ID — and pass it to a command? What if commands could
-    accept inputs so you could tell them exactly what to do?
+    reroute_next() fixes drones in whatever order
+    it finds them. But what if some drones were not
+    just misrouted — what if some were GROUNDED and
+    needed a completely different fix? Your program
+    had no way to look at a drone's status and
+    choose between two actions.
 
-    ─── NEW TOOLS UNLOCKED ───
+    scan_drones() showed you priorities and statuses
+    on screen. You could read them. But your program
+    could not make decisions based on what it saw. It
+    did the same thing to every drone, regardless.
 
-    You can now use variables and function arguments.
+    What you need is a way for your program to ask
+    a question — "is this drone misrouted or
+    grounded?" — and take a different action depending
+    on the answer.
 
-    A variable lets you store a value and give it a name:
+    ─── NEW TOOL: CONDITIONALS ───
 
-        x = 5
+    You can now use if and else to make decisions.
 
-    The = sign means "store the value on the right under
-    the name on the left." You can use that name later.
+    An if statement asks a yes-or-no question. If
+    the answer is yes (true), the indented code
+    underneath runs. If the answer is no (false),
+    the indented code is skipped entirely:
 
-    Function arguments let you pass values to commands:
+        if <condition>:
+            <do this>
 
-        some_command(value)
+    The question you ask is called a condition. You
+    write it using comparison operators — symbols
+    that compare two values:
 
-    The value inside the parentheses tells the command
-    what to work on. Future contracts will use these.
+        ==   "is the left equal to the right?"
+        !=   "is the left different from the right?"
+        >    "is the left greater than the right?"
+        <    "is the left less than the right?"
+
+    Important: == and = are different things.
+
+    A single = is assignment — it means "store this
+    value." It is a statement, not a question:
+
+        status = "STUCK"     (store "STUCK" in status)
+
+    A double == is comparison — it asks a question
+    and the answer is either true or false:
+
+        status == "STUCK"    (is status equal to "STUCK"?)
+
+    For example, you might check a variable:
+
+        if status == "STUCK":
+            <handle the stuck case>
+
+    The computer looks at what is stored in status
+    and asks "is this equal to STUCK?" If yes, the
+    indented code runs. If no, it is skipped.
+
+    You can add else to handle the other case:
+
+        if status == "STUCK":
+            <handle stuck>
+        else:
+            <handle everything else>
+
+    The program takes one path or the other, never
+    both. This is called branching — your program
+    can now follow different routes depending on
+    what it finds.
+
+    You can also use multiple if statements in a
+    row, each checking a different condition. Each
+    one is its own independent question.
 """
 
     def get_completed_banner(self):
         return (
             "★ CONTRACT #2478 COMPLETE — Sector 12 Drones Corrected ★\n"
-            "New tools unlocked: variables and function arguments\n"
+            "New tool unlocked: if/else conditionals\n"
         )

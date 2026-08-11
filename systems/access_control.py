@@ -6,6 +6,9 @@ class AccessController:
             "E-03": {"state": "STUCK",     "reset_target": "UNSTABLE"},
             "E-04": {"state": "UNSTABLE",  "reset_target": "NOMINAL"},
             "E-05": {"state": "NOMINAL",   "reset_target": "NOMINAL"},
+            "E-06": {"state": "STUCK",     "reset_target": "NOMINAL"},
+            "E-07": {"state": "UNSTABLE",  "reset_target": "NOMINAL"},
+            "E-08": {"state": "STUCK",     "reset_target": "UNSTABLE"},
         }
 
     def get_state(self, component_id):
