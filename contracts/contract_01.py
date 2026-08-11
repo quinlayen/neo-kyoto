@@ -42,148 +42,59 @@ class Contract01(BaseContract):
     recyclers, transit networks. When those systems
     break, people like you get the call.
 
-    You are not a hacker. You are not a soldier.
     You are an engineer. You write small programs
-    that tell machines what to do, and right now
-    a machine needs help.
-
-    ─── YOUR FIRST JOB ───
-
-    Block 7's power node is flickering. The
-    residents are losing power every few minutes.
-    The node's auto-repair failed, and the district
-    needs someone to stabilize it manually — by
-    writing a short program.
-
-    That is what you will do today: write your
-    first program.
+    that tell machines what to do. Right now,
+    Block 7's power node is flickering and the
+    residents are losing power. You need to
+    stabilize it by writing a short program.
 
     ─── WHAT IS A PROGRAM? ───
 
-    Think of a recipe. A recipe is a list of steps
-    written in order. You follow step 1 first, then
-    step 2, then step 3. If you skip a step or do
-    them out of order, the result is wrong.
-
-    A program works the same way. It is a list of
-    instructions, written line by line, that the
-    computer follows from top to bottom.
-
-    Each instruction goes on its own line. The
-    computer does line 1 first, then line 2, then
-    line 3, and so on until it reaches the end.
-    Then it stops.
-
-    That is all a program is: a list of steps
-    that a computer follows in order.
-
-    ─── WHAT IS A COMMAND? ───
-
-    Each line of your program is a command — one
-    instruction that tells the computer to do one
-    specific thing. A command looks like this:
+    A program is a list of instructions the
+    computer follows from top to bottom, one line
+    at a time. Each line is a command — it tells
+    the computer to do one thing. A command looks
+    like this:
 
         rebalance()
 
-    There are two parts:
-
-        rebalance   <- the name of the command
-        ()          <- tells it "do it now"
-
     The name tells the computer which command you
-    mean. The parentheses are what actually makes
-    it run. Without () the computer just sees a
-    name and does nothing with it.
+    mean. The parentheses () tell it "do it now."
+    Without () the computer sees the name but does
+    nothing with it.
 
-    Think of it like a button on a control panel.
-    The label says "rebalance." The parentheses
-    are you pressing that button.
-
-    Every command you write will follow this
-    pattern: a name, followed by ().
-
-    ─── SEEING WHAT HAPPENS: print() ───
-
-    There is one more tool you should know about
-    right away: print().
-
-    print() displays a message on your screen.
-    You put the message inside the parentheses:
+    You also have print() — it displays a message
+    on screen. Put text in quotes inside it:
 
         print("hello")
 
-    That line would show the word hello when
-    your program runs. The quotes tell the
-    computer you mean literal text — not a
-    command name or a number.
-
-    print() can also show you what a command
-    gives back:
-
-        print(rebalance())
-
-    This runs rebalance() and then displays
-    whatever it returned. Think of print() as
-    your most useful debugging tool — whenever
-    you want to see what is happening inside
-    your program, print() will show you.
-
-    You do not need print() to complete this
-    contract. But get comfortable with it now.
-    You will rely on it constantly.
+    You can also use print() to see what a command
+    gives back. It is your best tool for watching
+    what your program is doing.
 
     ─── YOUR COMMAND ───
 
-    Right now, you have access to one command:
+        rebalance()  — rebalances the power node
 
-        rebalance()
-
-    Each time this command runs, it tells the
-    power node to recalculate and redistribute
-    its electrical load.
-
-    One rebalance helps a little, but the node
-    is too unstable for a single call to fix it.
-    Each call brings the load down a notch. But
-    the node needs many rebalances before it
-    settles into a STABLE state.
-
-    You will need to call this command more than
-    once. Many more.
+    One rebalance is not enough. The node needs
+    many rebalances before it reaches a STABLE
+    state. Each call on its own line.
 
     ─── YOUR GOAL ───
 
-    Bring the power node from FLICKERING to
-    STABLE.
+    Bring the power node from FLICKERING to STABLE.
 
-    Remember: a program is a list of steps, and
-    each step goes on its own line. One rebalance
-    is not enough — figure out how many the node
-    needs.
-
-    After you run your script, check the status
-    display to see whether the node has stabilized.
-    If not, edit your script, add more, and run
-    again.
+    If your first attempt is not enough, edit your
+    script, add more, and run again.
 
     ─── HOW TO WORK ───
 
-    Your program lives in a file called block7.py.
+    Your script file is: block7.py
 
-    1. Type  edit  -> open the file in your editor
+    1. Type  edit  → open the file in your editor
     2. Write your program
     3. Save the file
     4. Come back here and type  run
-
-    You can run your program as many times as you
-    want. If it does not work the first time, edit
-    and try again. Experimenting is how programmers
-    work.
-
-    ─── READY? ───
-
-    The residents of Block 7 are waiting.
-    Type a command to begin.
     """
 
     def get_completion_message(self):

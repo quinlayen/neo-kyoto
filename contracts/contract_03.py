@@ -1,147 +1,83 @@
 from contracts.base import BaseContract
-from systems.warehouse import Warehouse
+from systems.drone_dispatch import DroneDispatch
 
 
 class Contract03(BaseContract):
     CONTRACT_ID = "contract_03"
-    TITLE = "Inventory Drift"
-    LOCATION = "Harbor District"
-    SCRIPT_FILE = "player_scripts/warehouse.py"
+    TITLE = "Drone Dispatch"
+    LOCATION = "Sector 14"
+    SCRIPT_FILE = "player_scripts/dispatch.py"
 
     def __init__(self):
         super().__init__()
-        self.warehouse = Warehouse()
+        self.dispatch = DroneDispatch()
 
-    MAX_CALLS = 30
+    MAX_CALLS = 20
 
     def get_commands(self):
         return {
-            "check_slot": self.warehouse.check_slot,
-            "get_slot_type": self.warehouse.get_slot_type,
-            "adjust_slot": self.warehouse.adjust_slot,
-            "gentle_adjust": self.warehouse.gentle_adjust,
-            "unlock_slot": self.warehouse.unlock_slot,
+            "check_next": self.dispatch.check_next,
+            "reroute": self.dispatch.reroute,
+            "repair": self.dispatch.repair,
         }
 
     def reset_system(self):
-        self.warehouse = Warehouse()
+        self.dispatch = DroneDispatch()
 
     def is_goal_met(self):
-        return self.warehouse.is_goal_met()
+        return self.dispatch.is_goal_met()
 
     def get_status_text(self):
-        return self.warehouse.get_status_text()
+        return self.dispatch.get_status_text()
 
     def get_briefing(self):
         return """
     ╔══════════════════════════════════════════════╗
     ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
-    ║   Contract #2479 – Inventory Drift          ║
+    ║   Contract #2479 – Drone Dispatch           ║
     ╚══════════════════════════════════════════════╝
 
     ─── INCOMING TRANSMISSION ───
 
     Contractor,
 
-    Harbor District Warehouse 7 has a problem.
+    Your work in Sector 12 got noticed. Sector 14
+    has a bigger problem — their drone fleet is
+    down, and it is not as simple as last time.
 
-    The warehouse has 6 storage slots, numbered 1
-    through 6. Each slot is supposed to hold a
-    specific number of items, but the counts are
-    wrong. Some have too many, others too few.
+    Some drones are MISROUTED — flying wrong paths,
+    same as Sector 12. But others are GROUNDED —
+    completely offline, hardware fault. A reroute
+    will not help a grounded drone. It needs a
+    different kind of fix.
 
-    Here is the complication: not all slots are the
-    same. Most are STANDARD — you can adjust them
-    normally. But one is FRAGILE — standard
-    adjustment is too rough and will fail. Another
-    is LOCKED — it must be unlocked before you can
-    adjust it at all.
-
-    If you use the wrong command on the wrong type
-    of slot, it will fail and tell you why. Your
-    program needs to check each slot's type and
-    choose the right approach.
-
-    ─── HOW CHECK_SLOT WORKS ───
-
-    check_slot takes a slot number and gives back
-    the correction that slot needs — a number. For
-    example, if slot 1 has 4 too few items, check_slot
-    returns the number 4 (meaning "add 4"). If slot 2
-    has 3 too many, it returns -3 (meaning "remove 3").
-
-    The output will show you both the situation and
-    the correction number. Catch the return value
-    in a variable, and that variable holds the exact
-    number you need to pass to the adjust command.
-
-    ─── LOOPING THROUGH ALL 6 SLOTS ───
-
-    You need to process slots 1 through 6. You
-    can use a counter variable to track which slot
-    you are on, and increase it each time through
-    a while True loop. Remember the counter pattern
-    from the last contract:
-
-        slot = 1
-        (inside the loop)
-        slot = slot + 1
-
-    Each time through the loop, slot goes from 1
-    to 2 to 3, and so on. When it goes past 6,
-    the system will report that the slot does not
-    exist, and the sandbox will stop the loop.
-
-    ─── USING CONDITIONALS ───
-
-    This is your first contract where you need to
-    make decisions. You just unlocked if and else.
-
-    get_slot_type gives back a piece of text — the
-    type of a slot: "STANDARD", "FRAGILE", or
-    "LOCKED". Catch it in a variable:
-
-        slot_type = get_slot_type(1)
-
-    Then use if to check what it is. Remember:
-    == asks the question "is the left equal to the
-    right?" A single = stores a value. A double ==
-    compares two values.
-
-    For each slot, you need to:
-    1. Check the type with get_slot_type
-    2. Get the correction with check_slot
-    3. Use if statements to choose the right action
-
-    STANDARD slots: use adjust_slot
-    FRAGILE slots: use gentle_adjust
-    LOCKED slots: call unlock_slot first, then
-                  adjust_slot
-
-    You can use multiple if statements in a row
-    to check for each type separately.
+    Your old approach — blindly fixing every drone
+    the same way — will not work here. You need to
+    check what is wrong first, then choose the
+    right response.
 
     ─── YOUR COMMANDS ───
 
-        check_slot(n)           — returns the
-                                  correction needed
-        get_slot_type(n)        — returns the slot type
-                                  as text
-        adjust_slot(n, amount)  — adjust a STANDARD or
-                                  unlocked slot
-        gentle_adjust(n, amount)— adjust a FRAGILE slot
-        unlock_slot(n)          — unlock a LOCKED slot
+        check_next()  — finds the next broken drone
+                        and tells you what is wrong
+        reroute()     — fixes a MISROUTED drone
+        repair()      — fixes a GROUNDED drone
 
-    Slot numbers are 1 through 6.
+    check_next() gives back the drone's problem as
+    text — either "MISROUTED" or "GROUNDED". Catch
+    it in a variable so your program can use it to
+    decide what to do.
+
+    If you use the wrong fix, the system will tell
+    you.
 
     ─── YOUR GOAL ───
 
-    Balance all 6 slots. Each needs the right
-    command for its type.
+    Get all 8 drones operational.
 
     ─── HOW TO WORK ───
 
-    Your script file is: warehouse.py
+    Your script file is: dispatch.py
 
     1. Type  edit    → open the file in your editor
     2. Write your program
@@ -153,70 +89,73 @@ class Contract03(BaseContract):
         return """
     ╔══════════════════════════════════════════════╗
     ║   ★  CONTRACT #2479 COMPLETE  ★             ║
-    ║   Harbor District Warehouse — BALANCED      ║
+    ║   Sector 14 — ALL DRONES OPERATIONAL        ║
     ╚══════════════════════════════════════════════╝
 
-    All slots are back in sync. The warehouse is
-    operational again. Harbor District sends payment.
+    All drones are back in the air. Sector 14
+    sends payment.
 
     ─── WHAT YOU JUST DID ───
 
-    You wrote a program that inspects data and makes
-    decisions. Your code checked each slot's type and
-    chose the right action — standard adjust, gentle
-    adjust, or unlock first. Your programs can now
-    adapt to what they find.
+    You wrote a program that adapts. Instead of
+    doing the same thing to every drone, your code
+    checked each one's problem and chose the right
+    fix. That is the power of conditionals — your
+    programs can now make decisions.
 
     ─── THE LIMITATION ───
 
-    Look at your code. You probably wrote a similar
-    check-type-then-act block for each of the 6
-    slots, changing only the slot number each time.
-    The logic was identical. Only the data differed.
+    Your while True loop ran until the sandbox
+    stopped it. That worked here, but think about
+    what would happen without the sandbox — your
+    loop would run forever.
 
-    What if there were 60 slots? 600? Writing the
-    same block hundreds of times is not practical.
-    You need a way to say "here is a collection of
-    items — do this same thing for each one."
+    And what if you needed your program to do
+    something AFTER the loop? With while True,
+    there is no "after" — the loop never ends on
+    its own, so any code below it never runs.
 
-    ─── NEW TOOL: FOR LOOPS AND LISTS ───
+    You need a way to make the loop stop when the
+    job is done.
 
-    A list is a way to hold multiple values under
-    one name. You create one with square brackets:
+    ─── NEW TOOL: CONTROLLED WHILE LOOPS ───
 
-        ids = ["E-01", "E-02", "E-03"]
+    You have been using while True — a loop that
+    repeats forever. But the word after "while"
+    does not have to be True. It can be any
+    condition — and when that condition becomes
+    false, the loop stops.
 
-    After this line, ids holds all three values
-    together. A list can hold numbers, text, or
-    any mix of values, in order.
+        count = 0
+        while count < 8:
+            <do something>
+            count = count + 1
 
-    A for loop repeats code once for each item
-    in a collection:
+    Here is what happens:
 
-        for item in collection:
-            <do something with item>
+    Before the loop starts, count is 0. The
+    computer checks: is 0 < 8? Yes — so it runs
+    the body. Inside, count goes from 0 to 1.
 
-    The variable before "in" (here called item)
-    automatically takes on each value, one at a
-    time. First loop: item is the first value.
-    Second loop: the second value. And so on.
+    Back to the top: is 1 < 8? Yes — run again.
+    count goes to 2. Then 3, 4, 5, 6, 7.
 
-    range() creates a sequence of numbers:
+    When count reaches 8: is 8 < 8? No — the
+    loop stops. The program moves to whatever
+    comes after the loop.
 
-        range(10)    gives you 0 through 9
-        range(1, 7)  gives you 1 through 6
+    This pattern — set a counter, check it in the
+    while condition, increase it inside the body —
+    lets you repeat something an exact number of
+    times and then move on.
 
-    Use it with a for loop to repeat code a
-    specific number of times, or to count through
-    a sequence of slot numbers, component IDs, etc.
-
-    len() tells you how many items are in a list:
-
-        len(ids)   gives you 3
+    Any code you write after the loop (without
+    indentation) will only run once the loop has
+    finished.
 """
 
     def get_completed_banner(self):
         return (
-            "★ CONTRACT #2479 COMPLETE — Warehouse Balanced ★\n"
-            "New tools unlocked: for loops, lists, range(), len()\n"
+            "★ CONTRACT #2479 COMPLETE — Sector 14 Drones Operational ★\n"
+            "New tool unlocked: controlled while loops\n"
         )

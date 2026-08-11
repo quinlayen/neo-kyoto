@@ -1,108 +1,87 @@
 from contracts.base import BaseContract
-from systems.access_control import AccessController
+from systems.transit_signals import TransitSignals
 
 
 class Contract04(BaseContract):
     CONTRACT_ID = "contract_04"
-    TITLE = "Elevator Recovery"
-    LOCATION = "Midtown"
-    SCRIPT_FILE = "player_scripts/elevator.py"
+    TITLE = "Signal Interference"
+    LOCATION = "Transit Hub"
+    SCRIPT_FILE = "player_scripts/signals.py"
 
     def __init__(self):
         super().__init__()
-        self.controller = AccessController()
+        self.signals = TransitSignals()
 
-    MAX_CALLS = 40
+    MAX_CALLS = 25
 
     def get_commands(self):
         return {
-            "get_state": self.controller.get_state,
-            "reset_component": self.controller.reset_component,
-            "set_watchdog": self.controller.set_watchdog,
+            "check_signal": self.signals.check_signal,
+            "reset_signal": self.signals.reset_signal,
+            "calibrate_signal": self.signals.calibrate_signal,
+            "submit_report": self.signals.submit_report,
         }
 
     def reset_system(self):
-        self.controller = AccessController()
+        self.signals = TransitSignals()
 
     def is_goal_met(self):
-        return self.controller.is_goal_met()
+        return self.signals.is_goal_met()
 
     def get_status_text(self):
-        return self.controller.get_status_text()
+        return self.signals.get_status_text()
 
     def get_briefing(self):
         return """
     ╔══════════════════════════════════════════════╗
     ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
-    ║   Contract #2480 – Elevator Recovery        ║
+    ║   Contract #2480 – Signal Interference      ║
     ╚══════════════════════════════════════════════╝
 
     ─── INCOMING TRANSMISSION ───
 
     Contractor,
 
-    The Midtown elevator grid is in trouble. Eight
-    elevator components have entered various failure
-    states and the building's residents are trapped
-    on their floors.
+    The Transit Hub's signal controllers are down.
+    There are 6 signals, numbered 1 through 6.
+    Each one is either STUCK or SCRAMBLED — you
+    know how to handle both types from last time.
 
-    Each component needs different treatment. Some
-    are STUCK — they need a hard reset. Others are
-    UNSTABLE — they need a watchdog process. At
-    least one may need more than one step.
+    Here is what is different: the signals are
+    numbered, and each command needs a signal
+    number to know which one you mean:
 
-    ─── USING FOR LOOPS AND LISTS ───
+        check_signal(1)
+        reset_signal(3)
+        calibrate_signal(5)
 
-    You just unlocked for loops and lists. This
-    contract is where they pay off.
+    The number in the parentheses tells the command
+    which signal to work on. This is called an
+    argument — a value you pass to a command.
 
-    There are 8 components with IDs "E-01" through
-    "E-08". You could write the check-and-fix code
-    for each one individually — but that is 8 blocks
-    of nearly identical code. Last contract showed
-    you how painful that gets.
-
-    Instead, put the IDs in a list and use a for
-    loop to work through them:
-
-    A list holds multiple values under one name,
-    written with square brackets and commas.
-
-    A for loop walks through the list one item at
-    a time. Each time through, the loop variable
-    holds the current item. You use that variable
-    as the argument to your commands.
-
-    For each component: check its state with
-    get_state, then use if/else to decide whether
-    to reset it or set a watchdog. The for loop
-    handles moving to the next component.
+    After fixing all 6 signals, you must call
+    submit_report() to log the work. The report
+    can only be submitted after all signals are
+    fixed — so your loop must end for your program
+    to reach it.
 
     ─── YOUR COMMANDS ───
 
-        get_state(id)        — check a component's
-                               state (returns text)
-        reset_component(id)  — reset a STUCK one
-        set_watchdog(id)     — stabilize UNSTABLE
+        check_signal(n)      — shows and returns
+                               the signal's state
+        reset_signal(n)      — fixes STUCK signals
+        calibrate_signal(n)  — fixes SCRAMBLED signals
+        submit_report()      — log your completed work
 
-    Component IDs are text values in quotes:
-    "E-01" through "E-08"
-
-    The wrong fix does nothing harmful — the system
-    tells you it had no effect. Only the right fix
-    moves a component to NOMINAL.
+    Signal numbers are 1 through 6.
 
     ─── YOUR GOAL ───
 
-    Bring all 8 components to NOMINAL state.
-
-    Some may change state after your first fix —
-    you may need to run your script more than once,
-    or handle that case in your code.
+    Fix all 6 signals and submit the report.
 
     ─── HOW TO WORK ───
 
-    Your script file is: elevator.py
+    Your script file is: signals.py
 
     1. Type  edit    → open the file in your editor
     2. Write your program
@@ -114,75 +93,56 @@ class Contract04(BaseContract):
         return """
     ╔══════════════════════════════════════════════╗
     ║   ★  CONTRACT #2480 COMPLETE  ★             ║
-    ║   Midtown Elevator Grid — ALL NOMINAL       ║
+    ║   Transit Hub — ALL SIGNALS FIXED           ║
     ╚══════════════════════════════════════════════╝
 
-    All elevators are running again. Midtown
-    residents can move freely. Well done.
+    All signals are operational and the report is
+    filed. Transit Hub sends payment.
 
     ─── WHAT YOU JUST DID ───
 
-    You combined a for loop with conditionals to
-    process 8 components automatically. Your
-    program iterated through a list, checked each
-    item's state, and took the right action.
+    You wrote a program that processes numbered
+    items using a controlled loop, passes arguments
+    to commands, makes decisions for each item, and
+    then continues to the next step after the loop
+    ends. That is real automation.
 
-    That is a powerful pattern: iterate, inspect,
-    decide, act. Most real-world automation follows
-    this same structure.
+    ─── HOW FAR YOU HAVE COME ───
 
-    ─── THE LIMITATION ───
+    Think back to your first contract. You wrote
+    one command on each line, over and over.
 
-    Your code works, but look at the structure.
-    Inside your loop, you have a block of logic:
-    get the state, check if it is stuck, check if
-    it is unstable, take the right action. That
-    block is the "fix a component" procedure.
+    Now you write programs that store data in
+    variables, make decisions with conditionals,
+    control loops with conditions, and pass data
+    to commands as arguments.
 
-    Now imagine you need that same procedure in a
-    different script, or in a different part of
-    this script. You would have to copy the whole
-    block again. If you later need to change how
-    fixing works, you would need to find and
-    update every copy.
+    These are the fundamentals of programming.
+    Every language, every system, every tool you
+    will ever use builds on these ideas.
 
-    What if you could give that block a name and
-    call it whenever you need it — like a command
-    you wrote yourself?
+    ─── WHAT COMES NEXT ───
 
-    ─── NEW TOOL: FUNCTION DEFINITIONS ───
+    You have been writing scripts to fix systems.
+    But some problems cannot be diagnosed from a
+    script alone.
 
-    You can now create your own commands using def.
+    The city's infrastructure runs on terminals —
+    systems with directories full of logs, config
+    files, and diagnostic data. Sometimes you need
+    to connect directly to a system's terminal,
+    navigate its files, and find what is wrong by
+    hand before you can write the fix.
 
-    The keyword def is followed by a name you
-    choose, then (), then a colon. The indented
-    lines underneath are the instructions that run
-    when you call it:
+    That is a different kind of skill. Not writing
+    code — but reading systems. Navigating them.
+    Searching through data to find what matters.
 
-        def <your_name>():
-            <step 1>
-            <step 2>
-            <step 3>
-
-    Writing a def does not run the code inside it.
-    It teaches the computer a new command. The code
-    only runs when you call the name later with ():
-
-        <your_name>()
-
-    You can name it anything descriptive. Once
-    defined, you can call it as many times as you
-    want, from anywhere in your program — including
-    inside loops.
-
-    You have been using functions since your very
-    first contract. rebalance, scan_drones,
-    check_slot — those were all functions someone
-    else wrote. Now you can write your own.
+    New contracts are coming.
 """
 
     def get_completed_banner(self):
         return (
-            "★ CONTRACT #2480 COMPLETE — Elevators Nominal ★\n"
-            "New tool unlocked: def (function definitions)\n"
+            "★ CONTRACT #2480 COMPLETE — Transit Signals Fixed ★\n"
+            "Python fundamentals mastered.\n"
         )

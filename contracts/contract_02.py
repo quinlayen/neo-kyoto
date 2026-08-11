@@ -41,132 +41,48 @@ class Contract02(BaseContract):
     Good work on Block 7. Word travels fast —
     Sector 12 needs your help now.
 
-    The automated delivery drones in this sector
-    are flying wrong routes. Packages are arriving
-    at the wrong buildings, or not arriving at all.
-    The routing table got corrupted and the drones
-    need manual correction.
+    The delivery drones in this sector are flying
+    wrong routes. The routing table got corrupted
+    and all 8 drones need manual correction.
 
-    ─── A NEW TOOL: VARIABLES ───
-
-    Before we get to the drones, there is a
-    fundamental concept you need: variables.
+    ─── VARIABLES ───
 
     A variable is a name that holds a value. You
     create one with the = sign:
 
         speed = 30
 
-    After this line runs, the name speed holds
-    the number 30. Anywhere you write speed from
-    now on, the computer reads it as 30.
-
-    The name you choose matters. Pick something
-    that describes what the value represents.
-    "speed" is clear. "x" is not. When your
-    programs get longer, meaningful names help
-    you remember what each value is for.
-
-    The value can be anything — a number, text
-    in quotes, or the result a command gives back:
-
-        drone_count = 8
-        district = "Sector 12"
-        load = 0.5
-
-    ─── CATCHING RETURN VALUES ───
+    Now the name speed holds the number 30. You
+    can use it anywhere in your program after that.
 
     Some commands give back a value when they run.
-    This is called a return value.
+    This is called a return value. You can catch
+    it in a variable:
 
-    For example, reroute_next() fixes a drone and
-    then gives back that drone's ID — a piece of
-    text like "D-01". If you just call reroute_next()
-    on its own, that ID appears and immediately
-    vanishes. The computer moves on and the value
-    is gone forever.
+        fixed = reroute_next()
 
-    You can catch the return value by assigning it
-    to a variable:
+    Now fixed holds whatever reroute_next() gave
+    back. Use print() to see it:
 
-        fixed_drone = reroute_next()
-
-    Now the variable fixed_drone holds the ID that
-    reroute_next() gave back — for example, "D-01".
-    You can see it with print():
-
-        print(fixed_drone)
-
-    Remember print() from the last contract? You
-    can also print a command directly to see what
-    it gives back, without storing it:
-
-        print(reroute_next())
-
-    Both work. The first stores the value so you
-    can use it later. The second just displays it
-    and the value is lost.
-
-    ─── DEBUGGING WITH PRINT ───
-
-    print() is your best tool for understanding
-    what your program is doing. Try this pattern:
-
-    1. Call scan_drones() to see the current state
-    2. Call reroute_next() to fix one drone
-    3. Call scan_drones() again to see what changed
-
-    Each scan shows you the full table. By comparing
-    before and after, you can see exactly what your
-    commands are doing. This is called debugging —
-    watching your program step by step to understand
-    its behavior.
-
-    ─── COUNTERS ───
-
-    You can change a variable by assigning it a
-    new value. A common pattern is using a variable
-    as a counter:
-
-        count = 0
-        count = count + 1
-
-    Here is what happens on the second line: the
-    computer looks at the right side first. It
-    finds count (which is 0) and adds 1 to it,
-    getting 1. Then it takes that result and
-    stores it back into count, replacing the old
-    value. Now count holds 1.
-
-    If that line runs again — say, inside a loop —
-    the computer reads count (now 1), adds 1 to
-    get 2, and stores 2 back into count. Each
-    time through the loop, count goes up by 1:
-    0, 1, 2, 3, 4...
+        print(fixed)
 
     You do not strictly need variables for this
-    contract, but practice using them. Try catching
-    what reroute_next() gives back. Try printing
-    it. These skills become essential starting
-    next contract.
+    contract, but practice using them — they
+    become essential next contract.
 
     ─── YOUR COMMANDS ───
 
         scan_drones()   — shows all drone statuses
-                          (returns count of misrouted)
-        reroute_next()  — fixes the next misrouted drone
-                          (returns the ID it fixed)
+        reroute_next()  — fixes the next misrouted
+                          drone
 
     ─── YOUR GOAL ───
 
-    Correct all 8 misrouted drones in the sector.
+    Correct all 8 misrouted drones.
 
-    You could call reroute_next() eight times by
-    hand. But you have a loop now — think about
-    how to let the computer handle the repetition.
-
-    The sandbox will stop your program safely
-    after enough calls.
+    You could call reroute_next() eight times.
+    But you have a loop now — think about how to
+    let the computer handle the repetition.
 
     ─── HOW TO WORK ───
 

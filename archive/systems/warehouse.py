@@ -38,16 +38,7 @@ class Warehouse:
         if slot is None:
             return 0
 
-        correction = -slot["drift"]
-
-        if slot["drift"] == 0:
-            print(f"    Slot {slot_number} [{slot['type']}]: BALANCED — correction: 0")
-        elif slot["drift"] > 0:
-            print(f"    Slot {slot_number} [{slot['type']}]: {slot['drift']} over — correction: {correction:+d}")
-        else:
-            print(f"    Slot {slot_number} [{slot['type']}]: {abs(slot['drift'])} under — correction: {correction:+d}")
-
-        return correction
+        return -slot["drift"]
 
     def adjust_slot(self, slot_number, amount):
         slot = self._validate_slot(slot_number)

@@ -1,3 +1,4 @@
+import glob
 import os
 import sys
 import time
@@ -8,6 +9,20 @@ from contracts.contract_01 import Contract01
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
+
+
+def reset_player_scripts():
+    for path in glob.glob("player_scripts/*.py"):
+        with open(path, "r") as f:
+            lines = f.readlines()
+        header = []
+        for line in lines:
+            header.append(line)
+            if line.startswith("# ────"):
+                break
+        header.append("\n")
+        with open(path, "w") as f:
+            f.writelines(header)
 
 
 CONTRACT_DEFS = [
@@ -23,17 +38,12 @@ def _load_contracts():
         pass
     try:
         from contracts.contract_03 import Contract03
-        CONTRACT_DEFS.append({"id": "contract_03", "class": Contract03, "title": "Inventory Drift", "location": "Harbor District", "unlock_index": 2})  # for_loops
+        CONTRACT_DEFS.append({"id": "contract_03", "class": Contract03, "title": "Drone Dispatch", "location": "Sector 14", "unlock_index": -1})  # controlled while (no new gate)
     except ImportError:
         pass
     try:
         from contracts.contract_04 import Contract04
-        CONTRACT_DEFS.append({"id": "contract_04", "class": Contract04, "title": "Elevator Recovery", "location": "Midtown", "unlock_index": 3})  # functions
-    except ImportError:
-        pass
-    try:
-        from contracts.contract_05 import Contract05
-        CONTRACT_DEFS.append({"id": "contract_05", "class": Contract05, "title": "Assembly Automation", "location": "Industrial Zone", "unlock_index": -1})  # capstone, no unlock
+        CONTRACT_DEFS.append({"id": "contract_04", "class": Contract04, "title": "Signal Interference", "location": "Transit Hub", "unlock_index": -1})  # end of Python Phase 1
     except ImportError:
         pass
 
@@ -130,6 +140,8 @@ def run_contract(cdef, game_state):
         print("  run     — execute your script")
         print("  status  — check system status")
         print("  brief   — re-read the contract briefing")
+        if contract.completed:
+            print("  debrief — review completion debrief")
         print("  back    — return to contract board")
         print("──────────────────────────────────────────────")
         cmd = input("  > ").strip().lower()
@@ -143,6 +155,11 @@ def run_contract(cdef, game_state):
         elif cmd == "brief":
             clear()
             print(contract.get_briefing())
+            input("\n  Press Enter to continue...")
+
+        elif cmd == "debrief" and contract.completed:
+            clear()
+            print(contract.get_completion_message())
             input("\n  Press Enter to continue...")
 
         elif cmd == "edit":
@@ -190,6 +207,7 @@ def run_contract(cdef, game_state):
 
 def main():
     _load_contracts()
+    reset_player_scripts()
     game_state = GameState()
     dev_mode = "--dev" in sys.argv
 
