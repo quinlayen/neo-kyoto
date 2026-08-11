@@ -77,29 +77,50 @@ class Contract02(BaseContract):
     ─── CATCHING RETURN VALUES ───
 
     Some commands give back a value when they run.
-    This is called a return value. On its own, that
-    value appears and immediately vanishes — the
-    computer moves on and the value is gone.
+    This is called a return value.
 
-    You can catch it by assigning it to a variable:
+    For example, reroute_next() fixes a drone and
+    then gives back that drone's ID — a piece of
+    text like "D-01". If you just call reroute_next()
+    on its own, that ID appears and immediately
+    vanishes. The computer moves on and the value
+    is gone forever.
+
+    You can catch the return value by assigning it
+    to a variable:
 
         fixed_drone = reroute_next()
 
-    Now fixed_drone holds the ID of the drone
-    that was just fixed. You can see it with
-    print():
+    Now the variable fixed_drone holds the ID that
+    reroute_next() gave back — for example, "D-01".
+    You can see it with print():
 
         print(fixed_drone)
 
     Remember print() from the last contract? You
-    can print a variable to see its value, or
-    print a command directly to see what it gives
-    back:
+    can also print a command directly to see what
+    it gives back, without storing it:
 
         print(reroute_next())
 
     Both work. The first stores the value so you
-    can use it later. The second just displays it.
+    can use it later. The second just displays it
+    and the value is lost.
+
+    ─── DEBUGGING WITH PRINT ───
+
+    print() is your best tool for understanding
+    what your program is doing. Try this pattern:
+
+    1. Call scan_drones() to see the current state
+    2. Call reroute_next() to fix one drone
+    3. Call scan_drones() again to see what changed
+
+    Each scan shows you the full table. By comparing
+    before and after, you can see exactly what your
+    commands are doing. This is called debugging —
+    watching your program step by step to understand
+    its behavior.
 
     ─── COUNTERS ───
 
@@ -218,19 +239,31 @@ class Contract02(BaseContract):
     write it using comparison operators — symbols
     that compare two values:
 
-        ==   "is equal to"
-        !=   "is not equal to"
-        >    "is greater than"
-        <    "is less than"
+        ==   "is the left equal to the right?"
+        !=   "is the left different from the right?"
+        >    "is the left greater than the right?"
+        <    "is the left less than the right?"
+
+    Important: == and = are different things.
+
+    A single = is assignment — it means "store this
+    value." It is a statement, not a question:
+
+        status = "STUCK"     (store "STUCK" in status)
+
+    A double == is comparison — it asks a question
+    and the answer is either true or false:
+
+        status == "STUCK"    (is status equal to "STUCK"?)
 
     For example, you might check a variable:
 
         if status == "STUCK":
             <handle the stuck case>
 
-    The computer compares what is stored in status
-    to the text "STUCK". If they match, the indented
-    code runs. If not, it is skipped.
+    The computer looks at what is stored in status
+    and asks "is this equal to STUCK?" If yes, the
+    indented code runs. If no, it is skipped.
 
     You can add else to handle the other case:
 

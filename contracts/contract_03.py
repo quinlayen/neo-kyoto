@@ -62,36 +62,61 @@ class Contract03(BaseContract):
     program needs to check each slot's type and
     choose the right approach.
 
+    ─── HOW CHECK_SLOT WORKS ───
+
+    check_slot takes a slot number and gives back
+    the correction that slot needs — a number. For
+    example, if slot 1 has 4 too few items, check_slot
+    returns the number 4 (meaning "add 4"). If slot 2
+    has 3 too many, it returns -3 (meaning "remove 3").
+
+    The output will show you both the situation and
+    the correction number. Catch the return value
+    in a variable, and that variable holds the exact
+    number you need to pass to the adjust command.
+
+    ─── LOOPING THROUGH ALL 6 SLOTS ───
+
+    You need to process slots 1 through 6. You
+    can use a counter variable to track which slot
+    you are on, and increase it each time through
+    a while True loop. Remember the counter pattern
+    from the last contract:
+
+        slot = 1
+        (inside the loop)
+        slot = slot + 1
+
+    Each time through the loop, slot goes from 1
+    to 2 to 3, and so on. When it goes past 6,
+    the system will report that the slot does not
+    exist, and the sandbox will stop the loop.
+
     ─── USING CONDITIONALS ───
 
     This is your first contract where you need to
-    make decisions. You just unlocked if and else —
-    here is how they work on this job.
+    make decisions. You just unlocked if and else.
 
     get_slot_type gives back a piece of text — the
-    type of a slot, like "STANDARD", "FRAGILE", or
-    "LOCKED". You can catch that text in a variable:
+    type of a slot: "STANDARD", "FRAGILE", or
+    "LOCKED". Catch it in a variable:
 
         slot_type = get_slot_type(1)
 
-    Then you use if to check what it is:
-
-        if slot_type == "FRAGILE":
-            <handle the fragile case>
-
-    The == operator asks "are these two values the
-    same?" If they match, the indented code runs.
-    If they do not match, it is skipped.
+    Then use if to check what it is. Remember:
+    == asks the question "is the left equal to the
+    right?" A single = stores a value. A double ==
+    compares two values.
 
     For each slot, you need to:
-    1. Check the slot type with get_slot_type
-    2. Check the correction with check_slot
-    3. Choose the right action based on the type
+    1. Check the type with get_slot_type
+    2. Get the correction with check_slot
+    3. Use if statements to choose the right action
 
     STANDARD slots: use adjust_slot
     FRAGILE slots: use gentle_adjust
-    LOCKED slots: use unlock_slot first, then
-    adjust_slot
+    LOCKED slots: call unlock_slot first, then
+                  adjust_slot
 
     You can use multiple if statements in a row
     to check for each type separately.
