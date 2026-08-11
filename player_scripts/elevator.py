@@ -5,9 +5,9 @@
 # Your available commands:
 #   get_state(id)        — check component state
 #   reset_component(id)  — reset a STUCK component
-#   set_watchdog(id)     — stabilize an UNSTABLE component
+#   set_watchdog(id)     — stabilize an UNSTABLE one
 #
-# Component IDs: "E-01" through "E-05"
+# Component IDs: "E-01" through "E-08"
 #
 # ────────────────────────────────────────────────
 

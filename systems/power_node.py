@@ -1,14 +1,14 @@
 class PowerNode:
     def __init__(self):
         self.status = "FLICKERING"
-        self.load = 0.91
+        self.load = 0.97
         self.rebalance_count = 0
 
     def rebalance(self):
         self.rebalance_count += 1
-        self.load = max(0.4, self.load - 0.12)
+        self.load = max(0.4, self.load - 0.05)
 
-        if self.rebalance_count >= 4 and self.status != "STABLE":
+        if self.rebalance_count >= 12 and self.status != "STABLE":
             self.status = "STABLE"
 
         msg = f"    Rebalance #{self.rebalance_count} — load {self.load:.2f} — Status: {self.status}"

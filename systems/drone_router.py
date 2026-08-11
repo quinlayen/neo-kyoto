@@ -12,20 +12,25 @@ class DroneRouter:
         ]
 
     def scan_drones(self):
+        remaining = sum(1 for d in self.drones if d["status"] == "MISROUTED")
         print("  ┌─────────┬───────────┬────────────┐")
         print("  │ Drone   │ Priority  │ Status     │")
         print("  ├─────────┼───────────┼────────────┤")
         for d in self.drones:
             print(f"  │ {d['id']:<7s} │ {d['priority']:<9s} │ {d['status']:<10s} │")
         print("  └─────────┴───────────┴────────────┘")
+        print(f"    {remaining} drones still misrouted.")
+        return remaining
 
     def reroute_next(self):
         for d in self.drones:
             if d["status"] == "MISROUTED":
                 d["status"] = "CORRECTED"
-                print(f"    Drone {d['id']} ({d['priority']}) rerouted → CORRECTED")
-                return
+                drone_id = d["id"]
+                print(f"    Drone {drone_id} ({d['priority']}) rerouted → CORRECTED")
+                return drone_id
         print("    All drones already corrected.")
+        return None
 
     def is_goal_met(self):
         return all(d["status"] == "CORRECTED" for d in self.drones)

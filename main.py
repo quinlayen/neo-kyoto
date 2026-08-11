@@ -18,22 +18,22 @@ CONTRACT_DEFS = [
 def _load_contracts():
     try:
         from contracts.contract_02 import Contract02
-        CONTRACT_DEFS.append({"id": "contract_02", "class": Contract02, "title": "Drone Route Cleanup", "location": "Sector 12", "unlock_index": 1})
+        CONTRACT_DEFS.append({"id": "contract_02", "class": Contract02, "title": "Drone Route Cleanup", "location": "Sector 12", "unlock_index": 1})  # conditionals
     except ImportError:
         pass
     try:
         from contracts.contract_03 import Contract03
-        CONTRACT_DEFS.append({"id": "contract_03", "class": Contract03, "title": "Inventory Drift", "location": "Harbor District", "unlock_index": 2})
+        CONTRACT_DEFS.append({"id": "contract_03", "class": Contract03, "title": "Inventory Drift", "location": "Harbor District", "unlock_index": 2})  # for_loops
     except ImportError:
         pass
     try:
         from contracts.contract_04 import Contract04
-        CONTRACT_DEFS.append({"id": "contract_04", "class": Contract04, "title": "Elevator Recovery", "location": "Midtown", "unlock_index": 3})
+        CONTRACT_DEFS.append({"id": "contract_04", "class": Contract04, "title": "Elevator Recovery", "location": "Midtown", "unlock_index": 3})  # functions
     except ImportError:
         pass
     try:
         from contracts.contract_05 import Contract05
-        CONTRACT_DEFS.append({"id": "contract_05", "class": Contract05, "title": "Assembly Automation", "location": "Industrial Zone", "unlock_index": 4})
+        CONTRACT_DEFS.append({"id": "contract_05", "class": Contract05, "title": "Assembly Automation", "location": "Industrial Zone", "unlock_index": -1})  # capstone, no unlock
     except ImportError:
         pass
 

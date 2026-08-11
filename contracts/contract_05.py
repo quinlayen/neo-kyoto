@@ -109,86 +109,53 @@ class Contract05(BaseContract):
     ╚══════════════════════════════════════════════╝
 
     10 production cycles completed. The backlog is
-    cleared. Industrial Zone management is impressed —
-    this was your most complex automation yet.
+    cleared. Industrial Zone management is impressed
+    — this was your most complex automation yet.
 
     ─── WHAT YOU JUST DID ───
 
     You built a complete automated pipeline. Your
-    program coordinated multiple steps in the right
-    sequence, repeated them the exact number of times
-    needed, and finished the job without any manual
-    intervention.
+    program defined a reusable function, called it
+    inside a loop, and coordinated multiple steps
+    in sequence without any manual intervention.
 
     That is real automation. That is what keeps a
     city like Neo-Kyoto running.
 
-    ─── THE LIMITATION ───
+    ─── HOW FAR YOU HAVE COME ───
 
-    Your pipeline code works, but look at it. The
-    four steps of a production cycle are written out
-    inside the loop. What if you needed those same
-    four steps in a different script? You would have
-    to copy all of them again.
+    Think back to your first contract. You wrote
+    one command on each line, over and over.
 
-    What if the cycle had 20 steps instead of 4?
-    Your loop body would be enormous. And if you
-    needed to change one step, you would have to find
-    and fix it everywhere you copied it.
+    Now you write programs that store data in
+    variables, make decisions with conditionals,
+    iterate over collections with for loops, and
+    organize logic into reusable functions.
 
-    What if you could take a group of steps, give
-    that group a name, and then call that name like
-    a command — just like calling rebalance() or
-    harvest()? Write the steps once, use them
-    wherever you need them.
+    These are the fundamentals of programming.
+    Every language, every system, every tool you
+    will ever use builds on these ideas.
 
-    ─── NEW TOOL: FUNCTION DEFINITIONS ───
+    ─── WHAT COMES NEXT ───
 
-    You can now create your own commands using def.
+    You have proven yourself as a programmer. But
+    Neo-Kyoto runs on more than scripts.
 
-    The keyword def is followed by a name you choose,
-    then (), then a colon. The indented lines underneath
-    are the instructions that run when you call it:
+    The city's infrastructure depends on terminals,
+    databases, and version control systems. There
+    are contractors who navigate file systems from
+    a command line, query city data with SQL, and
+    track system changes with Git.
 
-        def <your_name>():
-            <step 1>
-            <step 2>
-            <step 3>
+    Those tools are coming. And when they arrive,
+    the programming skills you have built here will
+    be the foundation for everything else.
 
-    Writing a def does not run the code inside it.
-    It just teaches the computer a new command. The
-    code only runs when you call the name later with
-    parentheses, just like any other command:
-
-        <your_name>()
-
-    You can name it anything that makes sense. Good
-    names describe what the group of steps does. Once
-    defined, you can call it as many times as you want,
-    from anywhere in your program — including inside
-    loops.
-
-    This is called a function. You have been using
-    functions since your very first contract — rebalance,
-    scan_drones, check_slot were all functions that
-    someone else wrote. Now you can write your own.
-
-    ─── END OF CURRENT CONTRACTS ───
-
-    You have completed all available contracts.
-
-    You started by pressing a single button over and
-    over. Now you write programs that store data, make
-    decisions, iterate over collections, and define
-    your own reusable commands.
-
-    Neo-Kyoto's systems are in better hands with you
-    on the job. More contracts will come.
+    More contracts will come.
 """
 
     def get_completed_banner(self):
         return (
             "★ CONTRACT #2481 COMPLETE — Assembly Cell Online ★\n"
-            "New tools unlocked: def (function definitions)\n"
             "All current contracts complete.\n"
         )

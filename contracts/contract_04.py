@@ -36,74 +36,64 @@ class Contract04(BaseContract):
 
     Contractor,
 
-    The Midtown elevator grid is in trouble. Five
+    The Midtown elevator grid is in trouble. Eight
     elevator components have entered various failure
     states and the building's residents are trapped
     on their floors.
 
-    Each component needs different treatment depending
-    on what went wrong. Some are STUCK — they need a
-    hard reset. Others are UNSTABLE — they need a
-    watchdog process to keep them steady. At least one
-    component may need more than one step to recover.
+    Each component needs different treatment. Some
+    are STUCK — they need a hard reset. Others are
+    UNSTABLE — they need a watchdog process. At
+    least one may need more than one step.
 
-    This is exactly the kind of problem that
-    conditionals were made for.
+    ─── USING FOR LOOPS AND LISTS ───
 
-    ─── USING CONDITIONALS ───
+    You just unlocked for loops and lists. This
+    contract is where they pay off.
 
-    You now have if and else. Here is how they apply
-    to this job.
+    There are 8 components with IDs "E-01" through
+    "E-08". You could write the check-and-fix code
+    for each one individually — but that is 8 blocks
+    of nearly identical code. Last contract showed
+    you how painful that gets.
 
-    get_state gives back a piece of text — the current
-    state of a component, like "STUCK" or "UNSTABLE"
-    or "NOMINAL". You can catch that text in a variable
-    and then check it with an if statement.
+    Instead, put the IDs in a list and use a for
+    loop to work through them:
 
-    When you compare text, you put it in quotes on both
-    sides of the ==. The computer checks whether the
-    two pieces of text are exactly the same:
+    A list holds multiple values under one name,
+    written with square brackets and commas.
 
-        if state == "STUCK":
+    A for loop walks through the list one item at
+    a time. Each time through, the loop variable
+    holds the current item. You use that variable
+    as the argument to your commands.
 
-    If the value in your variable matches the text
-    "STUCK", the indented code underneath will run.
-    If it does not match, the indented code is skipped.
-
-    You can use multiple if statements in a row to
-    check for different states. Each if is its own
-    independent check — the computer evaluates each
-    one separately.
-
-    The general pattern for this contract is:
-    get the state, check what it is, take the right
-    action. Repeat that pattern for each component.
+    For each component: check its state with
+    get_state, then use if/else to decide whether
+    to reset it or set a watchdog. The for loop
+    handles moving to the next component.
 
     ─── YOUR COMMANDS ───
 
-        get_state(id)        — check a component's state
-                               (returns text like "STUCK")
-        reset_component(id)  — reset a STUCK component
-        set_watchdog(id)     — stabilize an UNSTABLE one
+        get_state(id)        — check a component's
+                               state (returns text)
+        reset_component(id)  — reset a STUCK one
+        set_watchdog(id)     — stabilize UNSTABLE
 
-    Each command takes a component ID as an argument.
-    The IDs are text values and must be in quotes:
-    "E-01", "E-02", "E-03", "E-04", "E-05"
+    Component IDs are text values in quotes:
+    "E-01" through "E-08"
 
-    Applying the wrong fix does nothing harmful — the
-    system will just tell you it had no effect. But
-    only the right fix for the right state will move
-    a component to NOMINAL.
+    The wrong fix does nothing harmful — the system
+    tells you it had no effect. Only the right fix
+    moves a component to NOMINAL.
 
     ─── YOUR GOAL ───
 
-    Bring all 5 components to NOMINAL state.
+    Bring all 8 components to NOMINAL state.
 
-    Check the status display to see what state each
-    component is in. Some may need a reset, others a
-    watchdog, and at least one may change state after
-    your first fix — so you may need to check it again
-    and take a second action.
+    Some may change state after your first fix —
+    you may need to run your script more than once,
+    or handle that case in your code.
 
     ─── HOW TO WORK ───
 
@@ -113,9 +103,6 @@ class Contract04(BaseContract):
     2. Write your program
     3. Save the file
     4. Come back here and type  run
-
-    If not all components are NOMINAL after one run,
-    check the status, adjust your script, and run again.
     """
 
     def get_completion_message(self):
@@ -125,102 +112,72 @@ class Contract04(BaseContract):
     ║   Midtown Elevator Grid — ALL NOMINAL       ║
     ╚══════════════════════════════════════════════╝
 
-    All elevators are running again. Midtown residents
-    can move freely between floors. Well done.
+    All elevators are running again. Midtown
+    residents can move freely. Well done.
 
     ─── WHAT YOU JUST DID ───
 
-    You wrote a program that inspects data and makes
-    decisions. Your code checked each component's state
-    and chose the right action — reset or watchdog.
+    You combined a for loop with conditionals to
+    process 8 components automatically. Your
+    program iterated through a list, checked each
+    item's state, and took the right action.
 
-    That is the core of almost all real software: look
-    at data, decide what to do, act. Your programs are
-    no longer just repeating the same thing — they are
-    thinking.
+    That is a powerful pattern: iterate, inspect,
+    decide, act. Most real-world automation follows
+    this same structure.
 
     ─── THE LIMITATION ───
 
-    Look at your code. You probably wrote the same
-    check-and-act block five times — once per component,
-    changing only the ID string each time. The logic
-    was identical. Only the data was different.
+    Your code works, but look at the structure.
+    Inside your loop, you have a block of logic:
+    get the state, check if it is stuck, check if
+    it is unstable, take the right action. That
+    block is the "fix a component" procedure.
 
-    What if there were 50 components? 500? Writing the
-    same block hundreds of times is not practical. You
-    need a way to say "here is a collection of items —
-    do this same thing for each one."
+    Now imagine you need that same procedure in a
+    different script, or in a different part of
+    this script. You would have to copy the whole
+    block again. If you later need to change how
+    fixing works, you would need to find and
+    update every copy.
 
-    ─── NEW TOOL: LISTS ───
+    What if you could give that block a name and
+    call it whenever you need it — like a command
+    you wrote yourself?
 
-    A list is a way to hold multiple values under one
-    name. You create a list with square brackets, and
-    separate the items with commas:
+    ─── NEW TOOL: FUNCTION DEFINITIONS ───
 
-        ids = ["E-01", "E-02", "E-03"]
+    You can now create your own commands using def.
 
-    After this line, the name ids holds all three
-    values together. A list can hold numbers, text,
-    or any mix of values. The items stay in the order
-    you wrote them.
+    The keyword def is followed by a name you
+    choose, then (), then a colon. The indented
+    lines underneath are the instructions that run
+    when you call it:
 
-    len() tells you how many items are in a list:
+        def <your_name>():
+            <step 1>
+            <step 2>
+            <step 3>
 
-        len(ids)
+    Writing a def does not run the code inside it.
+    It teaches the computer a new command. The code
+    only runs when you call the name later with ():
 
-    This gives you 3 — because there are three items.
+        <your_name>()
 
-    ─── NEW TOOL: FOR LOOPS ───
+    You can name it anything descriptive. Once
+    defined, you can call it as many times as you
+    want, from anywhere in your program — including
+    inside loops.
 
-    A for loop repeats a block of code once for each
-    item in a collection. It works differently from
-    a while loop.
-
-    A while loop repeats "as long as a condition is
-    true." A for loop repeats "once for each item."
-    You do not need to manage a counter or worry about
-    when to stop — the for loop handles that for you.
-
-    The structure looks like this:
-
-        for item in collection:
-            <do something with item>
-
-    The variable before "in" (here called "item") is
-    automatically set to each value in the collection,
-    one at a time. The first time through the loop, it
-    holds the first value. The second time, the second
-    value. And so on, until every value has been used.
-
-    You can use any name you want for that variable.
-    Pick something that describes what each item is.
-
-    ─── range() ───
-
-    Sometimes you do not have a list of items — you
-    just want to repeat something a specific number
-    of times. range() creates a sequence of numbers
-    for you:
-
-        range(10)
-
-    This produces the numbers 0, 1, 2, 3, 4, 5, 6,
-    7, 8, 9 — ten numbers total, starting from 0.
-
-    You can use it with a for loop to repeat code a
-    fixed number of times. The variable takes on each
-    number in the sequence, one at a time.
-
-    You can also give range a starting number:
-
-        range(1, 6)
-
-    This produces 1, 2, 3, 4, 5 — starting at 1 and
-    stopping before 6.
+    You have been using functions since your very
+    first contract. rebalance, scan_drones,
+    check_slot — those were all functions someone
+    else wrote. Now you can write your own.
 """
 
     def get_completed_banner(self):
         return (
             "★ CONTRACT #2480 COMPLETE — Elevators Nominal ★\n"
-            "New tools unlocked: for loops, lists, range(), len()\n"
+            "New tool unlocked: def (function definitions)\n"
         )

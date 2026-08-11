@@ -13,7 +13,6 @@ class RestrictedInterpreter:
 
     FEATURE_GATES = {
         "loops":        (ast.While,),
-        "variables":    (ast.Assign, ast.AugAssign),
         "conditionals": (ast.If, ast.IfExp),
         "for_loops":    (ast.For,),
         "functions":    (ast.FunctionDef,),
@@ -21,7 +20,6 @@ class RestrictedInterpreter:
 
     FEATURE_NAMES = {
         "loops":        "while loops",
-        "variables":    "variables (= assignment)",
         "conditionals": "if/else conditionals",
         "for_loops":    "for loops",
         "functions":    "function definitions (def)",

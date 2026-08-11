@@ -34,111 +34,148 @@ class Contract01(BaseContract):
 
     Welcome to Neo-Kyoto. The year is 2189.
 
-    This city runs on thousands of automated systems —
-    power grids, cargo drones, water recyclers, transit
-    networks. When those systems break, people like you
-    get the call.
+    This city runs on thousands of automated
+    systems — power grids, cargo drones, water
+    recyclers, transit networks. When those systems
+    break, people like you get the call.
 
     You are not a hacker. You are not a soldier.
-    You are an engineer. You write small programs that
-    tell machines what to do, and right now a machine
-    needs help.
+    You are an engineer. You write small programs
+    that tell machines what to do, and right now
+    a machine needs help.
 
     ─── YOUR FIRST JOB ───
 
-    Block 7's power node is flickering. The residents
-    are losing power every few minutes. The node's
-    auto-repair failed, and the district needs someone
-    to stabilize it manually — by writing a short program.
+    Block 7's power node is flickering. The
+    residents are losing power every few minutes.
+    The node's auto-repair failed, and the district
+    needs someone to stabilize it manually — by
+    writing a short program.
 
-    That is what you will do today: write your first
-    program.
+    That is what you will do today: write your
+    first program.
 
     ─── WHAT IS A PROGRAM? ───
 
-    Think of a recipe. A recipe is a list of steps,
+    Think of a recipe. A recipe is a list of steps
     written in order. You follow step 1 first, then
-    step 2, then step 3, and so on. If you skip a step
-    or do them out of order, the result is wrong.
+    step 2, then step 3. If you skip a step or do
+    them out of order, the result is wrong.
 
     A program works the same way. It is a list of
-    instructions, written out line by line, that the
+    instructions, written line by line, that the
     computer follows from top to bottom.
 
-    Each instruction goes on its own line. The computer
-    does line 1 first, then line 2, then line 3, and
-    so on until it reaches the end. Then it stops.
+    Each instruction goes on its own line. The
+    computer does line 1 first, then line 2, then
+    line 3, and so on until it reaches the end.
+    Then it stops.
 
-    That is all a program is: a list of steps that a
-    computer follows in order. Nothing more.
+    That is all a program is: a list of steps
+    that a computer follows in order.
 
     ─── WHAT IS A COMMAND? ───
 
-    Each line of your program is a command — a single
+    Each line of your program is a command — one
     instruction that tells the computer to do one
-    specific thing. In programming, a command looks
-    like this:
+    specific thing. A command looks like this:
 
         rebalance()
 
     There are two parts:
 
-        rebalance   ← the name of the command
-        ()          ← tells the computer "do it now"
+        rebalance   <- the name of the command
+        ()          <- tells it "do it now"
 
-    The name tells the computer which command you mean.
-    The parentheses are what actually makes it run.
-    Without the parentheses, the computer just sees a
+    The name tells the computer which command you
+    mean. The parentheses are what actually makes
+    it run. Without () the computer just sees a
     name and does nothing with it.
 
     Think of it like a button on a control panel.
-    The label on the button is "rebalance." The
-    parentheses are you pressing that button.
+    The label says "rebalance." The parentheses
+    are you pressing that button.
 
-    Every command you write in your programs will
-    follow this pattern: a name, followed by ().
+    Every command you write will follow this
+    pattern: a name, followed by ().
 
-    ─── YOUR ONLY TOOL (FOR NOW) ───
+    ─── SEEING WHAT HAPPENS: print() ───
+
+    There is one more tool you should know about
+    right away: print().
+
+    print() displays a message on your screen.
+    You put the message inside the parentheses:
+
+        print("hello")
+
+    That line would show the word hello when
+    your program runs. The quotes tell the
+    computer you mean literal text — not a
+    command name or a number.
+
+    print() can also show you what a command
+    gives back:
+
+        print(rebalance())
+
+    This runs rebalance() and then displays
+    whatever it returned. Think of print() as
+    your most useful debugging tool — whenever
+    you want to see what is happening inside
+    your program, print() will show you.
+
+    You do not need print() to complete this
+    contract. But get comfortable with it now.
+    You will rely on it constantly.
+
+    ─── YOUR COMMAND ───
 
     Right now, you have access to one command:
 
         rebalance()
 
-    Each time this command runs, it tells the power node
-    to recalculate and redistribute its electrical load.
+    Each time this command runs, it tells the
+    power node to recalculate and redistribute
+    its electrical load.
 
-    One rebalance helps a little, but the node is too
-    unstable for a single call to fix it. Each time you
-    call rebalance(), the load drops a little and the
-    node gets closer to stability. But it takes several
-    calls before the node settles into a STABLE state.
+    One rebalance helps a little, but the node
+    is too unstable for a single call to fix it.
+    Each call brings the load down a notch. But
+    the node needs many rebalances before it
+    settles into a STABLE state.
 
-    You will need to call this command more than once.
+    You will need to call this command more than
+    once. Many more.
 
     ─── YOUR GOAL ───
 
-    Bring the power node from FLICKERING to STABLE.
+    Bring the power node from FLICKERING to
+    STABLE.
 
-    Remember: a program is a list of steps, and each
-    step goes on its own line. One rebalance is not
-    enough — figure out how many the node needs.
+    Remember: a program is a list of steps, and
+    each step goes on its own line. One rebalance
+    is not enough — figure out how many the node
+    needs.
 
-    After you run your script, check the status display
-    to see whether the node has stabilized. If it has
-    not, edit your script, add more, and run again.
+    After you run your script, check the status
+    display to see whether the node has stabilized.
+    If not, edit your script, add more, and run
+    again.
 
     ─── HOW TO WORK ───
 
     Your program lives in a file called block7.py.
 
-    1. Type  edit    → open the file in your editor
+    1. Type  edit  -> open the file in your editor
     2. Write your program
     3. Save the file
     4. Come back here and type  run
 
-    You can run your program as many times as you want.
-    If it does not work the first time, edit and try
-    again. Experimenting is how programmers work.
+    You can run your program as many times as you
+    want. If it does not work the first time, edit
+    and try again. Experimenting is how programmers
+    work.
 
     ─── READY? ───
 

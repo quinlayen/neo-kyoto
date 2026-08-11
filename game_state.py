@@ -1,7 +1,6 @@
 class GameState:
     UNLOCK_SEQUENCE = [
         "loops",
-        "variables",
         "conditionals",
         "for_loops",
         "functions",
