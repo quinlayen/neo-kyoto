@@ -15,6 +15,9 @@ class Contract01(BaseContract):
     def get_commands(self):
         return {"rebalance": self.node.rebalance}
 
+    def reset_system(self):
+        self.node = PowerNode()
+
     def is_goal_met(self):
         return self.node.is_goal_met()
 
@@ -219,56 +222,74 @@ class Contract01(BaseContract):
     ─── NEW TOOL: LOOPS ───
 
     A loop tells the computer: "repeat these
-    instructions." Instead of writing a command ten
-    times, you write it once and tell the computer
-    to keep doing it.
+    instructions." Instead of writing a command
+    many times, you write it once and tell the
+    computer to keep doing it.
 
     You just unlocked a new keyword:  while
 
-    A while loop has three parts:
+    Here is how a while loop works, step by step:
 
-    1. The keyword "while" — this tells the computer
-       a loop is starting.
-
-    2. A condition — this is a yes-or-no question that
-       the computer checks each time before it repeats.
-       As long as the answer is yes (true), the loop
-       keeps going. When the answer is no (false), the
-       loop stops and the program moves on.
-
-    3. A colon : at the end of the while line — this
-       marks where the loop body begins.
-
-    Everything indented underneath the while line is
-    the "loop body" — the instructions that get
-    repeated. Indentation means adding spaces at the
-    start of a line (usually 4 spaces or a tab). The spaces are
-    how the computer knows which lines are inside the
-    loop and which are not.
+    The computer reads the while line and checks
+    the condition — a yes-or-no question. If the
+    answer is yes (true), it runs the indented
+    block underneath. Then it goes back to the
+    while line and checks the condition again. If
+    still true, it runs the block again. This
+    cycle keeps repeating — check, run, check,
+    run — until the condition becomes false. When
+    it does, the loop stops and the program moves
+    to the next line after the loop.
 
     The structure looks like this:
 
         while <condition>:
             <instructions to repeat>
 
-    The condition can be anything that is true or
-    false. The simplest condition is the word True
-    (with a capital T), which is always true — meaning
-    the loop will repeat forever.
+    The indented lines underneath the while line
+    are called the "loop body." These are the
+    instructions that get repeated each cycle.
 
-    "Forever" sounds dangerous, but the sandbox will
-    safely stop your program after enough cycles. So
-    you can experiment without worrying about it
-    running out of control.
+    Indentation means adding a tab or 4 spaces at
+    the start of a line. This is how the computer
+    knows which lines are inside the loop and
+    which are not. Every line you want repeated
+    must be indented. Lines that are not indented
+    are outside the loop.
+
+    The colon : at the end of the while line is
+    required — it marks where the loop body begins.
+
+    ─── WHAT IS THE CONDITION? ───
+
+    The condition is anything that evaluates to
+    true or false. The simplest condition is the
+    word True (with a capital T), which is always
+    true. A loop with True as its condition will
+    repeat forever — this is called an infinite
+    loop.
+
+    An infinite loop sounds dangerous, but the
+    sandbox will safely stop your program after
+    enough cycles. So you can experiment without
+    worrying about it running out of control.
+
+    Later, you will learn to write conditions that
+    can change — so the loop runs a specific number
+    of times and then stops on its own. For now,
+    True is all you need.
 
     ─── TRY IT ───
 
-    Edit your script and see if you can replace your
-    repeated lines with a loop. Think about what goes
-    on the while line and what goes indented underneath.
+    Edit your script and see if you can replace
+    your repeated lines with a loop. Think about
+    what goes on the while line and what goes
+    indented underneath.
 
-    If you get it right, two lines of code can do what
-    many lines did before.
+    If you get it right, two lines of code can do
+    what many lines did before. You can also add
+    print() inside your loop to watch each step
+    as it happens.
 """
 
     def get_completed_banner(self):

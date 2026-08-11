@@ -12,12 +12,17 @@ class Contract04(BaseContract):
         super().__init__()
         self.controller = AccessController()
 
+    MAX_CALLS = 40
+
     def get_commands(self):
         return {
             "get_state": self.controller.get_state,
             "reset_component": self.controller.reset_component,
             "set_watchdog": self.controller.set_watchdog,
         }
+
+    def reset_system(self):
+        self.controller = AccessController()
 
     def is_goal_met(self):
         return self.controller.is_goal_met()

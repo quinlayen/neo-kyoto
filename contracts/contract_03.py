@@ -12,6 +12,8 @@ class Contract03(BaseContract):
         super().__init__()
         self.warehouse = Warehouse()
 
+    MAX_CALLS = 30
+
     def get_commands(self):
         return {
             "check_slot": self.warehouse.check_slot,
@@ -20,6 +22,9 @@ class Contract03(BaseContract):
             "gentle_adjust": self.warehouse.gentle_adjust,
             "unlock_slot": self.warehouse.unlock_slot,
         }
+
+    def reset_system(self):
+        self.warehouse = Warehouse()
 
     def is_goal_met(self):
         return self.warehouse.is_goal_met()

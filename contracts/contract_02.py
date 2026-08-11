@@ -18,6 +18,9 @@ class Contract02(BaseContract):
             "reroute_next": self.router.reroute_next,
         }
 
+    def reset_system(self):
+        self.router = DroneRouter()
+
     def is_goal_met(self):
         return self.router.is_goal_met()
 
@@ -46,52 +49,85 @@ class Contract02(BaseContract):
 
     ─── A NEW TOOL: VARIABLES ───
 
-    Before we get to the drones, there is a new
-    concept you need to know: variables.
+    Before we get to the drones, there is a
+    fundamental concept you need: variables.
 
     A variable is a name that holds a value. You
     create one with the = sign:
 
-        x = 5
+        speed = 30
 
-    After this line runs, the name x holds the
-    number 5. Anywhere you write x from now on,
-    the computer reads it as 5.
+    After this line runs, the name speed holds
+    the number 30. Anywhere you write speed from
+    now on, the computer reads it as 30.
 
-    The value can be anything — a number, text in
-    quotes, or the result a command gives back.
+    The name you choose matters. Pick something
+    that describes what the value represents.
+    "speed" is clear. "x" is not. When your
+    programs get longer, meaningful names help
+    you remember what each value is for.
+
+    The value can be anything — a number, text
+    in quotes, or the result a command gives back:
+
+        drone_count = 8
+        district = "Sector 12"
+        load = 0.5
+
+    ─── CATCHING RETURN VALUES ───
 
     Some commands give back a value when they run.
-    On its own, that value appears and vanishes.
-    But you can catch it in a variable:
+    This is called a return value. On its own, that
+    value appears and immediately vanishes — the
+    computer moves on and the value is gone.
 
-        result = reroute_next()
+    You can catch it by assigning it to a variable:
 
-    Now result holds the ID of the drone that was
-    just fixed. You can print it to see it:
+        fixed_drone = reroute_next()
 
-        print(result)
+    Now fixed_drone holds the ID of the drone
+    that was just fixed. You can see it with
+    print():
 
-    You can also change a variable's value:
+        print(fixed_drone)
+
+    Remember print() from the last contract? You
+    can print a variable to see its value, or
+    print a command directly to see what it gives
+    back:
+
+        print(reroute_next())
+
+    Both work. The first stores the value so you
+    can use it later. The second just displays it.
+
+    ─── COUNTERS ───
+
+    You can change a variable by assigning it a
+    new value. A common pattern is using a variable
+    as a counter:
 
         count = 0
         count = count + 1
 
-    The computer reads the right side first (takes
-    the current value 0, adds 1 to get 1), then
-    stores the result back into count. After the
-    second line, count holds 1. Run it again and
-    count becomes 2, then 3, and so on.
+    Here is what happens on the second line: the
+    computer looks at the right side first. It
+    finds count (which is 0) and adds 1 to it,
+    getting 1. Then it takes that result and
+    stores it back into count, replacing the old
+    value. Now count holds 1.
 
-    This is useful inside a loop — each time
-    through, the value grows, giving you a counter
-    that tracks progress.
+    If that line runs again — say, inside a loop —
+    the computer reads count (now 1), adds 1 to
+    get 2, and stores 2 back into count. Each
+    time through the loop, count goes up by 1:
+    0, 1, 2, 3, 4...
 
     You do not strictly need variables for this
-    contract, but practice using them now. Try
-    catching what reroute_next() gives back. Try
-    printing values. These skills become essential
-    starting next contract.
+    contract, but practice using them. Try catching
+    what reroute_next() gives back. Try printing
+    it. These skills become essential starting
+    next contract.
 
     ─── YOUR COMMANDS ───
 

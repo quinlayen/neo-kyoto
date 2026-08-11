@@ -8,7 +8,7 @@ class SandboxStop(Exception):
 
 
 class RestrictedInterpreter:
-    MAX_CALLS = 100
+    DEFAULT_MAX_CALLS = 20
     TIMEOUT_SECONDS = 5
 
     FEATURE_GATES = {
@@ -25,8 +25,9 @@ class RestrictedInterpreter:
         "functions":    "function definitions (def)",
     }
 
-    def __init__(self, game_state):
+    def __init__(self, game_state, max_calls=None):
         self.game_state = game_state
+        self.max_calls = max_calls or self.DEFAULT_MAX_CALLS
         self.active_commands = {}
         self._call_count = 0
 
@@ -40,10 +41,10 @@ class RestrictedInterpreter:
     def _wrap_command(self, name, func):
         def wrapped(*args, **kwargs):
             self._call_count += 1
-            if self._call_count > self.MAX_CALLS:
+            if self._call_count > self.max_calls:
                 raise SandboxStop(
-                    f"Sandbox auto-stopped after {self.MAX_CALLS} "
-                    f"total command calls (safety limit)."
+                    f"Sandbox auto-stopped after {self.max_calls} "
+                    f"calls (loop safety limit)."
                 )
             return func(*args, **kwargs)
         return wrapped

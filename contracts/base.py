@@ -3,6 +3,7 @@ class BaseContract:
     TITLE = ""
     LOCATION = ""
     SCRIPT_FILE = ""
+    MAX_CALLS = 20
 
     def __init__(self):
         self.completed = False
@@ -24,6 +25,9 @@ class BaseContract:
         raise NotImplementedError
 
     def get_commands(self) -> dict:
+        raise NotImplementedError
+
+    def reset_system(self):
         raise NotImplementedError
 
     def update_completion(self) -> bool:

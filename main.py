@@ -107,11 +107,7 @@ def show_contract_board(game_state):
 
 def run_contract(cdef, game_state):
     contract = cdef["class"]()
-    interpreter = RestrictedInterpreter(game_state)
-    interpreter.set_commands(
-        active_commands=contract.get_commands(),
-        retired_commands=game_state.retired_commands,
-    )
+    interpreter = RestrictedInterpreter(game_state, max_calls=contract.MAX_CALLS)
     script_path = contract.SCRIPT_FILE
 
     clear()
@@ -164,6 +160,12 @@ def run_contract(cdef, game_state):
 
             with open(script_path, "r") as f:
                 code = f.read()
+
+            contract.reset_system()
+            interpreter.set_commands(
+                active_commands=contract.get_commands(),
+                retired_commands=game_state.retired_commands,
+            )
 
             print()
             print("  ┌─ Running script ─────────────────────┐")

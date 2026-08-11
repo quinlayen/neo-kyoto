@@ -12,6 +12,8 @@ class Contract05(BaseContract):
         super().__init__()
         self.line = AssemblyLine()
 
+    MAX_CALLS = 50
+
     def get_commands(self):
         return {
             "harvest": self.line.harvest,
@@ -20,6 +22,9 @@ class Contract05(BaseContract):
             "ship": self.line.ship,
             "check_pipeline": self.line.check_pipeline,
         }
+
+    def reset_system(self):
+        self.line = AssemblyLine()
 
     def is_goal_met(self):
         return self.line.is_goal_met()
