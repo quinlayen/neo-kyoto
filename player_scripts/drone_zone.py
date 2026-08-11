@@ -9,5 +9,5 @@
 # ────────────────────────────────────────────────
 scan_drones()
 
-while True:
-    reroute_next()
+reroute_next()
+scan_drones()
