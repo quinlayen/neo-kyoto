@@ -13,3 +13,13 @@
 #
 # ────────────────────────────────────────────────
 
+slot_type = get_slot_type(1)
+print(slot_type)
+
+correction = check_slot(1)
+print(correction)
+
+adjust_slot(1, 4)
+
+if slot_type == "STANDARD":
+    adjust_slot(slot, )
