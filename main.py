@@ -46,6 +46,16 @@ def _load_contracts():
         CONTRACT_DEFS.append({"id": "contract_04", "class": Contract04, "title": "Signal Interference", "location": "Transit Hub", "unlock_index": -1})  # end of Python Phase 1
     except ImportError:
         pass
+    try:
+        from contracts.contract_05 import Contract05
+        CONTRACT_DEFS.append({"id": "contract_05", "class": Contract05, "title": "System Recovery", "location": "Data Center", "unlock_index": -1, "type": "terminal"})
+    except ImportError:
+        pass
+    try:
+        from contracts.contract_06 import Contract06
+        CONTRACT_DEFS.append({"id": "contract_06", "class": Contract06, "title": "Log Analysis", "location": "Network Ops", "unlock_index": -1, "type": "terminal"})
+    except ImportError:
+        pass
 
 
 def show_title_screen():
@@ -205,6 +215,80 @@ def run_contract(cdef, game_state):
             time.sleep(1.2)
 
 
+def run_terminal_contract(cdef, game_state):
+    contract = cdef["class"]()
+
+    clear()
+    print(contract.get_briefing())
+    input("\n  Press Enter to jack in...")
+
+    while True:
+        clear()
+        print("══════════════════════════════════════════════")
+        print(f"  NEO-KYOTO — {contract.TITLE} — {contract.LOCATION}")
+        print("══════════════════════════════════════════════")
+        print()
+        print(contract.get_status_text())
+
+        if contract.completed:
+            print(contract.get_completed_banner())
+
+        print("──────────────────────────────────────────────")
+        print("  Type terminal commands below.")
+        print("  Special:  brief | status | debrief | reset | exit")
+        print("──────────────────────────────────────────────")
+
+        while True:
+            try:
+                cmd = input(contract.get_prompt()).strip()
+            except EOFError:
+                return
+
+            if not cmd:
+                continue
+
+            if cmd == "exit":
+                return
+
+            if cmd == "brief":
+                clear()
+                print(contract.get_briefing())
+                input("\n  Press Enter to continue...")
+                break
+
+            if cmd == "status":
+                break
+
+            if cmd == "debrief" and contract.completed:
+                clear()
+                print(contract.get_completion_message())
+                input("\n  Press Enter to continue...")
+                break
+
+            if cmd == "reset":
+                contract.reset_system()
+                print("  System reset. Filesystem restored to initial state.")
+                break
+
+            output = contract.on_command(cmd)
+            if output:
+                print(output)
+
+            if contract.consume_completion_announcement():
+                game_state.mark_completed(cdef["id"], cdef["unlock_index"])
+                print()
+                print(contract.get_completion_message(), flush=True)
+                input("\n  Press Enter to continue...")
+                break
+
+
+def _dispatch_contract(cdef, game_state):
+    if cdef.get("type") == "terminal":
+        run_terminal_contract(cdef, game_state)
+    else:
+        run_contract(cdef, game_state)
+
+
 def main():
     _load_contracts()
     reset_player_scripts()
@@ -226,7 +310,7 @@ def main():
             time.sleep(0.6)
             print("  Session ended.\n")
             break
-        run_contract(cdef, game_state)
+        _dispatch_contract(cdef, game_state)
 
 
 if __name__ == "__main__":

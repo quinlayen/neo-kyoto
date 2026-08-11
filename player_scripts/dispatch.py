@@ -9,10 +9,3 @@
 #
 # ────────────────────────────────────────────────
 
-while True:
-    status = check_next()
-    if status == "MISROUTED":
-        reroute()
-    if status == "GROUNDED":
-        repair()
-    
