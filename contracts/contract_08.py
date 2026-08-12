@@ -8,7 +8,7 @@ class Contract08(BaseCombinedContract):
     TITLE = "Grid Restoration"
     LOCATION = "Central Grid"
     SCRIPT_FILE = "player_scripts/grid.py"
-    MAX_CALLS = 30
+    MAX_CALLS = 40
 
     def __init__(self):
         self.grid = None
@@ -35,77 +35,69 @@ class Contract08(BaseCombinedContract):
                      "─────────────────────────\n"
                      "Major power failure across the city.\n"
                      "Multiple sectors are offline or degraded.\n"
+                     "The failures are different every time the\n"
+                     "grid resets — you cannot hardcode the fix.\n"
                      "\n"
-                     "The sector manifest is on the grid\n"
-                     "control server at /opt/grid/manifest.txt\n"
-                     "\n"
-                     "Too many sectors to fix by hand. You\n"
-                     "will need to write a script that loops\n"
-                     "through the broken sectors and repairs\n"
-                     "each one automatically.\n"
+                     "Check /opt/grid/ for the repair protocol.\n"
                      "\n"
                      "Use  edit  to open your script file.\n"
                      "Use  run   to execute it.\n")
 
-        fs.add_file("/opt/grid/manifest.txt",
-                     "═══════════════════════════════════════\n"
-                     "  CENTRAL GRID — SECTOR MANIFEST\n"
-                     "═══════════════════════════════════════\n"
-                     "\n"
-                     "  S-01    OFFLINE\n"
-                     "  S-02    DEGRADED\n"
-                     "  S-03    OFFLINE\n"
-                     "  S-04    ONLINE\n"
-                     "  S-05    OFFLINE\n"
-                     "  S-06    DEGRADED\n"
-                     "  S-07    OFFLINE\n"
-                     "  S-08    ONLINE\n"
-                     "  S-09    DEGRADED\n"
-                     "  S-10    OFFLINE\n"
-                     "\n"
-                     "  8 sectors need repair.\n"
-                     "  Sector IDs: S-01 through S-10\n"
-                     "═══════════════════════════════════════\n")
-
         fs.add_file("/opt/grid/repair_protocol.txt",
                      "REPAIR PROTOCOL\n"
                      "───────────────\n"
-                     "For each broken sector, call:\n"
-                     "    repair(sector_id)\n"
                      "\n"
-                     "Example:\n"
-                     "    repair(\"S-01\")\n"
+                     "get_broken_sectors() returns a list of\n"
+                     "sector IDs that need repair. The list\n"
+                     "changes each time the grid resets, so\n"
+                     "you cannot write out each repair by hand.\n"
                      "\n"
-                     "To check a sector's status:\n"
-                     "    get_status(sector_id)\n"
+                     "You need a way to say: for each sector\n"
+                     "in this list, call repair on it.\n"
                      "\n"
-                     "To see the full grid:\n"
-                     "    scan_grid()\n"
+                     "That is what a for loop does.\n"
                      "\n"
-                     "There are 10 sectors. Writing repair()\n"
-                     "for each one by hand would work, but\n"
-                     "there is a better way.\n"
+                     "─── FOR LOOPS ───\n"
                      "\n"
-                     "A for loop lets you repeat code for\n"
-                     "each item in a list:\n"
+                     "A for loop repeats code once for each\n"
+                     "item in a list:\n"
                      "\n"
-                     "    for item in [\"a\", \"b\", \"c\"]:\n"
+                     "    for item in my_list:\n"
                      "        <do something with item>\n"
                      "\n"
-                     "The variable before 'in' takes on each\n"
-                     "value in turn. First loop: item is \"a\".\n"
-                     "Second: \"b\". Third: \"c\".\n")
+                     "The variable before 'in' (here called\n"
+                     "item) takes on each value in the list,\n"
+                     "one at a time.\n"
+                     "\n"
+                     "You can combine this with a command that\n"
+                     "returns a list:\n"
+                     "\n"
+                     "    broken = get_broken_sectors()\n"
+                     "    for sector in broken:\n"
+                     "        repair(sector)\n"
+                     "\n"
+                     "First line: get the list of broken IDs.\n"
+                     "Second line: for each one in that list...\n"
+                     "Third line: repair it.\n"
+                     "\n"
+                     "The indented line runs once per sector.\n"
+                     "When the list is exhausted, the loop\n"
+                     "stops and your program continues.\n")
+
+        fs.add_file("/opt/grid/README.txt",
+                     "GRID CONTROL COMMANDS\n"
+                     "─────────────────────\n"
+                     "scan_grid()            show all sectors\n"
+                     "get_broken_sectors()   returns a list of\n"
+                     "                       broken sector IDs\n"
+                     "get_status(sector_id)  check one sector\n"
+                     "repair(sector_id)      repair a sector\n")
 
         fs.add_file("/var/log/grid.log",
                      "2189-08-11 02:30:00 [CRIT]  Cascade failure detected\n"
-                     "2189-08-11 02:30:01 [CRIT]  S-01: OFFLINE\n"
-                     "2189-08-11 02:30:01 [WARN]  S-02: DEGRADED\n"
-                     "2189-08-11 02:30:02 [CRIT]  S-03: OFFLINE\n"
-                     "2189-08-11 02:30:03 [CRIT]  S-05: OFFLINE\n"
-                     "2189-08-11 02:30:03 [WARN]  S-06: DEGRADED\n"
-                     "2189-08-11 02:30:04 [CRIT]  S-07: OFFLINE\n"
-                     "2189-08-11 02:30:04 [WARN]  S-09: DEGRADED\n"
-                     "2189-08-11 02:30:05 [CRIT]  S-10: OFFLINE\n"
+                     "2189-08-11 02:30:01 [CRIT]  Multiple sectors offline\n"
+                     "2189-08-11 02:30:02 [WARN]  Sector failures randomized\n"
+                     "2189-08-11 02:30:03 [WARN]  Manual hardcoding will not work\n"
                      "2189-08-11 02:31:00 [INFO]  Contractor dispatched\n")
 
         return fs
@@ -117,6 +109,7 @@ class Contract08(BaseCombinedContract):
     def get_commands(self):
         return {
             "scan_grid": self.grid.scan_grid,
+            "get_broken_sectors": self.grid.get_broken_sectors,
             "get_status": self.grid.get_status,
             "repair": self.grid.repair,
         }
@@ -140,43 +133,54 @@ class Contract08(BaseCombinedContract):
 
     This is the big one. A cascade failure has
     knocked out most of the city's power grid.
-    Multiple sectors are offline or degraded.
+    8 to 12 of the 15 sectors are down, and the
+    failures are different every time the grid
+    resets.
+
+    You cannot hardcode the repairs. You need a
+    way to get the list of broken sectors and
+    process each one automatically.
 
     This is a two-part job:
 
     FIRST — investigate. Use the terminal to
-    check the grid manifest and logs. Find out
-    which sectors are down and what needs fixing.
+    read the repair protocol in /opt/grid/.
+    It explains a new tool: the for loop.
 
-    THEN — automate. There are too many sectors
-    to repair by hand. Write a Python script that
-    loops through the broken sectors and repairs
+    THEN — write a script. Use get_broken_sectors()
+    to get the list, and a for loop to repair
     each one.
 
-    You have both terminal commands AND Python
-    scripting available in this contract.
+    ─── NEW CONCEPT: FOR LOOPS ───
 
-    ─── TERMINAL COMMANDS ───
+    A for loop repeats code once for each item
+    in a list:
 
-    All your terminal commands work here:
-    ls, cd, cat, grep, and everything else.
+        for sector in broken_list:
+            repair(sector)
 
-    ─── SCRIPT COMMANDS ───
+    The variable (sector) automatically becomes
+    each value in the list, one at a time. When
+    the list is done, the loop stops.
 
-        edit          — open your script for editing
-        run           — execute your script
+    Read /opt/grid/repair_protocol.txt for the
+    full explanation and example.
+
+    ─── COMMANDS ───
+
+    Terminal: ls, cd, cat, grep, etc.
+    Script:  edit — open script, run — execute
 
     Your script can use:
-        scan_grid()           — show all sectors
-        get_status(sector_id) — check one sector
-        repair(sector_id)     — repair a sector
+        scan_grid()            — show all sectors
+        get_broken_sectors()   — returns the list of
+                                 broken sector IDs
+        get_status(sector_id)  — check one sector
+        repair(sector_id)      — repair a sector
 
     ─── YOUR GOAL ───
 
-    Bring all 10 sectors online.
-
-    Check the files in /opt/grid/ for the repair
-    protocol and sector manifest.
+    Bring all 15 sectors online.
 
     Type  exit  to return to the contract board.
     """
@@ -188,48 +192,51 @@ class Contract08(BaseCombinedContract):
     ║   Central Grid — ALL SECTORS ONLINE         ║
     ╚══════════════════════════════════════════════╝
 
-    The grid is back. All 10 sectors restored.
+    The grid is back. All 15 sectors restored.
     Neo-Kyoto has power again.
 
     ─── WHAT YOU JUST DID ───
 
     You combined two skill sets. You used the
-    terminal to investigate — navigating files,
-    reading logs, finding the sector manifest.
-    Then you wrote a Python script with a for
-    loop to automate the repairs.
+    terminal to investigate — reading the repair
+    protocol, understanding the system. Then you
+    wrote a Python script with a for loop to
+    automate the repairs.
 
-    Neither skill alone could have done this job
-    efficiently. Investigation told you WHAT was
-    broken. Automation fixed it all at once.
-
-    This is how real engineers work. Diagnose
-    with tools, then automate the fix.
+    The key insight: get_broken_sectors() gave
+    you a list, and the for loop processed every
+    item in it. You did not need to know which
+    sectors were broken in advance — your script
+    handled whatever the system returned.
 
     ─── FOR LOOPS ───
 
-    The for loop you just used is one of the
-    most powerful tools in programming:
+    The for loop is one of the most powerful
+    tools in programming:
 
-        for sector in ["S-01", "S-02", "S-03"]:
-            repair(sector)
+        for item in collection:
+            <do something with item>
 
-    It takes a list of values and runs the body
-    once for each one. The variable (sector)
-    automatically becomes each value in turn.
+    It works with any list or sequence. You will
+    use it constantly from here on.
 
     range() creates a sequence of numbers:
 
         range(10)     → 0 through 9
-        range(1, 11)  → 1 through 10
+        range(1, 16)  → 1 through 15
 
     len() tells you how many items are in a list:
 
-        len(["a", "b", "c"])  → 3
+        len(my_list)  → the count
 
-    These tools let your programs work with
-    collections of data — not just one item
-    at a time.
+    ─── WHAT COMES NEXT ───
+
+    You just combined terminal investigation with
+    Python automation for the first time. That
+    pattern — investigate, then automate — is the
+    core of systems engineering.
+
+    More combined contracts are coming.
 """
 
     def get_completed_banner(self):

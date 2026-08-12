@@ -1,21 +1,21 @@
+import random
+
+
 class PowerGrid:
-    SECTOR_DEFS = [
-        ("S-01", "OFFLINE"),
-        ("S-02", "DEGRADED"),
-        ("S-03", "OFFLINE"),
-        ("S-04", "ONLINE"),
-        ("S-05", "OFFLINE"),
-        ("S-06", "DEGRADED"),
-        ("S-07", "OFFLINE"),
-        ("S-08", "ONLINE"),
-        ("S-09", "DEGRADED"),
-        ("S-10", "OFFLINE"),
+    ALL_SECTORS = [
+        "S-01", "S-02", "S-03", "S-04", "S-05",
+        "S-06", "S-07", "S-08", "S-09", "S-10",
+        "S-11", "S-12", "S-13", "S-14", "S-15",
     ]
 
     def __init__(self):
         self.sectors = {}
-        for sector_id, state in self.SECTOR_DEFS:
-            self.sectors[sector_id] = state
+        broken = random.sample(self.ALL_SECTORS, random.randint(8, 12))
+        for sid in self.ALL_SECTORS:
+            if sid in broken:
+                self.sectors[sid] = random.choice(["OFFLINE", "DEGRADED"])
+            else:
+                self.sectors[sid] = "ONLINE"
 
     def scan_grid(self):
         print("  ┌─────────┬────────────┐")
@@ -27,6 +27,14 @@ class PowerGrid:
         offline = sum(1 for s in self.sectors.values() if s == "OFFLINE")
         degraded = sum(1 for s in self.sectors.values() if s == "DEGRADED")
         print(f"    {offline} offline, {degraded} degraded")
+
+    def get_broken_sectors(self):
+        broken = [sid for sid in sorted(self.sectors)
+                  if self.sectors[sid] != "ONLINE"]
+        print(f"    {len(broken)} sectors need repair:")
+        for sid in broken:
+            print(f"      {sid} — {self.sectors[sid]}")
+        return broken
 
     def get_status(self, sector_id):
         if sector_id not in self.sectors:
