@@ -5,3 +5,5 @@
 - [Prototype Status](project-prototype-status.md) — 8 contracts complete (4 Python, 3 terminal, 1 combined), ready for Unity
 - [Briefing Style](feedback-briefing-style.md) — Short briefings, teach through in-game files and errors, not tutorials
 - [Unity Decisions](project-unity-decisions.md) — PC+Web, low-poly 3D (upgradeable), story arc, C1-C5 demo scope
+- [Unity Setup](project-unity-setup.md) — Project at unity/neo-kyoto, Unity 6000.5.8f1, URP, MCP on port 7890
+- [Unity Demo Status](project-unity-demo-status.md) — First playable demo (C1-C5) complete; architecture + gotchas

@@ -56,3 +56,36 @@ desktop.ini
 # Player scripts that contain solutions (optional – uncomment if you want to ignore them)
 # player_scripts/*.py
 # !player_scripts/.gitkeep
+# ── Unity ──────────────────────────────────────
+# Generated/derived folders — Unity rebuilds these from Assets/ + ProjectSettings/
+unity/*/[Ll]ibrary/
+unity/*/[Tt]emp/
+unity/*/[Oo]bj/
+unity/*/[Bb]uild/
+unity/*/[Bb]uilds/
+unity/*/[Ll]ogs/
+unity/*/[Uu]ser[Ss]ettings/
+unity/*/[Mm]emoryCaptures/
+unity/*/[Rr]ecordings/
+unity/*/.vsconfig
+
+# Generated IDE project files
+*.csproj
+*.sln
+*.unityproj
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+
+# Build artefacts
+*.apk
+*.aab
+*.unitypackage
+crashlytics-build.properties
+sysinfo.txt
+
+# Playtest captures
+unity/*/Assets/Screenshots/
+*.slnx
+unity/*/Builds/

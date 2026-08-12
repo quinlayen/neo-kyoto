@@ -1,5 +1,4 @@
 {
-  "autoMemoryDirectory": ".claude/memory",
   "permissions": {
     "allow": [
       "WebFetch(domain:steamcommunity.com)",
@@ -16,7 +15,23 @@
       "WebFetch(domain:hackersjourneysteamgame.com)",
       "WebFetch(domain:www.gog.com)",
       "WebFetch(domain:www.pcgamingwiki.com)",
-      "WebFetch(domain:docs.screeps.com)"
+      "WebFetch(domain:docs.screeps.com)",
+      "mcp__unity__unity_execute_code",
+      "mcp__unity__unity_get_compilation_errors",
+      "Bash(sed -i 's/\\\\benum Screen\\\\b/enum GameScreen/; s/\\\\bScreen CurrentScreen\\\\b/GameScreen CurrentScreen/; s/\\\\bGoTo\\(Screen /GoTo\\(GameScreen /; s/Screen\\\\.Title/GameScreen.Title/g; s/Screen\\\\.Board/GameScreen.Board/g; s/Screen\\\\.Briefing/GameScreen.Briefing/g; s/Screen\\\\.Workspace/GameScreen.Workspace/g; s/Screen\\\\.Debrief/GameScreen.Debrief/g' Core/GameManager.cs UI/UIController.cs World/WorldController.cs)",
+      "Bash(sed -i 's/Core\\\\.GameScreen/GameScreen/g; s/var s = _gm\\\\.CurrentScreen;/var s = _gm.CurrentScreen;/' UI/UIController.cs)",
+      "mcp__unity__unity_play_mode",
+      "mcp__unity__unity_console_log",
+      "mcp__unity__unity_screenshot_game",
+      "mcp__unity__unity_editor_state",
+      "Bash(git add *)",
+      "mcp__unity__unity_build",
+      "Bash(git lfs *)",
+      "Bash(git config *)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "unity"
+  ],
+  "autoMemoryDirectory": ".claude/memory"
 }

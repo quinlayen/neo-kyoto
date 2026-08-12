@@ -1,0 +1,84 @@
+# Neo-Kyoto asset versioning policy
+#
+# Unity is set to Force Text serialization (EditorSettings m_SerializationMode: 2),
+# so scenes, prefabs and .asset files are YAML. Those stay in Git as diffable text
+# and merge via Unity's SmartMerge. Only genuinely binary files go to Git LFS.
+#
+# SmartMerge needs a one-time local setup per machine (path differs per install):
+#   git config merge.unityyamlmerge.name "Unity SmartMerge"
+#   git config merge.unityyamlmerge.driver '"<UnityEditor>/Data/Tools/UnityYAMLMerge.exe" merge -p --force --fallback-onto-ours %O %A %B %A'
+#   git config merge.unityyamlmerge.recursive binary
+
+# ─── Unity YAML: text, diffable, smart-merged ───
+*.unity            text eol=lf merge=unityyamlmerge
+*.prefab           text eol=lf merge=unityyamlmerge
+*.asset            text eol=lf merge=unityyamlmerge
+*.mat              text eol=lf merge=unityyamlmerge
+*.anim             text eol=lf merge=unityyamlmerge
+*.controller       text eol=lf merge=unityyamlmerge
+*.overrideController text eol=lf merge=unityyamlmerge
+*.physicMaterial   text eol=lf merge=unityyamlmerge
+*.physicsMaterial2D text eol=lf merge=unityyamlmerge
+*.playable         text eol=lf merge=unityyamlmerge
+*.mask             text eol=lf merge=unityyamlmerge
+*.brush            text eol=lf merge=unityyamlmerge
+*.terrainlayer     text eol=lf merge=unityyamlmerge
+*.signal           text eol=lf merge=unityyamlmerge
+*.meta             text eol=lf
+
+# ─── Source and config: plain text ───
+*.cs               text diff=csharp
+*.shader           text
+*.shadergraph      text
+*.compute          text
+*.cginc            text
+*.hlsl             text
+*.uss              text
+*.uxml             text
+*.inputactions     text
+*.json             text
+*.md               text
+*.txt              text
+*.py               text
+*.sh               text eol=lf
+
+# ─── Binary assets: Git LFS ───
+# Images
+*.png              filter=lfs diff=lfs merge=lfs -text
+*.jpg              filter=lfs diff=lfs merge=lfs -text
+*.jpeg             filter=lfs diff=lfs merge=lfs -text
+*.gif              filter=lfs diff=lfs merge=lfs -text
+*.bmp              filter=lfs diff=lfs merge=lfs -text
+*.tga              filter=lfs diff=lfs merge=lfs -text
+*.tif              filter=lfs diff=lfs merge=lfs -text
+*.tiff             filter=lfs diff=lfs merge=lfs -text
+*.psd              filter=lfs diff=lfs merge=lfs -text
+*.exr              filter=lfs diff=lfs merge=lfs -text
+*.hdr              filter=lfs diff=lfs merge=lfs -text
+# Fonts
+*.ttf              filter=lfs diff=lfs merge=lfs -text
+*.otf              filter=lfs diff=lfs merge=lfs -text
+# 3D models
+*.fbx              filter=lfs diff=lfs merge=lfs -text
+*.obj              filter=lfs diff=lfs merge=lfs -text
+*.blend            filter=lfs diff=lfs merge=lfs -text
+*.dae              filter=lfs diff=lfs merge=lfs -text
+*.3ds              filter=lfs diff=lfs merge=lfs -text
+*.glb              filter=lfs diff=lfs merge=lfs -text
+*.gltf             filter=lfs diff=lfs merge=lfs -text
+# Audio
+*.wav              filter=lfs diff=lfs merge=lfs -text
+*.mp3              filter=lfs diff=lfs merge=lfs -text
+*.ogg              filter=lfs diff=lfs merge=lfs -text
+*.aif              filter=lfs diff=lfs merge=lfs -text
+*.aiff             filter=lfs diff=lfs merge=lfs -text
+# Video
+*.mp4              filter=lfs diff=lfs merge=lfs -text
+*.mov              filter=lfs diff=lfs merge=lfs -text
+*.webm             filter=lfs diff=lfs merge=lfs -text
+# Binaries and bundles
+*.dll              filter=lfs diff=lfs merge=lfs -text
+*.so               filter=lfs diff=lfs merge=lfs -text
+*.dylib            filter=lfs diff=lfs merge=lfs -text
+*.bundle           filter=lfs diff=lfs merge=lfs -text
+*.unitypackage     filter=lfs diff=lfs merge=lfs -text
