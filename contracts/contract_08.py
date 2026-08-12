@@ -33,17 +33,17 @@ class Contract08(BaseCombinedContract):
         fs.add_file("/home/contractor/notes.txt",
                      "GRID RESTORATION — URGENT\n"
                      "─────────────────────────\n"
-                     "Major power failure across the city.\n"
-                     "Multiple sectors are offline or degraded.\n"
-                     "The failures are different every time the\n"
-                     "grid resets — you cannot hardcode the fix.\n"
+                     "Major power failure. The grid control\n"
+                     "docs are somewhere under /opt/grid/ but\n"
+                     "the directory got locked down after the\n"
+                     "cascade failure.\n"
                      "\n"
-                     "Check /opt/grid/ for the repair protocol.\n"
-                     "\n"
-                     "Use  edit  to open your script file.\n"
-                     "Use  run   to execute it.\n")
+                     "You will need to find the repair protocol\n"
+                     "and the command reference. Not everything\n"
+                     "is visible at first glance.\n")
 
-        fs.add_file("/opt/grid/repair_protocol.txt",
+        fs.add_dir("/opt/grid", "r-x------")
+        fs.add_file("/opt/grid/.repair_protocol.txt",
                      "REPAIR PROTOCOL\n"
                      "───────────────\n"
                      "\n"
@@ -84,14 +84,15 @@ class Contract08(BaseCombinedContract):
                      "When the list is exhausted, the loop\n"
                      "stops and your program continues.\n")
 
-        fs.add_file("/opt/grid/README.txt",
+        fs.add_file("/opt/grid/.commands.txt",
                      "GRID CONTROL COMMANDS\n"
                      "─────────────────────\n"
                      "scan_grid()            show all sectors\n"
                      "get_broken_sectors()   returns a list of\n"
                      "                       broken sector IDs\n"
                      "get_status(sector_id)  check one sector\n"
-                     "repair(sector_id)      repair a sector\n")
+                     "repair(sector_id)      repair a sector\n",
+                     "---------")
 
         fs.add_file("/var/log/grid.log",
                      "2189-08-11 02:30:00 [CRIT]  Cascade failure detected\n"
@@ -131,52 +132,22 @@ class Contract08(BaseCombinedContract):
 
     Contractor,
 
-    This is the big one. A cascade failure has
-    knocked out most of the city's power grid.
-    8 to 12 of the 15 sectors are down, and the
-    failures are different every time the grid
-    resets.
+    Cascade failure. Most of the city's power
+    grid is down — 15 sectors, and the failures
+    change every time the grid resets. You cannot
+    fix this by hand.
 
-    You cannot hardcode the repairs. You need a
-    way to get the list of broken sectors and
-    process each one automatically.
+    The repair protocol and command reference
+    are on the grid control server under /opt/grid.
+    The directory got locked down after the crash.
+    You will need your terminal skills to find
+    and access the documentation.
 
-    This is a two-part job:
+    Once you understand the repair process, write
+    a script to automate it.
 
-    FIRST — investigate. Use the terminal to
-    read the repair protocol in /opt/grid/.
-    It explains a new tool: the for loop.
-
-    THEN — write a script. Use get_broken_sectors()
-    to get the list, and a for loop to repair
-    each one.
-
-    ─── NEW CONCEPT: FOR LOOPS ───
-
-    A for loop repeats code once for each item
-    in a list:
-
-        for sector in broken_list:
-            repair(sector)
-
-    The variable (sector) automatically becomes
-    each value in the list, one at a time. When
-    the list is done, the loop stops.
-
-    Read /opt/grid/repair_protocol.txt for the
-    full explanation and example.
-
-    ─── COMMANDS ───
-
-    Terminal: ls, cd, cat, grep, etc.
-    Script:  edit — open script, run — execute
-
-    Your script can use:
-        scan_grid()            — show all sectors
-        get_broken_sectors()   — returns the list of
-                                 broken sector IDs
-        get_status(sector_id)  — check one sector
-        repair(sector_id)      — repair a sector
+    Terminal commands and scripting (edit/run) are
+    both available.
 
     ─── YOUR GOAL ───
 
