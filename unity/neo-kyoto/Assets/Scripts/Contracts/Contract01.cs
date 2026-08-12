@@ -30,6 +30,79 @@ namespace NeoKyoto.Contracts
             return cmds;
         }
 
+        // The loop unlocked here replaces the repetition the player just wrote,
+        // so the debrief sends them straight back to Block 7 to try it.
+        public override bool DebriefInvitesRetry { get { return true; } }
+
+        public override string GetSolvedAgainMessage()
+        {
+            return "Stable again — and this time the loop did the work.";
+        }
+
+        /// <summary>
+        /// Shown the first time Block 7 is solved with a loop. It closes the lesson
+        /// the first debrief opened, and plants the problem C3 will solve.
+        /// </summary>
+        public override string GetLoopCompletionMessage()
+        {
+            return @"    ╔══════════════════════════════════════════════╗
+    ║   ◆  BLOCK 7 — SOLVED WITH A LOOP  ◆        ║
+    ║   Same result. A fraction of the code.      ║
+    ╚══════════════════════════════════════════════╝
+
+    The node is stable again. But look at what you
+    wrote this time — two lines instead of twelve.
+" + PageBreak + @"
+    ─── WHAT CHANGED ───
+
+    Your first version told the computer exactly
+    how many times to act. You had to know the
+    answer — twelve — before you started.
+
+    This version does not. It describes the work
+    and lets the computer repeat it until the job
+    is done.
+
+    That is the real shift. You stopped listing
+    steps and started describing behaviour.
+" + PageBreak + @"
+    ─── ABOUT THAT LAST MESSAGE ───
+
+    Your output ended with something like:
+
+        Sandbox auto-stopped after 20 calls
+        (loop safety limit).
+
+    That is not an error. It is the sandbox
+    catching a loop that would otherwise run
+    forever.
+
+    Remember: while True never becomes false. The
+    node went stable at rebalance 12, but your loop
+    had no way of knowing that, so it kept going
+    until the sandbox stopped it.
+" + PageBreak + @"
+    ─── SOMETHING TO NOTICE ───
+
+    A loop that runs forever is fine here. The node
+    does not mind being rebalanced a few extra times,
+    and the sandbox is watching.
+
+    But it will not always be fine. Some jobs need
+    the loop to finish so the program can carry on
+    to the next step.
+
+    You will need a loop that knows when to stop.
+    That comes later.
+" + PageBreak + @"
+    ─── NEXT ───
+
+    Sector 12 has eight delivery drones flying the
+    wrong routes. Same idea, bigger grid.
+
+    Take the contract when you are ready.";
+        }
+
         public override bool IsGoalMet() { return Node.IsGoalMet(); }
         public override string GetStatusText() { return Node.GetStatusText(); }
 
@@ -50,8 +123,7 @@ namespace NeoKyoto.Contracts
 
         public override string GetBriefing()
         {
-            return @"
-    ╔══════════════════════════════════════════════╗
+            return @"    ╔══════════════════════════════════════════════╗
     ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
     ║   Contract #2477 – Keep the Lights On       ║
     ╚══════════════════════════════════════════════╝
@@ -72,7 +144,7 @@ namespace NeoKyoto.Contracts
     Block 7's power node is flickering and the
     residents are losing power. You need to
     stabilize it by writing a short program.
-
+" + PageBreak + @"
     ─── WHAT IS A PROGRAM? ───
 
     A program is a list of instructions the
@@ -84,7 +156,7 @@ namespace NeoKyoto.Contracts
     The name says which command. The () tells
     it ""do it now."" Each command goes on its
     own line.
-
+" + PageBreak + @"
     ─── YOUR COMMAND ───
 
         rebalance()  — rebalances the power node
@@ -94,7 +166,7 @@ namespace NeoKyoto.Contracts
 
     You also have print() — it displays text on
     screen. Useful for seeing what is happening.
-
+" + PageBreak + @"
     ─── YOUR GOAL ───
 
     Bring the power node from FLICKERING to
@@ -107,8 +179,7 @@ namespace NeoKyoto.Contracts
 
         public override string GetCompletionMessage()
         {
-            return @"
-    ╔══════════════════════════════════════════════╗
+            return @"    ╔══════════════════════════════════════════════╗
     ║   ◆  CONTRACT #2477 COMPLETE  ◆             ║
     ║   Block 7 Power Node — STABLE               ║
     ╚══════════════════════════════════════════════╝
@@ -126,7 +197,7 @@ namespace NeoKyoto.Contracts
     That is how all software works, from the simplest
     script to the systems that run this city. A list
     of steps. Nothing magical.
-
+" + PageBreak + @"
     ─── THE LIMITATION ───
 
     Look at the program you just wrote. You probably
@@ -138,7 +209,7 @@ namespace NeoKyoto.Contracts
 
     Whenever you find yourself writing the same thing
     over and over, there is almost always a better way.
-
+" + PageBreak + @"
     ─── NEW TOOL: LOOPS ───
 
     A loop tells the computer: ""repeat these
@@ -160,7 +231,7 @@ namespace NeoKyoto.Contracts
     run — until the condition becomes false. When
     it does, the loop stops and the program moves
     to the next line after the loop.
-
+" + PageBreak + @"
     The structure looks like this:
 
         while <condition>:
@@ -179,7 +250,7 @@ namespace NeoKyoto.Contracts
 
     The colon : at the end of the while line is
     required — it marks where the loop body begins.
-
+" + PageBreak + @"
     ─── WHAT IS THE CONDITION? ───
 
     The condition is anything that evaluates to
@@ -198,7 +269,7 @@ namespace NeoKyoto.Contracts
     can change — so the loop runs a specific number
     of times and then stops on its own. For now,
     True is all you need.
-
+" + PageBreak + @"
     ─── TRY IT ───
 
     Edit your script and see if you can replace
@@ -209,8 +280,7 @@ namespace NeoKyoto.Contracts
     If you get it right, two lines of code can do
     what many lines did before. You can also add
     print() inside your loop to watch each step
-    as it happens.
-";
+    as it happens.";
         }
 
         public override string GetCompletedBanner()

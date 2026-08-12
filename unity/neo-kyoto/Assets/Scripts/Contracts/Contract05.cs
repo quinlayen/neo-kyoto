@@ -165,8 +165,7 @@ namespace NeoKyoto.Contracts
 
         public override string GetBriefing()
         {
-            return @"
-    ╔══════════════════════════════════════════════╗
+            return @"    ╔══════════════════════════════════════════════╗
     ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
     ║   Contract #2481 – System Recovery          ║
     ╚══════════════════════════════════════════════╝
@@ -188,7 +187,7 @@ namespace NeoKyoto.Contracts
     commands directly into a terminal — navigating
     directories, listing files, and reading what
     you find.
-
+" + PageBreak + @"
     ─── TERMINAL COMMANDS ───
 
         pwd             — print your current
@@ -198,7 +197,7 @@ namespace NeoKyoto.Contracts
         cd ..           — move up one directory
         cd ~            — go to your home directory
         cat <file>      — read a file's contents
-
+" + PageBreak + @"
     ─── YOUR GOAL ───
 
     Find and read the power grid crash report.
@@ -209,8 +208,7 @@ namespace NeoKyoto.Contracts
 
         public override string GetCompletionMessage()
         {
-            return @"
-    ╔══════════════════════════════════════════════╗
+            return @"    ╔══════════════════════════════════════════════╗
     ║   ◆  CONTRACT #2481 COMPLETE  ◆             ║
     ║   Data Center — CRASH REPORT FOUND          ║
     ╚══════════════════════════════════════════════╝
@@ -226,7 +224,7 @@ namespace NeoKyoto.Contracts
     contents, and read files to find what you
     needed. These are the same tools that real
     system administrators use every day.
-
+" + PageBreak + @"
     ─── THE LIMITATION ───
 
     You found one file by exploring manually. But
@@ -237,7 +235,7 @@ namespace NeoKyoto.Contracts
 
     Reading every file by hand does not scale.
     You need a way to search through files.
-
+" + PageBreak + @"
     ─── NEW TOOLS ───
 
     ls -a     — show hidden files (names that
@@ -255,8 +253,7 @@ namespace NeoKyoto.Contracts
     rm -rf    — delete a directory and everything
                 inside it
     chmod     — change who can read, write, or
-                run a file
-";
+                run a file";
         }
 
         public override string GetCompletedBanner()

@@ -81,8 +81,32 @@ namespace NeoKyoto.Interpreter
             string gate = CheckFeatureGates(_program);
             if (gate != null) { error = gate; return false; }
 
+            LastProgramUsedLoop = ContainsWhile(_program);
+
             _evaluator = new Evaluator(_commands) { MaxCalls = MaxCalls };
             return true;
+        }
+
+        /// <summary>
+        /// Whether the script just prepared contains a loop. Lets the game react to
+        /// the player actually adopting a new tool rather than merely unlocking it.
+        /// </summary>
+        public bool LastProgramUsedLoop { get; private set; }
+
+        private static bool ContainsWhile(List<Stmt> body)
+        {
+            foreach (var stmt in body)
+            {
+                if (stmt is WhileStmt) return true;
+
+                var ifStmt = stmt as IfStmt;
+                if (ifStmt != null)
+                {
+                    if (ContainsWhile(ifStmt.Body)) return true;
+                    if (ifStmt.Else != null && ContainsWhile(ifStmt.Else)) return true;
+                }
+            }
+            return false;
         }
 
         public IEnumerator<ExecEvent> Execute()

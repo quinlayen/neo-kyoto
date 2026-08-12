@@ -30,6 +30,16 @@ namespace NeoKyoto.UI
         private TextMeshProUGUI _runButtonLabel;
         private LayoutElement _statusLayout;
 
+        private string[] _briefingPages;
+        private int _briefingPage;
+        private Button _briefingPrev, _briefingNext;
+        private TextMeshProUGUI _briefingNextLabel, _briefingCounter;
+
+        private string[] _debriefPages;
+        private int _debriefPage;
+        private Button _debriefPrev, _debriefNext;
+        private TextMeshProUGUI _debriefNextLabel, _debriefCounter;
+
         private const float StatusMinHeight = 96f;
 
         private void Awake()
@@ -158,9 +168,39 @@ namespace NeoKyoto.UI
             _briefingText = UITheme.ScrollText("BriefingScroll", content, out _briefingScroll);
             AddLayout(_briefingScroll.gameObject, 0f, 1f);
 
-            var row = MakeRow(content, 44f);
-            UITheme.Button("Begin", row, "JACK IN", UITheme.Good, () => _gm.BeginWork());
+            // Paged rather than one long scroll.
+            var pageRow = MakeRow(content, 40f);
+            _briefingPrev = UITheme.Button("Prev", pageRow, "◂ BACK", UITheme.TextDim,
+                () => ShowBriefingPage(_briefingPage - 1));
+            _briefingCounter = UITheme.Label("Count", pageRow, "", UITheme.SmallSize,
+                UITheme.TextDim, TextAlignmentOptions.Center);
+            _briefingNext = UITheme.Button("Next", pageRow, "NEXT ▸", UITheme.Accent, BriefingAdvance);
+            _briefingNextLabel = _briefingNext.GetComponentInChildren<TextMeshProUGUI>();
+
+            var row = MakeRow(content, 40f);
             UITheme.Button("Back", row, "CONTRACT BOARD", UITheme.TextDim, () => _gm.BackToBoard());
+        }
+
+        /// <summary>Next page, or jack in once the briefing has been read through.</summary>
+        private void BriefingAdvance()
+        {
+            if (_briefingPage < _briefingPages.Length - 1) ShowBriefingPage(_briefingPage + 1);
+            else _gm.BeginWork();
+        }
+
+        private void ShowBriefingPage(int index)
+        {
+            if (_briefingPages == null || _briefingPages.Length == 0) return;
+            _briefingPage = Mathf.Clamp(index, 0, _briefingPages.Length - 1);
+            _briefingText.text = _briefingPages[_briefingPage];
+
+            bool last = _briefingPage == _briefingPages.Length - 1;
+            _briefingNextLabel.text = last ? "JACK IN ▸" : "NEXT ▸";
+            _briefingNextLabel.color = last ? UITheme.Good : UITheme.Accent;
+            _briefingPrev.interactable = _briefingPage > 0;
+            _briefingCounter.text = (_briefingPage + 1) + " / " + _briefingPages.Length;
+
+            StartCoroutine(ScrollToTop(_briefingScroll));
         }
 
         private void BuildWorkspace(Transform parent)
@@ -195,7 +235,8 @@ namespace NeoKyoto.UI
             _codeInput.gameObject.AddComponent<CodeEditorBehaviour>();
 
             _runRow = MakeRow(content, 42f).gameObject;
-            _runButton = UITheme.Button("Run", _runRow.transform, "▶ RUN", UITheme.Good, () => _gm.RunScript());
+            // One button: starts a run, and stops it while one is in progress.
+            _runButton = UITheme.Button("Run", _runRow.transform, "▶ RUN", UITheme.Good, ToggleRun);
             _runButtonLabel = _runButton.GetComponentInChildren<TextMeshProUGUI>();
             UITheme.Button("Reset", _runRow.transform, "RESET SCRIPT", UITheme.Warn, ResetScript);
             UITheme.Button("Brief", _runRow.transform, "BRIEFING", UITheme.TextDim,
@@ -247,7 +288,9 @@ namespace NeoKyoto.UI
             var frt = frameBorder.rectTransform;
             frt.anchorMin = new Vector2(0.5f, 0.5f);
             frt.anchorMax = new Vector2(0.5f, 0.5f);
-            frt.sizeDelta = new Vector2(1180, 880);
+            // Sized to the longest page rather than the screen, so short pages
+            // do not leave a large empty panel.
+            frt.sizeDelta = new Vector2(1120, 720);
 
             var inner = UITheme.Box("Inner", frameBorder.transform, UITheme.PanelSolid);
             UITheme.Stretch(inner.rectTransform, 2, 2, 2, 2);
@@ -265,9 +308,39 @@ namespace NeoKyoto.UI
             AddLayout(_debriefScroll.gameObject, 0f, 1f);
 
             var row = MakeRow(col.transform, 46f);
-            UITheme.Button("Continue", row, "CONTINUE", UITheme.Good, () => _gm.ContinueAfterDebrief());
-            UITheme.Button("Stay", row, "BACK TO WORKSPACE", UITheme.TextDim,
-                () => _gm.GoTo(GameScreen.Workspace));
+            _debriefPrev = UITheme.Button("Prev", row, "◂ BACK", UITheme.TextDim,
+                () => ShowDebriefPage(_debriefPage - 1));
+            _debriefCounter = UITheme.Label("Count", row, "", UITheme.SmallSize,
+                UITheme.TextDim, TextAlignmentOptions.Center);
+            _debriefNext = UITheme.Button("Next", row, "NEXT ▸", UITheme.Accent, DebriefAdvance);
+            _debriefNextLabel = _debriefNext.GetComponentInChildren<TextMeshProUGUI>();
+
+            var row2 = MakeRow(col.transform, 40f);
+            UITheme.Button("Board", row2, "CONTRACT BOARD", UITheme.TextDim, () => _gm.BackToBoard());
+        }
+
+        private void DebriefAdvance()
+        {
+            if (_debriefPage < _debriefPages.Length - 1) ShowDebriefPage(_debriefPage + 1);
+            else _gm.ContinueAfterDebrief();
+        }
+
+        private void ShowDebriefPage(int index)
+        {
+            if (_debriefPages == null || _debriefPages.Length == 0) return;
+            _debriefPage = Mathf.Clamp(index, 0, _debriefPages.Length - 1);
+            _debriefText.text = _debriefPages[_debriefPage];
+
+            bool last = _debriefPage == _debriefPages.Length - 1;
+            // On the last page the button becomes the action the debrief was leading to.
+            _debriefNextLabel.text = last
+                ? (_gm.DebriefInvitesRetry ? "TRY IT ▸" : "CONTRACT BOARD ▸")
+                : "NEXT ▸";
+            _debriefNextLabel.color = last ? UITheme.Good : UITheme.Accent;
+            _debriefPrev.interactable = _debriefPage > 0;
+            _debriefCounter.text = (_debriefPage + 1) + " / " + _debriefPages.Length;
+
+            StartCoroutine(ScrollToTop(_debriefScroll));
         }
 
         // ─── Small builders ───
@@ -387,14 +460,16 @@ namespace NeoKyoto.UI
 
             if (s == GameScreen.Briefing && _gm.ActiveContract != null)
             {
-                _briefingText.text = _gm.ActiveContract.GetBriefing();
-                StartCoroutine(ScrollToTop(_briefingScroll));
+                _briefingPages = Contract.Paginate(_gm.ActiveContract.GetBriefing());
+                ShowBriefingPage(0);
             }
 
             if (s == GameScreen.Debrief && _gm.ActiveContract != null)
             {
-                _debriefText.text = _gm.ActiveContract.GetCompletionMessage();
-                StartCoroutine(ScrollToTop(_debriefScroll));
+                string text = _gm.CurrentDebriefText;
+                if (string.IsNullOrEmpty(text)) text = _gm.ActiveContract.GetCompletionMessage();
+                _debriefPages = Contract.Paginate(text);
+                ShowDebriefPage(0);
             }
 
             if (s == GameScreen.Workspace && _gm.ActiveContract != null) SetupWorkspace();
@@ -455,8 +530,10 @@ namespace NeoKyoto.UI
             if (_debriefButton != null) _debriefButton.gameObject.SetActive(done);
 
             if (_runButtonLabel != null)
-                _runButtonLabel.text = _gm.IsRunning ? "RUNNING…" : "▶ RUN";
-            if (_runButton != null) _runButton.interactable = !_gm.IsRunning;
+            {
+                _runButtonLabel.text = _gm.IsRunning ? "■ STOP" : "▶ RUN";
+                _runButtonLabel.color = _gm.IsRunning ? UITheme.Fault : UITheme.Good;
+            }
         }
 
         private void RefreshConsole()
@@ -501,9 +578,18 @@ namespace NeoKyoto.UI
             StartCoroutine(FocusTerminal());
         }
 
+        private void ToggleRun()
+        {
+            if (_gm.IsRunning) _gm.StopScript();
+            else _gm.RunScript();
+        }
+
         private void ResetScript()
         {
             if (_gm.ActiveContract == null) return;
+            // Clearing the script mid-run would leave the run going against code
+            // that no longer exists, so stop it first.
+            _gm.StopScript();
             _gm.SetScript(_gm.ActiveContract.StarterScript);
             _codeInput.SetTextWithoutNotify(_gm.ActiveContract.StarterScript);
         }

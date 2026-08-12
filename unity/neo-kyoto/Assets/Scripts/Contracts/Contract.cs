@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using NeoKyoto.Interpreter;
 using NeoKyoto.Systems;
 
@@ -36,6 +37,61 @@ namespace NeoKyoto.Contracts
         public abstract string GetBriefing();
         public abstract string GetCompletionMessage();
         public abstract string GetCompletedBanner();
+
+        /// <summary>Short line shown when a finished contract is solved a second way.</summary>
+        public virtual string GetSolvedAgainMessage() { return "Solved again."; }
+
+        /// <summary>
+        /// A follow-up debrief for solving the contract with the tool it unlocked.
+        /// Null when the contract has no second lesson to teach.
+        /// </summary>
+        public virtual string GetLoopCompletionMessage() { return null; }
+
+        /// <summary>
+        /// True when the debrief hands over a tool the player can immediately use on
+        /// this same job, so the debrief should send them back to it rather than the board.
+        /// </summary>
+        public virtual bool DebriefInvitesRetry { get { return false; } }
+
+        /// <summary>
+        /// Marks a page break in briefing and debrief text. Long walls of text are
+        /// shown a page at a time rather than as one long scroll.
+        /// </summary>
+        public const string PageBreak = "@@PAGE@@";
+
+        public static string[] Paginate(string text)
+        {
+            var raw = (text ?? "").Split(new[] { PageBreak }, StringSplitOptions.None);
+            var pages = new List<string>();
+            foreach (var page in raw)
+            {
+                string trimmed = page.Trim('\r', '\n');
+                if (trimmed.Trim().Length > 0) pages.Add(trimmed);
+            }
+            if (pages.Count == 0) pages.Add("");
+            return pages.ToArray();
+        }
+
+        /// <summary>
+        /// Builds a header box with correct padding. Hand-aligned box art breaks
+        /// the moment a line changes length, so it is generated instead.
+        /// </summary>
+        protected static string Box(string line1, string line2 = null, int width = 46)
+        {
+            var sb = new StringBuilder();
+            sb.Append('╔').Append('═', width).Append("╗\n");
+            sb.Append('║').Append(BoxLine(line1, width)).Append("║\n");
+            if (line2 != null) sb.Append('║').Append(BoxLine(line2, width)).Append("║\n");
+            sb.Append('╚').Append('═', width).Append('╝');
+            return sb.ToString();
+        }
+
+        private static string BoxLine(string text, int width)
+        {
+            string s = "  " + (text ?? "");
+            if (s.Length > width) s = s.Substring(0, width);
+            return s.PadRight(width);
+        }
         public abstract bool IsGoalMet();
         public abstract string GetStatusText();
         public abstract void ResetSystem();

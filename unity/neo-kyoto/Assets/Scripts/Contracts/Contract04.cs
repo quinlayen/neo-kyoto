@@ -67,8 +67,7 @@ namespace NeoKyoto.Contracts
 
         public override string GetBriefing()
         {
-            return @"
-    ╔══════════════════════════════════════════════╗
+            return @"    ╔══════════════════════════════════════════════╗
     ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
     ║   Contract #2480 – Signal Interference      ║
     ╚══════════════════════════════════════════════╝
@@ -81,7 +80,7 @@ namespace NeoKyoto.Contracts
     There are 6 signals, numbered 1 through 6.
     Each one is either STUCK or SCRAMBLED — you
     know how to handle both types from last time.
-
+" + PageBreak + @"
     Here is what is different: the signals are
     numbered, and each command needs a signal
     number to know which one you mean:
@@ -99,7 +98,7 @@ namespace NeoKyoto.Contracts
     can only be submitted after all signals are
     fixed — so your loop must end for your program
     to reach it.
-
+" + PageBreak + @"
     ─── YOUR COMMANDS ───
 
         check_signal(n)      — shows and returns
@@ -109,7 +108,7 @@ namespace NeoKyoto.Contracts
         submit_report()      — log your completed work
 
     Signal numbers are 1 through 6.
-
+" + PageBreak + @"
     ─── YOUR GOAL ───
 
     Fix all 6 signals and submit the report.
@@ -119,8 +118,7 @@ namespace NeoKyoto.Contracts
 
         public override string GetCompletionMessage()
         {
-            return @"
-    ╔══════════════════════════════════════════════╗
+            return @"    ╔══════════════════════════════════════════════╗
     ║   ◆  CONTRACT #2480 COMPLETE  ◆             ║
     ║   Transit Hub — ALL SIGNALS FIXED           ║
     ╚══════════════════════════════════════════════╝
@@ -135,7 +133,7 @@ namespace NeoKyoto.Contracts
     to commands, makes decisions for each item, and
     then continues to the next step after the loop
     ends. That is real automation.
-
+" + PageBreak + @"
     ─── HOW FAR YOU HAVE COME ───
 
     Think back to your first contract. You wrote
@@ -149,7 +147,7 @@ namespace NeoKyoto.Contracts
     These are the fundamentals of programming.
     Every language, every system, every tool you
     will ever use builds on these ideas.
-
+" + PageBreak + @"
     ─── WHAT COMES NEXT ───
 
     You have been writing scripts to fix systems.
@@ -167,8 +165,7 @@ namespace NeoKyoto.Contracts
     code — but reading systems. Navigating them.
     Searching through data to find what matters.
 
-    New contracts are coming.
-";
+    New contracts are coming.";
         }
 
         public override string GetCompletedBanner()

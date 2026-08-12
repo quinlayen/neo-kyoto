@@ -54,8 +54,7 @@ namespace NeoKyoto.Contracts
 
         public override string GetBriefing()
         {
-            return @"
-    ╔══════════════════════════════════════════════╗
+            return @"    ╔══════════════════════════════════════════════╗
     ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
     ║   Contract #2479 – Drone Dispatch           ║
     ╚══════════════════════════════════════════════╝
@@ -78,7 +77,7 @@ namespace NeoKyoto.Contracts
     the same way — will not work here. You need to
     check what is wrong first, then choose the
     right response.
-
+" + PageBreak + @"
     ─── YOUR COMMANDS ───
 
         check_next()  — finds the next broken drone
@@ -88,7 +87,7 @@ namespace NeoKyoto.Contracts
 
     If you use the wrong fix, the system will
     tell you.
-
+" + PageBreak + @"
     ─── YOUR GOAL ───
 
     Get all 8 drones operational.
@@ -98,8 +97,7 @@ namespace NeoKyoto.Contracts
 
         public override string GetCompletionMessage()
         {
-            return @"
-    ╔══════════════════════════════════════════════╗
+            return @"    ╔══════════════════════════════════════════════╗
     ║   ◆  CONTRACT #2479 COMPLETE  ◆             ║
     ║   Sector 14 — ALL DRONES OPERATIONAL        ║
     ╚══════════════════════════════════════════════╝
@@ -114,7 +112,7 @@ namespace NeoKyoto.Contracts
     checked each one's problem and chose the right
     fix. That is the power of conditionals — your
     programs can now make decisions.
-
+" + PageBreak + @"
     ─── THE LIMITATION ───
 
     Your while True loop ran until the sandbox
@@ -129,7 +127,7 @@ namespace NeoKyoto.Contracts
 
     You need a way to make the loop stop when the
     job is done.
-
+" + PageBreak + @"
     ─── NEW TOOL: CONTROLLED WHILE LOOPS ───
 
     You have been using while True — a loop that
@@ -148,7 +146,7 @@ namespace NeoKyoto.Contracts
     Before the loop starts, count is 0. The
     computer checks: is 0 < 8? Yes — so it runs
     the body. Inside, count goes from 0 to 1.
-
+" + PageBreak + @"
     Back to the top: is 1 < 8? Yes — run again.
     count goes to 2. Then 3, 4, 5, 6, 7.
 
@@ -163,8 +161,7 @@ namespace NeoKyoto.Contracts
 
     Any code you write after the loop (without
     indentation) will only run once the loop has
-    finished.
-";
+    finished.";
         }
 
         public override string GetCompletedBanner()

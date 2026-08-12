@@ -31,7 +31,11 @@ namespace NeoKyoto.Core
 
         private readonly List<string> _console = new List<string>();
         private readonly Dictionary<string, string> _scripts = new Dictionary<string, string>();
+        private readonly HashSet<string> _debriefed = new HashSet<string>();
+        private readonly HashSet<string> _followUpDebriefed = new HashSet<string>();
         private ScriptRunner _runner;
+        private Coroutine _runRoutine;
+        private bool _goalWasMet;
 
         public IList<string> ConsoleLines { get { return _console; } }
 
@@ -82,6 +86,7 @@ namespace NeoKyoto.Core
 
             _runner = new ScriptRunner(State, ActiveContract.MaxCalls);
             _console.Clear();
+            _goalWasMet = false;
 
             var terminal = ActiveContract as TerminalContract;
             if (terminal != null) AppendConsole(terminal.GetPrompt());
@@ -137,7 +142,7 @@ namespace NeoKyoto.Core
         {
             if (IsRunning || ActiveContract == null) return;
             if (ActiveContract.Kind == ContractKind.Terminal) return;
-            StartCoroutine(RunScriptRoutine());
+            _runRoutine = StartCoroutine(RunScriptRoutine());
         }
 
         private IEnumerator RunScriptRoutine()
@@ -147,6 +152,7 @@ namespace NeoKyoto.Core
 
             // Each run starts from a clean system, matching the prototype.
             ActiveContract.ResetSystem();
+            _goalWasMet = false;
             RaiseStatus();
 
             _runner.SetCommands(ActiveContract.GetCommands(), AppendConsole);
@@ -188,12 +194,30 @@ namespace NeoKyoto.Core
                 else yield return null;
             }
 
+            // Clear the running flag before the final refresh, otherwise the UI's
+            // last status update still shows the run in progress.
+            IsRunning = false;
+            _runRoutine = null;
+
             AppendConsole(endMessage);
             AppendConsole("└──────────────────────────────────────────");
             RaiseStatus();
 
             CheckCompletion();
+        }
+
+        /// <summary>Halts a run in progress. The system keeps whatever state it reached.</summary>
+        public void StopScript()
+        {
+            if (!IsRunning) return;
+
+            if (_runRoutine != null) StopCoroutine(_runRoutine);
+            _runRoutine = null;
             IsRunning = false;
+
+            AppendConsole("Stopped.");
+            AppendConsole("└──────────────────────────────────────────");
+            RaiseStatus();
         }
 
         // ─── Terminal contracts ───
@@ -212,6 +236,7 @@ namespace NeoKyoto.Core
             if (commandLine == "reset")
             {
                 terminal.ResetSystem();
+                _goalWasMet = false;
                 AppendConsole("  System reset. Filesystem restored to initial state.");
                 RaiseStatus();
                 return;
@@ -229,8 +254,15 @@ namespace NeoKyoto.Core
         private void CheckCompletion()
         {
             if (ActiveContract == null) return;
-            if (!ActiveContract.ConsumeCompletionAnnouncement()) return;
 
+            // React to the moment the goal is reached, not to it merely being true —
+            // otherwise every later terminal command would re-report success.
+            bool met = ActiveContract.IsGoalMet();
+            if (!met) { _goalWasMet = false; return; }
+            if (_goalWasMet) return;
+            _goalWasMet = true;
+
+            ActiveContract.ConsumeCompletionAnnouncement();
             State.MarkCompleted(ActiveDef.Id, ActiveDef.UnlockIndex);
 
             // Finished systems keep their commands callable but inert.
@@ -238,7 +270,50 @@ namespace NeoKyoto.Core
                 State.RetireCommands(new List<string>(ActiveContract.GetCommands().Keys));
 
             RaiseStatus();
-            GoTo(GameScreen.Debrief);
+
+            if (!_debriefed.Contains(ActiveDef.Id))
+            {
+                _debriefed.Add(ActiveDef.Id);
+                CurrentDebriefText = ActiveContract.GetCompletionMessage();
+                ShowingFollowUpDebrief = false;
+                GoTo(GameScreen.Debrief);
+                return;
+            }
+
+            // Solving it again with the tool the debrief just handed over earns a
+            // proper follow-up — but only once, and only if they actually used it.
+            string followUp = ActiveContract.GetLoopCompletionMessage();
+            if (followUp != null && !_followUpDebriefed.Contains(ActiveDef.Id) &&
+                _runner != null && _runner.LastProgramUsedLoop)
+            {
+                _followUpDebriefed.Add(ActiveDef.Id);
+                CurrentDebriefText = followUp;
+                ShowingFollowUpDebrief = true;
+                GoTo(GameScreen.Debrief);
+                return;
+            }
+
+            AppendConsole("");
+            AppendConsole("◆ " + ActiveContract.GetSolvedAgainMessage());
+        }
+
+        /// <summary>Text the debrief screen should show — first pass or follow-up.</summary>
+        public string CurrentDebriefText { get; private set; }
+
+        public bool ShowingFollowUpDebrief { get; private set; }
+
+        /// <summary>
+        /// True when this contract's debrief handed the player a new tool, so the
+        /// natural next step is going back to the same job to try it.
+        /// </summary>
+        public bool DebriefInvitesRetry
+        {
+            get
+            {
+                return ActiveContract != null
+                       && ActiveContract.DebriefInvitesRetry
+                       && !ShowingFollowUpDebrief;
+            }
         }
 
         public bool HasNextContract()
@@ -250,7 +325,9 @@ namespace NeoKyoto.Core
 
         public void ContinueAfterDebrief()
         {
-            GoTo(GameScreen.Board);
+            // A debrief that unlocked something sends you back to the job to use it;
+            // otherwise the board is the natural next stop.
+            GoTo(DebriefInvitesRetry ? GameScreen.Workspace : GameScreen.Board);
         }
     }
 }

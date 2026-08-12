@@ -51,8 +51,7 @@ namespace NeoKyoto.Contracts
 
         public override string GetBriefing()
         {
-            return @"
-    ╔══════════════════════════════════════════════╗
+            return @"    ╔══════════════════════════════════════════════╗
     ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
     ║   Contract #2478 – Drone Route Cleanup      ║
     ╚══════════════════════════════════════════════╝
@@ -67,7 +66,7 @@ namespace NeoKyoto.Contracts
     The delivery drones in this sector are flying
     wrong routes. The routing table got corrupted
     and all 8 drones need manual correction.
-
+" + PageBreak + @"
     ─── YOUR COMMANDS ───
 
         scan_drones()   — shows all drone statuses
@@ -77,7 +76,7 @@ namespace NeoKyoto.Contracts
     Some commands give back a value when they
     run. You can store it in a variable with =
     and use print() to see it.
-
+" + PageBreak + @"
     ─── YOUR GOAL ───
 
     Correct all 8 misrouted drones. You could
@@ -90,8 +89,7 @@ namespace NeoKyoto.Contracts
 
         public override string GetCompletionMessage()
         {
-            return @"
-    ╔══════════════════════════════════════════════╗
+            return @"    ╔══════════════════════════════════════════════╗
     ║   ◆  CONTRACT #2478 COMPLETE  ◆             ║
     ║   Sector 12 Drone Grid — ALL CORRECTED      ║
     ╚══════════════════════════════════════════════╝
@@ -111,7 +109,7 @@ namespace NeoKyoto.Contracts
     gave back, or printed values to see what was
     happening — good. Those skills will be critical
     from here on.
-
+" + PageBreak + @"
     ─── THE LIMITATION ───
 
     Your loop fixed all 8 drones, but think about
@@ -133,7 +131,7 @@ namespace NeoKyoto.Contracts
     a question — ""is this drone misrouted or
     grounded?"" — and take a different action depending
     on the answer.
-
+" + PageBreak + @"
     ─── NEW TOOL: CONDITIONALS ───
 
     You can now use if and else to make decisions.
@@ -164,7 +162,7 @@ namespace NeoKyoto.Contracts
 
     A double == is comparison — it asks a question
     and the answer is either true or false:
-
+" + PageBreak + @"
         status == ""STUCK""    (is status equal to ""STUCK""?)
 
     For example, you might check a variable:
@@ -190,8 +188,7 @@ namespace NeoKyoto.Contracts
 
     You can also use multiple if statements in a
     row, each checking a different condition. Each
-    one is its own independent question.
-";
+    one is its own independent question.";
         }
 
         public override string GetCompletedBanner()

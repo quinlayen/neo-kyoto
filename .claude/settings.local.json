@@ -27,7 +27,8 @@
       "Bash(git add *)",
       "mcp__unity__unity_build",
       "Bash(git lfs *)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Bash(git commit *)"
     ]
   },
   "enabledMcpjsonServers": [
