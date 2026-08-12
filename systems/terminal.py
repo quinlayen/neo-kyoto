@@ -3,8 +3,9 @@ import time
 
 
 class TerminalInterpreter:
-    def __init__(self, filesystem):
+    def __init__(self, filesystem, process_table=None):
         self.fs = filesystem
+        self.process_table = process_table
         self.commands = {
             "pwd": self.cmd_pwd,
             "ls": self.cmd_ls,
@@ -19,6 +20,10 @@ class TerminalInterpreter:
             "tail": self.cmd_tail,
             "echo": self.cmd_echo,
             "clear": self.cmd_clear,
+            "cp": self.cmd_cp,
+            "mv": self.cmd_mv,
+            "ps": self.cmd_ps,
+            "kill": self.cmd_kill,
         }
 
     def execute(self, command_line):
@@ -257,6 +262,40 @@ class TerminalInterpreter:
             lines = node["content"].splitlines()
             output_parts.append("\n".join(lines[-n:]))
         return "\n".join(output_parts)
+
+    def cmd_ps(self, args):
+        if self.process_table is None:
+            return "ps: no process table available"
+        flags, _ = self._parse_flags(args)
+        show_all = "a" in flags or (args and args[0] == "aux")
+        return self.process_table.ps(show_all=show_all)
+
+    def cmd_kill(self, args):
+        if self.process_table is None:
+            return "kill: no process table available"
+        if not args:
+            return "kill: usage: kill <pid>"
+        try:
+            pid = int(args[0])
+        except ValueError:
+            return f"kill: invalid pid: {args[0]}"
+        return self.process_table.kill(pid)
+
+    def cmd_cp(self, args):
+        if len(args) < 2:
+            return "cp: missing file operand"
+        src = args[0]
+        dst = args[1]
+        err = self.fs.copy_file(src, dst)
+        return err or ""
+
+    def cmd_mv(self, args):
+        if len(args) < 2:
+            return "mv: missing file operand"
+        src = args[0]
+        dst = args[1]
+        err = self.fs.move(src, dst)
+        return err or ""
 
     def cmd_echo(self, args):
         return " ".join(args)

@@ -174,6 +174,58 @@ class VirtualFilesystem:
         del parent["children"][name]
         return None
 
+    def copy_file(self, src, dst):
+        src_resolved = self.resolve_path(src)
+        src_node = self._traverse(src_resolved)
+        if src_node is None:
+            return f"cp: cannot stat '{src}': No such file or directory"
+        if src_node["type"] == "dir":
+            return f"cp: -r not specified; omitting directory '{src}'"
+        if not self._has_permission(src_node, "r"):
+            return f"cp: cannot open '{src}': Permission denied"
+
+        dst_resolved = self.resolve_path(dst)
+        dst_node = self._traverse(dst_resolved)
+        if dst_node is not None and dst_node["type"] == "dir":
+            name = src_resolved.split("/")[-1]
+            dst_resolved = dst_resolved.rstrip("/") + "/" + name
+
+        parent, name = self._traverse_parent(dst_resolved)
+        if parent is None:
+            return f"cp: cannot create '{dst}': No such file or directory"
+        if not self._has_permission(parent, "w"):
+            return f"cp: cannot create '{dst}': Permission denied"
+
+        import copy
+        parent["children"][name] = copy.deepcopy(src_node)
+        parent["children"][name]["mtime"] = time.time()
+        return None
+
+    def move(self, src, dst):
+        src_resolved = self.resolve_path(src)
+        src_node = self._traverse(src_resolved)
+        if src_node is None:
+            return f"mv: cannot stat '{src}': No such file or directory"
+
+        src_parent, src_name = self._traverse_parent(src_resolved)
+        if not self._has_permission(src_parent, "w"):
+            return f"mv: cannot move '{src}': Permission denied"
+
+        dst_resolved = self.resolve_path(dst)
+        dst_node = self._traverse(dst_resolved)
+        if dst_node is not None and dst_node["type"] == "dir":
+            dst_resolved = dst_resolved.rstrip("/") + "/" + src_name
+
+        dst_parent, dst_name = self._traverse_parent(dst_resolved)
+        if dst_parent is None:
+            return f"mv: cannot move '{src}' to '{dst}': No such file or directory"
+        if not self._has_permission(dst_parent, "w"):
+            return f"mv: cannot move to '{dst}': Permission denied"
+
+        dst_parent["children"][dst_name] = src_node
+        del src_parent["children"][src_name]
+        return None
+
     def set_permissions(self, path, mode):
         node = self._traverse(path)
         if node is None:

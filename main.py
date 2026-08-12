@@ -56,6 +56,16 @@ def _load_contracts():
         CONTRACT_DEFS.append({"id": "contract_06", "class": Contract06, "title": "Log Analysis", "location": "Network Ops", "unlock_index": -1, "type": "terminal"})
     except ImportError:
         pass
+    try:
+        from contracts.contract_07 import Contract07
+        CONTRACT_DEFS.append({"id": "contract_07", "class": Contract07, "title": "Server Migration", "location": "Server Farm", "unlock_index": -1, "type": "terminal"})
+    except ImportError:
+        pass
+    try:
+        from contracts.contract_08 import Contract08
+        CONTRACT_DEFS.append({"id": "contract_08", "class": Contract08, "title": "Grid Restoration", "location": "Central Grid", "unlock_index": 2, "type": "combined"})
+    except ImportError:
+        pass
 
 
 def show_title_screen():
@@ -282,8 +292,114 @@ def run_terminal_contract(cdef, game_state):
                 break
 
 
+def run_combined_contract(cdef, game_state):
+    contract = cdef["class"]()
+    interpreter = RestrictedInterpreter(game_state, max_calls=contract.MAX_CALLS)
+    script_path = contract.SCRIPT_FILE
+
+    clear()
+    print(contract.get_briefing())
+    input("\n  Press Enter to jack in...")
+
+    while True:
+        clear()
+        print("══════════════════════════════════════════════")
+        print(f"  NEO-KYOTO — {contract.TITLE} — {contract.LOCATION}")
+        print("══════════════════════════════════════════════")
+        print()
+        print(contract.get_status_text())
+
+        if contract.completed:
+            print(contract.get_completed_banner())
+
+        print("──────────────────────────────────────────────")
+        print("  Terminal commands work here.")
+        print("  edit — open script  |  run — execute script")
+        print("  brief | status | debrief | reset | exit")
+        print("──────────────────────────────────────────────")
+
+        while True:
+            try:
+                cmd = input(contract.get_prompt()).strip()
+            except EOFError:
+                return
+
+            if not cmd:
+                continue
+
+            if cmd == "exit":
+                return
+
+            if cmd == "brief":
+                clear()
+                print(contract.get_briefing())
+                input("\n  Press Enter to continue...")
+                break
+
+            if cmd == "status":
+                break
+
+            if cmd == "debrief" and contract.completed:
+                clear()
+                print(contract.get_completion_message())
+                input("\n  Press Enter to continue...")
+                break
+
+            if cmd == "reset":
+                contract.reset_system()
+                interpreter = RestrictedInterpreter(game_state, max_calls=contract.MAX_CALLS)
+                print("  System reset.")
+                break
+
+            if cmd == "edit":
+                print(f"\n  Your script file is: {script_path}")
+                print("  Open it in any text editor, write your code,")
+                print("  and save the file.")
+                input("\n  Press Enter when ready...")
+                continue
+
+            if cmd == "run":
+                if not os.path.exists(script_path):
+                    print(f"\n  No script file found at {script_path}")
+                    time.sleep(1)
+                    continue
+
+                with open(script_path, "r") as f:
+                    code = f.read()
+
+                contract.grid = contract.grid.__class__()
+                interpreter.set_commands(
+                    active_commands=contract.get_commands(),
+                    retired_commands=game_state.retired_commands,
+                )
+
+                print()
+                print("  ┌─ Running script ─────────────────────┐")
+                result = interpreter.execute(code)
+                print(f"    {result}")
+                print("  └─────────────────────────────────────────┘")
+                print()
+                print(contract.get_status_text())
+
+                if contract.grid.is_goal_met():
+                    contract.completed = True
+
+                if contract.consume_completion_announcement():
+                    game_state.mark_completed(cdef["id"], cdef["unlock_index"])
+                    print(contract.get_completion_message(), flush=True)
+
+                input("\n  Press Enter to continue...")
+                break
+
+            output = contract.on_command(cmd)
+            if output:
+                print(output)
+
+
 def _dispatch_contract(cdef, game_state):
-    if cdef.get("type") == "terminal":
+    if cdef.get("type") == "combined":
+        run_combined_contract(cdef, game_state)
+    elif cdef.get("type") == "terminal":
         run_terminal_contract(cdef, game_state)
     else:
         run_contract(cdef, game_state)
