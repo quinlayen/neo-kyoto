@@ -89,3 +89,4 @@ sysinfo.txt
 unity/*/Assets/Screenshots/
 *.slnx
 unity/*/Builds/
+unity/dist/

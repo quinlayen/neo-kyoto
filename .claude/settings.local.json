@@ -28,7 +28,14 @@
       "mcp__unity__unity_build",
       "Bash(git lfs *)",
       "Bash(git config *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(xargs cat)",
+      "Bash(chmod +x publish-webgl.sh)",
+      "Bash(./publish-webgl.sh)",
+      "Bash(python3 -m http.server 8080 --bind 127.0.0.1)",
+      "Bash(curl -s -o /dev/null -w \"index.html -> HTTP %{http_code}, %{size_download} bytes\\\\n\" http://127.0.0.1:8080/index.html)",
+      "Bash(curl -s -o /dev/null -w \"loader.js  -> HTTP %{http_code}, %{size_download} bytes\\\\n\" http://127.0.0.1:8080/Build/WebGL.loader.js)",
+      "Bash(curl -s -o /dev/null -w \"wasm       -> HTTP %{http_code}, %{size_download} bytes\\\\n\" http://127.0.0.1:8080/Build/WebGL.wasm.unityweb)"
     ]
   },
   "enabledMcpjsonServers": [
