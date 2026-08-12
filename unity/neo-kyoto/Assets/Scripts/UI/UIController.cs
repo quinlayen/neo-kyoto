@@ -30,6 +30,10 @@ namespace NeoKyoto.UI
         private TextMeshProUGUI _runButtonLabel;
         private LayoutElement _statusLayout;
 
+        private Button _resetButton;
+        private TextMeshProUGUI _resetLabel, _saveHint;
+        private bool _resetArmed;
+
         private string[] _briefingPages;
         private int _briefingPage;
         private Button _briefingPrev, _briefingNext;
@@ -156,6 +160,48 @@ namespace NeoKyoto.UI
             layout.childForceExpandHeight = false;
             layout.childForceExpandWidth = true;
             _boardList = listGo.transform;
+
+            // Playtesters need a way back to a clean slate. Two-step, so it is
+            // never a single misclick away.
+            _resetButton = UITheme.Button("ResetProgress", _boardPanel.transform,
+                "RESET PROGRESS", UITheme.TextDim, OnResetProgressClicked);
+            var rrt = _resetButton.GetComponent<RectTransform>();
+            rrt.anchorMin = new Vector2(0.5f, 0f);
+            rrt.anchorMax = new Vector2(0.5f, 0f);
+            rrt.pivot = new Vector2(0.5f, 0f);
+            rrt.sizeDelta = new Vector2(300, 40);
+            rrt.anchoredPosition = new Vector2(0, 40);
+            _resetLabel = _resetButton.GetComponentInChildren<TextMeshProUGUI>();
+
+            _saveHint = UITheme.Label("SaveHint", _boardPanel.transform,
+                "Progress saves automatically.", 13f, UITheme.TextDim, TextAlignmentOptions.Center);
+            var shrt = _saveHint.rectTransform;
+            shrt.anchorMin = new Vector2(0.5f, 0f);
+            shrt.anchorMax = new Vector2(0.5f, 0f);
+            shrt.pivot = new Vector2(0.5f, 0f);
+            shrt.sizeDelta = new Vector2(600, 24);
+            shrt.anchoredPosition = new Vector2(0, 92);
+        }
+
+        private void OnResetProgressClicked()
+        {
+            if (!_resetArmed)
+            {
+                _resetArmed = true;
+                _resetLabel.text = "CONFIRM — ERASE ALL PROGRESS?";
+                _resetLabel.color = UITheme.Fault;
+                return;
+            }
+            DisarmReset();
+            _gm.ResetProgress();
+        }
+
+        private void DisarmReset()
+        {
+            _resetArmed = false;
+            if (_resetLabel == null) return;
+            _resetLabel.text = "RESET PROGRESS";
+            _resetLabel.color = UITheme.TextDim;
         }
 
         private void BuildBriefing(Transform parent)
@@ -457,6 +503,7 @@ namespace NeoKyoto.UI
             _debriefPanel.SetActive(s == GameScreen.Debrief);
 
             if (s == GameScreen.Board) RebuildBoard();
+            else DisarmReset();
 
             if (s == GameScreen.Briefing && _gm.ActiveContract != null)
             {

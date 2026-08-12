@@ -49,6 +49,19 @@ namespace NeoKyoto.Core
 
         public IEnumerable<string> RetiredCommands { get { return _retiredCommands; } }
 
+        public IEnumerable<Feature> UnlockedFeatures { get { return _unlocked; } }
+
+        /// <summary>Rebuilds state from a save. Retired commands are stored rather
+        /// than re-derived, so loading does not need to instantiate every contract.</summary>
+        public void Restore(IEnumerable<string> completed, IEnumerable<Feature> unlocked,
+                            IEnumerable<string> retired)
+        {
+            Reset();
+            if (completed != null) foreach (var id in completed) _completed.Add(id);
+            if (unlocked != null) foreach (var f in unlocked) _unlocked.Add(f);
+            if (retired != null) foreach (var name in retired) _retiredCommands.Add(name);
+        }
+
         public void UnlockAll(IEnumerable<string> contractIds)
         {
             foreach (var f in UnlockSequence) _unlocked.Add(f);

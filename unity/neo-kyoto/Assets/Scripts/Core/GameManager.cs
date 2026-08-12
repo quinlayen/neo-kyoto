@@ -49,8 +49,91 @@ namespace NeoKyoto.Core
         {
             Instance = this;
             State = new GameState();
+            LoadProgress();
             if (unlockAllForTesting) State.UnlockAll(ContractRegistry.AllIds());
             CurrentScreen = GameScreen.Title;
+        }
+
+        // ─── Persistence ───
+
+        private bool _saveDirty;
+        private float _saveTimer;
+        private const float SaveDebounceSeconds = 2f;
+
+        public bool HasSavedProgress { get { return SaveSystem.HasSave; } }
+
+        private void LoadProgress()
+        {
+            var data = SaveSystem.Load();
+            if (data == null) return;
+
+            var features = new List<Feature>();
+            foreach (var name in data.unlockedFeatures)
+            {
+                try { features.Add((Feature)Enum.Parse(typeof(Feature), name)); }
+                catch { /* a feature that no longer exists is simply dropped */ }
+            }
+
+            State.Restore(data.completedContracts, features, data.retiredCommands);
+
+            foreach (var id in data.debriefed) _debriefed.Add(id);
+            foreach (var id in data.followUpDebriefed) _followUpDebriefed.Add(id);
+            foreach (var entry in data.scripts)
+            {
+                if (!string.IsNullOrEmpty(entry.contractId)) _scripts[entry.contractId] = entry.code;
+            }
+        }
+
+        private SaveData BuildSaveData()
+        {
+            var data = new SaveData();
+            foreach (var id in State.CompletedContracts) data.completedContracts.Add(id);
+            foreach (var f in State.UnlockedFeatures) data.unlockedFeatures.Add(f.ToString());
+            foreach (var c in State.RetiredCommands) data.retiredCommands.Add(c);
+            foreach (var id in _debriefed) data.debriefed.Add(id);
+            foreach (var id in _followUpDebriefed) data.followUpDebriefed.Add(id);
+            foreach (var kv in _scripts)
+                data.scripts.Add(new ScriptEntry { contractId = kv.Key, code = kv.Value });
+            return data;
+        }
+
+        /// <summary>Queues a save. Typing should not hit storage on every keystroke.</summary>
+        private void MarkDirty()
+        {
+            _saveDirty = true;
+            _saveTimer = SaveDebounceSeconds;
+        }
+
+        /// <summary>Writes immediately — used at moments the player could vanish.</summary>
+        public void FlushSave()
+        {
+            if (!_saveDirty) return;
+            _saveDirty = false;
+            SaveSystem.Save(BuildSaveData());
+        }
+
+        private void Update()
+        {
+            if (!_saveDirty) return;
+            _saveTimer -= Time.unscaledDeltaTime;
+            if (_saveTimer <= 0f) FlushSave();
+        }
+
+        private void OnApplicationPause(bool paused) { if (paused) FlushSave(); }
+        private void OnApplicationFocus(bool focused) { if (!focused) FlushSave(); }
+        private void OnApplicationQuit() { FlushSave(); }
+
+        public void ResetProgress()
+        {
+            SaveSystem.Clear();
+            State.Reset();
+            _scripts.Clear();
+            _debriefed.Clear();
+            _followUpDebriefed.Clear();
+            _saveDirty = false;
+            ActiveContract = null;
+            ActiveDef = null;
+            GoTo(GameScreen.Title);
         }
 
         // ─── Navigation ───
@@ -98,6 +181,7 @@ namespace NeoKyoto.Core
 
         public void BackToBoard()
         {
+            FlushSave();
             ActiveContract = null;
             ActiveDef = null;
             GoTo(GameScreen.Board);
@@ -116,6 +200,7 @@ namespace NeoKyoto.Core
         {
             if (ActiveDef == null) return;
             _scripts[ActiveDef.Id] = code;
+            MarkDirty();
         }
 
         // ─── Console ───
@@ -264,6 +349,7 @@ namespace NeoKyoto.Core
 
             ActiveContract.ConsumeCompletionAnnouncement();
             State.MarkCompleted(ActiveDef.Id, ActiveDef.UnlockIndex);
+            MarkDirty();
 
             // Finished systems keep their commands callable but inert.
             if (ActiveContract.Kind != ContractKind.Terminal)
@@ -274,6 +360,7 @@ namespace NeoKyoto.Core
             if (!_debriefed.Contains(ActiveDef.Id))
             {
                 _debriefed.Add(ActiveDef.Id);
+                MarkDirty();
                 CurrentDebriefText = ActiveContract.GetCompletionMessage();
                 ShowingFollowUpDebrief = false;
                 GoTo(GameScreen.Debrief);
@@ -287,6 +374,7 @@ namespace NeoKyoto.Core
                 _runner != null && _runner.LastProgramUsedLoop)
             {
                 _followUpDebriefed.Add(ActiveDef.Id);
+                MarkDirty();
                 CurrentDebriefText = followUp;
                 ShowingFollowUpDebrief = true;
                 GoTo(GameScreen.Debrief);
