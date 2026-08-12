@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "unity": {
+      "command": "node",
+      "args": ["/home/peterf/.local/share/unity-mcp-server/src/index.js"],
+      "env": {
+        "UNITY_BRIDGE_PORT": "7890"
+      }
+    }
+  }
+}

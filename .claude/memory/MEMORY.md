@@ -1,0 +1,7 @@
+- [TFWR Progression Research](reference-tfwr-progression.md) — Unlock order and design patterns from The Farmer Was Replaced
+- [Multi-Technology Vision](project-multi-tech-vision.md) — Plan to interleave Python, Linux, SQL, and Git across contracts
+- [Print Early](feedback-print-early.md) — Introduce print() as a debugging tool alongside variables
+- [Visual Game Vision](project-visual-game-vision.md) — God-view UI, visual feedback, jack-in coding interface
+- [Prototype Status](project-prototype-status.md) — 8 contracts complete (4 Python, 3 terminal, 1 combined), ready for Unity
+- [Briefing Style](feedback-briefing-style.md) — Short briefings, teach through in-game files and errors, not tutorials
+- [Unity Decisions](project-unity-decisions.md) — PC+Web, low-poly 3D (upgradeable), story arc, C1-C5 demo scope

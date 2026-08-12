@@ -1,0 +1,22 @@
+{
+  "autoMemoryDirectory": ".claude/memory",
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:steamcommunity.com)",
+      "WebFetch(domain:store.steampowered.com)",
+      "WebFetch(domain:the-farmer-was-replaced.fandom.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.reddit.com)",
+      "WebFetch(domain:gameplay.tips)",
+      "WebFetch(domain:thefarmerwasreplaced.wiki.gg)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:bitburner-official.readthedocs.io)",
+      "WebFetch(domain:hacknet-os.fandom.com)",
+      "WebFetch(domain:bitburner.fandom.com)",
+      "WebFetch(domain:hackersjourneysteamgame.com)",
+      "WebFetch(domain:www.gog.com)",
+      "WebFetch(domain:www.pcgamingwiki.com)",
+      "WebFetch(domain:docs.screeps.com)"
+    ]
+  }
+}
