@@ -78,15 +78,7 @@ class Contract04(BaseContract):
     ─── YOUR GOAL ───
 
     Fix all 6 signals and submit the report.
-
-    ─── HOW TO WORK ───
-
     Your script file is: signals.py
-
-    1. Type  edit    → open the file in your editor
-    2. Write your program
-    3. Save the file
-    4. Come back here and type  run
     """
 
     def get_completion_message(self):

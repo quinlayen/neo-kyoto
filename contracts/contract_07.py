@@ -164,39 +164,19 @@ class Contract07(BaseTerminalContract):
 
     Contractor,
 
-    The server farm is migrating to a new directory
-    structure. Most files have been moved, but some
-    were left behind in the old /legacy/ directory.
-
-    You need to:
-
-    1. Move the database config to its new home
-    2. Find a hidden encryption key in /legacy/
-       (hint: not everything shows up with plain ls)
-    3. The key file is locked — fix its permissions
-       so you can copy it
-    4. Copy the key to /srv/security/
-    5. Clean up by removing /legacy/ entirely
+    The server farm is migrating to a new
+    directory structure. Files were left behind
+    in /legacy/ and need to be moved to /srv/.
 
     ─── NEW COMMANDS ───
 
         cp <src> <dst>   — copy a file
         mv <src> <dst>   — move or rename a file
-        rm -rf <dir>     — remove a directory and
-                           everything inside it
-
-    Plus everything you already know: ls, ls -la,
-    cd, cat, chmod, mkdir, touch, pwd
 
     ─── YOUR GOAL ───
 
     Complete all objectives shown in status.
-
-    ─── TIPS ───
-
-    Check your notes at ~/notes.txt for details.
-    Use ls -la to find hidden files.
-    Use chmod to fix locked permissions.
+    Check ~/notes.txt for details.
 
     Type  exit  to return to the contract board.
     Type  reset  to restore the filesystem.

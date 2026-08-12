@@ -59,30 +59,17 @@ class Contract03(BaseContract):
     ─── YOUR COMMANDS ───
 
         check_next()  — finds the next broken drone
-                        and tells you what is wrong
+                        and returns what is wrong
         reroute()     — fixes a MISROUTED drone
         repair()      — fixes a GROUNDED drone
 
-    check_next() gives back the drone's problem as
-    text — either "MISROUTED" or "GROUNDED". Catch
-    it in a variable so your program can use it to
-    decide what to do.
-
-    If you use the wrong fix, the system will tell
-    you.
+    If you use the wrong fix, the system will
+    tell you.
 
     ─── YOUR GOAL ───
 
     Get all 8 drones operational.
-
-    ─── HOW TO WORK ───
-
     Your script file is: dispatch.py
-
-    1. Type  edit    → open the file in your editor
-    2. Write your program
-    3. Save the file
-    4. Come back here and type  run
     """
 
     def get_completion_message(self):

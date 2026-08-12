@@ -45,53 +45,23 @@ class Contract02(BaseContract):
     wrong routes. The routing table got corrupted
     and all 8 drones need manual correction.
 
-    ─── VARIABLES ───
-
-    A variable is a name that holds a value. You
-    create one with the = sign:
-
-        speed = 30
-
-    Now the name speed holds the number 30. You
-    can use it anywhere in your program after that.
-
-    Some commands give back a value when they run.
-    This is called a return value. You can catch
-    it in a variable:
-
-        fixed = reroute_next()
-
-    Now fixed holds whatever reroute_next() gave
-    back. Use print() to see it:
-
-        print(fixed)
-
-    You do not strictly need variables for this
-    contract, but practice using them — they
-    become essential next contract.
-
     ─── YOUR COMMANDS ───
 
         scan_drones()   — shows all drone statuses
         reroute_next()  — fixes the next misrouted
                           drone
 
+    Some commands give back a value when they
+    run. You can store it in a variable with =
+    and use print() to see it.
+
     ─── YOUR GOAL ───
 
-    Correct all 8 misrouted drones.
-
-    You could call reroute_next() eight times.
-    But you have a loop now — think about how to
-    let the computer handle the repetition.
-
-    ─── HOW TO WORK ───
+    Correct all 8 misrouted drones. You could
+    call reroute_next() eight times — but you
+    have a loop now.
 
     Your script file is: drone_zone.py
-
-    1. Type  edit    → open the file in your editor
-    2. Write your program
-    3. Save the file
-    4. Come back here and type  run
     """
 
     def get_completion_message(self):

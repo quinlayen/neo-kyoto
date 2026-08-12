@@ -191,53 +191,24 @@ class Contract06(BaseTerminalContract):
     Contractor,
 
     A security breach hit the network. The access
-    logs recorded everything, but there are hundreds
-    of lines — too many to read by hand.
+    logs are massive — too many lines to read by
+    hand. Some files may be hidden or locked down.
 
-    You need to:
+    ─── NEW COMMANDS ───
 
-    1. Search the access log for BREACH entries
-       using grep
-
-    2. Find a backup config file — it may be
-       hidden. Use ls -a to reveal hidden files
-       and directories (names starting with a dot)
-
-    3. The backup file is locked down. Use chmod
-       to fix its permissions so you can read it
-       (chmod 644 <file>)
-
-    4. File your findings by creating a report at
-       /tmp/report/findings.txt
-
-    ─── YOUR COMMANDS ───
-
-        grep <word> <file>   — search a file for
-                               lines containing
-                               that word
-        ls -a                — show hidden files
-        ls -l                — show permissions
-                               and details
-        ls -la               — both at once
-        chmod <mode> <file>  — change permissions
-                               (e.g. chmod 644)
-        mkdir <dir>          — create a directory
-        touch <file>         — create an empty file
-        rm <file>            — delete a file
-        rm -rf <dir>         — delete a directory
-        head -n 5 <file>     — first 5 lines
-        tail -n 5 <file>     — last 5 lines
-
-    Plus everything from before: pwd, ls, cd, cat
+        grep <word> <file>  — search for a word
+        ls -a               — show hidden files
+        ls -la              — hidden + details
+        chmod <mode> <file> — change permissions
+        mkdir <dir>         — create a directory
+        touch <file>        — create a file
+        rm <file>           — delete a file
+        rm -rf <dir>        — delete a directory
 
     ─── YOUR GOAL ───
 
-    Complete all three objectives shown in status.
-
-    ─── TIPS ───
-
-    Start with your notes in ~ for orientation.
-    Check status at any time to see your progress.
+    Complete the objectives shown in status.
+    Check your notes at ~ to get started.
 
     Type  exit  to return to the contract board.
     Type  reset  to restore the filesystem.

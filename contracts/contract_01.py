@@ -51,50 +51,32 @@ class Contract01(BaseContract):
     ─── WHAT IS A PROGRAM? ───
 
     A program is a list of instructions the
-    computer follows from top to bottom, one line
-    at a time. Each line is a command — it tells
-    the computer to do one thing. A command looks
-    like this:
+    computer follows from top to bottom, one
+    line at a time. A command looks like this:
 
         rebalance()
 
-    The name tells the computer which command you
-    mean. The parentheses () tell it "do it now."
-    Without () the computer sees the name but does
-    nothing with it.
-
-    You also have print() — it displays a message
-    on screen. Put text in quotes inside it:
-
-        print("hello")
-
-    You can also use print() to see what a command
-    gives back. It is your best tool for watching
-    what your program is doing.
+    The name says which command. The () tells
+    it "do it now." Each command goes on its
+    own line.
 
     ─── YOUR COMMAND ───
 
         rebalance()  — rebalances the power node
 
     One rebalance is not enough. The node needs
-    many rebalances before it reaches a STABLE
-    state. Each call on its own line.
+    many before it reaches a STABLE state.
+
+    You also have print() — it displays text on
+    screen. Useful for seeing what is happening.
 
     ─── YOUR GOAL ───
 
-    Bring the power node from FLICKERING to STABLE.
+    Bring the power node from FLICKERING to
+    STABLE. Your script file is: block7.py
 
-    If your first attempt is not enough, edit your
-    script, add more, and run again.
-
-    ─── HOW TO WORK ───
-
-    Your script file is: block7.py
-
-    1. Type  edit  → open the file in your editor
-    2. Write your program
-    3. Save the file
-    4. Come back here and type  run
+    Type  edit  to open it, write your program,
+    save it, then type  run  to execute.
     """
 
     def get_completion_message(self):
