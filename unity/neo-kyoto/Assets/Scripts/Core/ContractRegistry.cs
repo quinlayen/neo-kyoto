@@ -53,6 +53,27 @@ namespace NeoKyoto.Core
             return ids;
         }
 
+        /// <summary>Highest star total the board can reach, for rank progress.</summary>
+        public static int MaxTotalStars { get { return All.Count * Scoring.MaxStars; } }
+
+        private static Dictionary<string, int> _baseCredits;
+
+        /// <summary>
+        /// Payout rate for a contract. It lives on the Contract subclass rather than
+        /// the def, so the board instantiates each one once and keeps only the number
+        /// — duplicating the rate here would let the two drift apart.
+        /// </summary>
+        public static int BaseCreditsFor(string contractId)
+        {
+            if (_baseCredits == null)
+            {
+                _baseCredits = new Dictionary<string, int>();
+                foreach (var d in All) _baseCredits[d.Id] = d.Create().BaseCredits;
+            }
+            int credits;
+            return _baseCredits.TryGetValue(contractId, out credits) ? credits : 0;
+        }
+
         public static int IndexOf(string contractId)
         {
             for (int i = 0; i < All.Count; i++) if (All[i].Id == contractId) return i;

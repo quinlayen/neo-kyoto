@@ -47,6 +47,26 @@ namespace NeoKyoto.Core
         }
 
         /// <summary>
+        /// How far through the current rank band the player is, 0-1, so a progress
+        /// bar fills toward the next promotion rather than toward total completion.
+        /// Returns 1 at the top rank.
+        /// </summary>
+        public static float RankProgress(int totalStars)
+        {
+            int lower = 0;
+            foreach (var r in Ranks)
+            {
+                if (totalStars < r.Stars)
+                {
+                    int span = r.Stars - lower;
+                    return span <= 0 ? 1f : (float)(totalStars - lower) / span;
+                }
+                lower = r.Stars;
+            }
+            return 1f;
+        }
+
+        /// <summary>
         /// Filled and empty rating marks, e.g. "◆◆◇".
         /// Cascadia Mono has no ★ or ☆ glyph — they render as placeholder boxes —
         /// so the diamond pair stands in for stars throughout the UI.

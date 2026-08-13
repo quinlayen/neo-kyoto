@@ -20,9 +20,21 @@ namespace NeoKyoto.UI
         public static readonly Color Warn = new Color32(0xFF, 0xAE, 0x26, 0xFF);
         public static readonly Color Fault = new Color32(0xF2, 0x40, 0x34, 0xFF);
 
-        public const float BodySize = 15f;
-        public const float SmallSize = 13f;
-        public const float TitleSize = 22f;
+        /// <summary>Backing panel for sample code, so it reads as a block and not as prose.</summary>
+        public static readonly Color CodeBg = new Color32(0x1E, 0x2C, 0x3C, 0xFF);
+
+        /// <summary>Bar behind the line a run is currently executing.</summary>
+        public static readonly Color RunLine = new Color32(0x1B, 0x3A, 0x4A, 0xFF);
+
+        // Type scale. Starting values for the 1920x1080 reference canvas; at BodySize
+        // the ~768px work panel measures roughly 65 characters, which is inside the
+        // comfortable range for prose. See docs/ART_DIRECTION.md before changing these.
+        public const float MicroSize = 14f;   // page counters, hints
+        public const float SmallSize = 16f;   // field labels, console output
+        public const float CodeSize = 18f;    // sample code and the script editor
+        public const float BodySize = 19f;    // prose and status readouts
+        public const float SectionSize = 22f; // panel headers
+        public const float TitleSize = 34f;   // screen headers
 
         private static TMP_FontAsset _mono;
 
@@ -34,6 +46,12 @@ namespace NeoKyoto.UI
                 if (_mono == null) _mono = TMP_Settings.defaultFontAsset;
                 return _mono;
             }
+        }
+
+        /// <summary>Theme colour as a TMP rich-text hex, e.g. "#35D6FF".</summary>
+        public static string Hex(Color c)
+        {
+            return "#" + ColorUtility.ToHtmlStringRGB(c);
         }
 
         public static GameObject Node(string name, Transform parent)
@@ -61,9 +79,14 @@ namespace NeoKyoto.UI
             return img;
         }
 
+        /// <summary>
+        /// Wrapping is opt-in: terminal output, code and column-aligned rows rely on
+        /// their own line breaks, while prose needs the panel to decide where lines end.
+        /// </summary>
         public static TextMeshProUGUI Label(string name, Transform parent, string text,
                                             float size, Color color,
-                                            TextAlignmentOptions align = TextAlignmentOptions.TopLeft)
+                                            TextAlignmentOptions align = TextAlignmentOptions.TopLeft,
+                                            bool wrap = false)
         {
             var go = Node(name, parent);
             var t = go.AddComponent<TextMeshProUGUI>();
@@ -73,7 +96,7 @@ namespace NeoKyoto.UI
             t.color = color;
             t.alignment = align;
             t.richText = false;
-            t.enableWordWrapping = false;
+            t.enableWordWrapping = wrap;
             t.overflowMode = TextOverflowModes.Overflow;
             return t;
         }
@@ -110,7 +133,8 @@ namespace NeoKyoto.UI
         }
 
         /// <summary>A scrollable text area. Returns the text component; scroll is the parent ScrollRect.</summary>
-        public static TextMeshProUGUI ScrollText(string name, Transform parent, out ScrollRect scroll)
+        public static TextMeshProUGUI ScrollText(string name, Transform parent, out ScrollRect scroll,
+                                                 bool wrap = false)
         {
             var viewportImg = Box(name, parent, new Color(0, 0, 0, 0));
             scroll = viewportImg.gameObject.AddComponent<ScrollRect>();
@@ -136,12 +160,12 @@ namespace NeoKyoto.UI
             var fitter = content.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            var text = Label("Text", content.transform, "", BodySize, Text);
+            var text = Label("Text", content.transform, "", BodySize, Text,
+                             TextAlignmentOptions.TopLeft, wrap);
             var trt = text.rectTransform;
             trt.anchorMin = new Vector2(0, 1);
             trt.anchorMax = new Vector2(1, 1);
             trt.pivot = new Vector2(0, 1);
-            text.enableWordWrapping = false;
 
             var textFitter = content.AddComponent<VerticalLayoutGroup>();
             textFitter.childControlHeight = true;
