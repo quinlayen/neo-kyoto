@@ -50,7 +50,10 @@
       "WebFetch(domain:quinlayen.itch.io)",
       "Bash(./publish-webgl.sh --push)",
       "Bash(git checkout *)",
-      "Bash(git merge *)"
+      "Bash(git merge *)",
+      "Bash(cp neo-kyoto-portable/setup.sh .claude/setup.sh)",
+      "Bash(rm -rf neo-kyoto-portable)",
+      "mcp__unity__unity_console_clear"
     ]
   },
   "enabledMcpjsonServers": [
