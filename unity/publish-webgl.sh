@@ -59,7 +59,10 @@ if [ "$1" == "--push" ]; then
     fi
     echo
     echo "Pushing to $ITCH_TARGET"
-    butler push "$BUILD_DIR" "$ITCH_TARGET" --userversion-file "$SCRIPT_DIR/neo-kyoto/ProjectSettings/ProjectVersion.txt" 2>/dev/null \
-        || butler push "$BUILD_DIR" "$ITCH_TARGET"
-    echo "Done. Set the itch page to 'This file will be played in the browser'."
+    # Let butler assign the build number; Unity's ProjectVersion.txt is not a
+    # version string and would be rejected as --userversion-file.
+    butler push "$BUILD_DIR" "$ITCH_TARGET"
+    echo
+    echo "Done. On the itch page, tick 'This file will be played in the browser'"
+    echo "for the new build, and remove the older manual upload if present."
 fi
