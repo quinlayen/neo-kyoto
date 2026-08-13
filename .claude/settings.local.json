@@ -37,7 +37,12 @@
       "Bash(curl -s -o /dev/null -w \"loader.js  -> HTTP %{http_code}, %{size_download} bytes\\\\n\" http://127.0.0.1:8080/Build/WebGL.loader.js)",
       "Bash(curl -s -o /dev/null -w \"wasm       -> HTTP %{http_code}, %{size_download} bytes\\\\n\" http://127.0.0.1:8080/Build/WebGL.wasm.unityweb)",
       "Bash(python3 -)",
-      "Bash(curl -s -m 3 -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8080/)"
+      "Bash(curl -s -m 3 -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8080/)",
+      "Bash(git push *)",
+      "Bash(mkdir -p 'C:\\\\Users\\\\Peter/.local/bin' 'C:\\\\Users\\\\Peter/.local/tmp/butler')",
+      "Read(//c/Users/Peter/.local/tmp/**)",
+      "Bash(curl -sSL -o butler.zip \"https://broth.itch.zone/butler/windows-amd64/LATEST/archive/default\" -w \"download: HTTP %{http_code}, %{size_download} bytes\\\\n\")",
+      "Bash(python3 -c ' *)"
     ]
   },
   "enabledMcpjsonServers": [
