@@ -48,9 +48,13 @@ creates everything else. This is deliberate — the game is defined in code, not
   `Assets/Resources/WorldLit.mat` instead (emission enabled there, so that variant ships too).
   Same trap applies to any shader/variant only reached from code.
 
+**Since then:** briefing text was restored to the fuller pre-trim versions and
+paginated, and the gamification layer was ported on a branch — see
+[[project-gamification-status]] and [[feedback-briefing-style]].
+
 **Known polish gaps (not blockers):**
-- No save/persistence — progress resets each run.
 - No audio.
+- Nobody has played the scoring layer; it is only programmatically verified.
 - Interactive typing (Tab/Enter/terminal submit) was verified by unit-testing the indent
   logic and driving the API, not by simulated keystrokes.
 - Camera framing on the wide drone lanes (C2/C3) leaves dead space at the bottom.
