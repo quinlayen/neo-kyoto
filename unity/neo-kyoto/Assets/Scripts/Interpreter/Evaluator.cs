@@ -37,8 +37,16 @@ namespace NeoKyoto.Interpreter
 
         private int _steps;
         private int _calls;
+        private int _loopDepth;
+        private int _callsInsideLoop;
 
         public int CallCount { get { return _calls; } }
+
+        /// <summary>
+        /// Calls made from inside a loop body. Distinguishes a loop that does the
+        /// work from one written purely to look like it does.
+        /// </summary>
+        public int CallsInsideLoop { get { return _callsInsideLoop; } }
 
         public Evaluator(Dictionary<string, CommandFunc> commands)
         {
@@ -87,7 +95,10 @@ namespace NeoKyoto.Interpreter
                     bool go = PyValue.Truthy(Eval(whileStmt.Condition));
                     foreach (var ev in Drain()) yield return ev;
                     if (!go) break;
+
+                    _loopDepth++;
                     foreach (var ev in ExecBlock(whileStmt.Body)) yield return ev;
+                    _loopDepth--;
                 }
                 yield break;
             }
@@ -252,6 +263,7 @@ namespace NeoKyoto.Interpreter
                 throw new ScriptNameException(call.Callee);
 
             _calls++;
+            if (_loopDepth > 0) _callsInsideLoop++;
             if (_calls > MaxCalls)
             {
                 throw new SandboxStopException(

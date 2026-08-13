@@ -11,11 +11,22 @@ namespace NeoKyoto.Contracts
     {
         public const string TargetFile = "/opt/neo-kyoto/services/power-grid/error.log";
 
+        /// <summary>The optional find: a dot file the player has not been told about.</summary>
+        public const string BonusFile = "/home/contractor/.bash_history";
+
         public override string Id { get { return "contract_05"; } }
         public override string Title { get { return "System Recovery"; } }
         public override string Location { get { return "Data Center"; } }
 
         public bool TargetFound { get; private set; }
+        public bool HistoryRead { get; private set; }
+
+        public override bool HasBonus { get { return true; } }
+        public override bool BonusFound { get { return HistoryRead; } }
+        public override string BonusHint
+        {
+            get { return "Some files are hidden. The shell keeps a history."; }
+        }
 
         public override VirtualFilesystem BuildFilesystem()
         {
@@ -138,7 +149,9 @@ namespace NeoKyoto.Contracts
             {
                 for (int i = 1; i < parts.Count; i++)
                 {
-                    if (Fs.ResolvePath(parts[i]) == TargetFile) TargetFound = true;
+                    string resolved = Fs.ResolvePath(parts[i]);
+                    if (resolved == TargetFile) TargetFound = true;
+                    if (resolved == BonusFile) HistoryRead = true;
                 }
             }
 
@@ -150,8 +163,11 @@ namespace NeoKyoto.Contracts
         public override void ResetSystem()
         {
             TargetFound = false;
+            HistoryRead = false;
             base.ResetSystem();
         }
+
+        public override int BaseCredits { get { return 150; } }
 
         public override bool IsGoalMet() { return TargetFound; }
 

@@ -51,6 +51,76 @@ namespace NeoKyoto.Core
 
         public IEnumerable<Feature> UnlockedFeatures { get { return _unlocked; } }
 
+        // ─── Scoring ───
+
+        private readonly Dictionary<string, ContractScore> _scores = new Dictionary<string, ContractScore>();
+
+        public int Credits { get; private set; }
+
+        public IEnumerable<KeyValuePair<string, ContractScore>> Scores { get { return _scores; } }
+
+        public ContractScore ScoreFor(string contractId)
+        {
+            ContractScore s;
+            return _scores.TryGetValue(contractId, out s) ? s : null;
+        }
+
+        public int StarsFor(string contractId)
+        {
+            var s = ScoreFor(contractId);
+            return s != null ? s.Stars : 0;
+        }
+
+        public int TotalStars
+        {
+            get
+            {
+                int total = 0;
+                foreach (var kv in _scores) total += kv.Value.Stars;
+                return total;
+            }
+        }
+
+        public string Rank { get { return Scoring.RankFor(TotalStars); } }
+
+        /// <summary>
+        /// Records a result. A replay only pays the difference, so improving a
+        /// rating is rewarded but re-running the same solution is not farmable.
+        /// </summary>
+        public int RecordScore(string contractId, int stars, int callsToGoal,
+                               bool bonusFound, int baseCredits)
+        {
+            ContractScore existing;
+            if (!_scores.TryGetValue(contractId, out existing))
+            {
+                existing = new ContractScore();
+                _scores[contractId] = existing;
+            }
+
+            int paid = 0;
+            if (stars > existing.Stars)
+            {
+                paid = Scoring.CreditsFor(stars, baseCredits)
+                     - Scoring.CreditsFor(existing.Stars, baseCredits);
+                Credits += paid;
+                existing.Stars = stars;
+            }
+
+            // Keep the best run's call count, and never un-find a bonus.
+            if (callsToGoal > 0 && (existing.CallsToGoal == 0 || callsToGoal < existing.CallsToGoal))
+                existing.CallsToGoal = callsToGoal;
+            if (bonusFound) existing.BonusFound = true;
+
+            return paid;
+        }
+
+        public void RestoreScores(IEnumerable<KeyValuePair<string, ContractScore>> scores, int credits)
+        {
+            _scores.Clear();
+            if (scores != null) foreach (var kv in scores) _scores[kv.Key] = kv.Value;
+            Credits = credits;
+        }
+
         /// <summary>Rebuilds state from a save. Retired commands are stored rather
         /// than re-derived, so loading does not need to instantiate every contract.</summary>
         public void Restore(IEnumerable<string> completed, IEnumerable<Feature> unlocked,
@@ -73,6 +143,8 @@ namespace NeoKyoto.Core
             _unlocked.Clear();
             _completed.Clear();
             _retiredCommands.Clear();
+            _scores.Clear();
+            Credits = 0;
         }
     }
 }

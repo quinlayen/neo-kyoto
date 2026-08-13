@@ -12,6 +12,15 @@ namespace NeoKyoto.Core
     }
 
     [Serializable]
+    public class ScoreEntry
+    {
+        public string contractId;
+        public int stars;
+        public int callsToGoal;
+        public bool bonusFound;
+    }
+
+    [Serializable]
     public class SaveData
     {
         public int version = SaveSystem.CurrentVersion;
@@ -21,6 +30,8 @@ namespace NeoKyoto.Core
         public List<string> debriefed = new List<string>();
         public List<string> followUpDebriefed = new List<string>();
         public List<ScriptEntry> scripts = new List<ScriptEntry>();
+        public List<ScoreEntry> scores = new List<ScoreEntry>();
+        public int credits;
     }
 
     /// <summary>
