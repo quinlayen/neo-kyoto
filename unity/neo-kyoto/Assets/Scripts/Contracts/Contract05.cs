@@ -198,11 +198,24 @@ namespace NeoKyoto.Contracts
         cd ~            — go to your home directory
         cat <file>      — read a file's contents
 " + PageBreak + @"
+    ─── TIPS ───
+
+    Start in your home directory. There may be
+    notes or clues about where to look.
+
+    Use ls to see what is in a directory. Use cd
+    to move into it. Use cat to read files.
+
+    The file tree has several directories. Not all
+    of them are relevant — explore and figure out
+    which path leads to the crash report.
+" + PageBreak + @"
     ─── YOUR GOAL ───
 
     Find and read the power grid crash report.
-    Start from your home directory — there may
-    be clues about where to look.
+
+    Use CONTRACT BOARD to leave this job.
+    Type  reset  to restore the filesystem.
     ";
         }
 

@@ -80,7 +80,7 @@ namespace NeoKyoto.Contracts
     There are 6 signals, numbered 1 through 6.
     Each one is either STUCK or SCRAMBLED — you
     know how to handle both types from last time.
-" + PageBreak + @"
+
     Here is what is different: the signals are
     numbered, and each command needs a signal
     number to know which one you mean:
@@ -112,7 +112,15 @@ namespace NeoKyoto.Contracts
     ─── YOUR GOAL ───
 
     Fix all 6 signals and submit the report.
+" + PageBreak + @"
+    ─── HOW TO WORK ───
+
     Your script file is: signals.py
+
+    1. Write your program in the editor
+    2. Press RUN to execute it
+    3. Watch the system respond, then adjust
+       and run again
     ";
         }
 

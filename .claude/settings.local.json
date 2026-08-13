@@ -42,7 +42,13 @@
       "Bash(mkdir -p 'C:\\\\Users\\\\Peter/.local/bin' 'C:\\\\Users\\\\Peter/.local/tmp/butler')",
       "Read(//c/Users/Peter/.local/tmp/**)",
       "Bash(curl -sSL -o butler.zip \"https://broth.itch.zone/butler/windows-amd64/LATEST/archive/default\" -w \"download: HTTP %{http_code}, %{size_download} bytes\\\\n\")",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(butler status *)",
+      "Read(//c/Users/Peter/Downloads/**)",
+      "Bash(tar -tzf game-design-1.0.0.tar.gz)",
+      "WebFetch(domain:itch.io)",
+      "WebFetch(domain:quinlayen.itch.io)",
+      "Bash(./publish-webgl.sh --push)"
     ]
   },
   "enabledMcpjsonServers": [

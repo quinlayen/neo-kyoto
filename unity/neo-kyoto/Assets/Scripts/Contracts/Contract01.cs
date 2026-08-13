@@ -148,32 +148,50 @@ namespace NeoKyoto.Contracts
     ─── WHAT IS A PROGRAM? ───
 
     A program is a list of instructions the
-    computer follows from top to bottom, one
-    line at a time. A command looks like this:
+    computer follows from top to bottom, one line
+    at a time. Each line is a command — it tells
+    the computer to do one thing. A command looks
+    like this:
 
         rebalance()
 
-    The name says which command. The () tells
-    it ""do it now."" Each command goes on its
-    own line.
+    The name tells the computer which command you
+    mean. The parentheses () tell it ""do it now.""
+    Without () the computer sees the name but does
+    nothing with it.
+
+    You also have print() — it displays a message
+    on screen. Put text in quotes inside it:
+
+        print(""hello"")
+
+    You can also use print() to see what a command
+    gives back. It is your best tool for watching
+    what your program is doing.
 " + PageBreak + @"
     ─── YOUR COMMAND ───
 
         rebalance()  — rebalances the power node
 
     One rebalance is not enough. The node needs
-    many before it reaches a STABLE state.
-
-    You also have print() — it displays text on
-    screen. Useful for seeing what is happening.
+    many rebalances before it reaches a STABLE
+    state. Each call on its own line.
 " + PageBreak + @"
     ─── YOUR GOAL ───
 
-    Bring the power node from FLICKERING to
-    STABLE. Your script file is: block7.py
+    Bring the power node from FLICKERING to STABLE.
 
-    Write your program in the editor, then press
-    RUN to execute it.
+    If your first attempt is not enough, edit your
+    script, add more, and run again.
+" + PageBreak + @"
+    ─── HOW TO WORK ───
+
+    Your script file is: block7.py
+
+    1. Write your program in the editor
+    2. Press RUN to execute it
+    3. Watch the system respond, then adjust
+       and run again
     ";
         }
 

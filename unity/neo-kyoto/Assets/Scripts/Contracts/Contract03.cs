@@ -81,17 +81,30 @@ namespace NeoKyoto.Contracts
     ─── YOUR COMMANDS ───
 
         check_next()  — finds the next broken drone
-                        and returns what is wrong
+                        and tells you what is wrong
         reroute()     — fixes a MISROUTED drone
         repair()      — fixes a GROUNDED drone
 
-    If you use the wrong fix, the system will
-    tell you.
+    check_next() gives back the drone's problem as
+    text — either ""MISROUTED"" or ""GROUNDED"". Catch
+    it in a variable so your program can use it to
+    decide what to do.
+
+    If you use the wrong fix, the system will tell
+    you.
 " + PageBreak + @"
     ─── YOUR GOAL ───
 
     Get all 8 drones operational.
+" + PageBreak + @"
+    ─── HOW TO WORK ───
+
     Your script file is: dispatch.py
+
+    1. Write your program in the editor
+    2. Press RUN to execute it
+    3. Watch the system respond, then adjust
+       and run again
     ";
         }
 
