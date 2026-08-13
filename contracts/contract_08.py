@@ -103,8 +103,11 @@ class Contract08(BaseCombinedContract):
 
         return fs
 
-    def reset_system(self):
+    def reset_game_system(self):
         self.grid = PowerGrid()
+
+    def reset_system(self):
+        self.reset_game_system()
         super().reset_system()
 
     def get_commands(self):

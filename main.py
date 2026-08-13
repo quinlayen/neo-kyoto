@@ -66,6 +66,21 @@ def _load_contracts():
         CONTRACT_DEFS.append({"id": "contract_08", "class": Contract08, "title": "Grid Restoration", "location": "Central Grid", "unlock_index": 2, "type": "combined"})
     except ImportError:
         pass
+    try:
+        from contracts.contract_09 import Contract09
+        CONTRACT_DEFS.append({"id": "contract_09", "class": Contract09, "title": "Process Lockdown", "location": "Comms Tower", "unlock_index": -1, "type": "terminal"})
+    except ImportError:
+        pass
+    try:
+        from contracts.contract_10 import Contract10
+        CONTRACT_DEFS.append({"id": "contract_10", "class": Contract10, "title": "Water Treatment", "location": "Underground Plant", "unlock_index": 3, "type": "combined"})
+    except ImportError:
+        pass
+    try:
+        from contracts.contract_11 import Contract11
+        CONTRACT_DEFS.append({"id": "contract_11", "class": Contract11, "title": "Sector Sweep", "location": "Industrial Zone", "unlock_index": -1, "type": "combined"})
+    except ImportError:
+        pass
 
 
 def show_title_screen():
@@ -367,7 +382,7 @@ def run_combined_contract(cdef, game_state):
                 with open(script_path, "r") as f:
                     code = f.read()
 
-                contract.grid = contract.grid.__class__()
+                contract.reset_game_system()
                 interpreter.set_commands(
                     active_commands=contract.get_commands(),
                     retired_commands=game_state.retired_commands,
@@ -381,7 +396,7 @@ def run_combined_contract(cdef, game_state):
                 print()
                 print(contract.get_status_text())
 
-                if contract.grid.is_goal_met():
+                if contract.is_goal_met():
                     contract.completed = True
 
                 if contract.consume_completion_announcement():

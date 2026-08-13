@@ -9,5 +9,8 @@ class BaseCombinedContract(BaseTerminalContract):
     def get_commands(self):
         raise NotImplementedError
 
+    def reset_game_system(self):
+        raise NotImplementedError
+
     def get_prompt(self):
         return self.terminal.get_prompt()
