@@ -7,3 +7,4 @@
 - [Unity Decisions](project-unity-decisions.md) — PC+Web, low-poly 3D (upgradeable), story arc, C1-C5 demo scope
 - [Unity Setup](project-unity-setup.md) — Project at unity/neo-kyoto, Unity 6000.5.8f1, URP, MCP on port 7890
 - [Unity Demo Status](project-unity-demo-status.md) — First playable demo (C1-C5) complete; architecture + gotchas
+- [itch.io Page](reference-itch-page.md) — Live demo URL and butler publish workflow
