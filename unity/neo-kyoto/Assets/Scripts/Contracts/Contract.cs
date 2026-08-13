@@ -20,6 +20,22 @@ namespace NeoKyoto.Contracts
 
         public virtual ContractKind Kind { get { return ContractKind.Python; } }
         public virtual int MaxCalls { get { return 20; } }
+
+        // ─── Scoring (mirrors the prototype's gamification layer) ───
+
+        public virtual int BaseCredits { get { return 100; } }
+
+        /// <summary>Calls-to-goal at or below which the contract earns three / two stars.</summary>
+        public virtual int ThreeStarCalls { get { return 0; } }
+        public virtual int TwoStarCalls { get { return 0; } }
+
+        /// <summary>
+        /// Terminal contracts are rated on exploration rather than call count:
+        /// two stars for finishing, three for turning up the hidden extra.
+        /// </summary>
+        public virtual bool HasBonus { get { return false; } }
+        public virtual bool BonusFound { get { return false; } }
+        public virtual string BonusHint { get { return null; } }
         public virtual string ScriptName { get { return ""; } }
         public virtual string StarterScript { get { return ""; } }
 

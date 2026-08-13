@@ -31,6 +31,7 @@ namespace NeoKyoto.UI
         private TextMeshProUGUI _runButtonLabel;
         private LayoutElement _statusLayout;
 
+        private TextMeshProUGUI _boardStatus, _debriefScore;
         private Button _resetButton;
         private TextMeshProUGUI _resetLabel, _saveHint;
         private bool _resetArmed;
@@ -137,6 +138,15 @@ namespace NeoKyoto.UI
             hrt.sizeDelta = new Vector2(1200, 50);
             hrt.anchoredPosition = new Vector2(0, -70);
 
+            _boardStatus = UITheme.Label("BoardStatus", _boardPanel.transform,
+                "", 16f, UITheme.Good, TextAlignmentOptions.Center);
+            var bsrt = _boardStatus.rectTransform;
+            bsrt.anchorMin = new Vector2(0.5f, 1f);
+            bsrt.anchorMax = new Vector2(0.5f, 1f);
+            bsrt.pivot = new Vector2(0.5f, 1f);
+            bsrt.sizeDelta = new Vector2(1200, 28);
+            bsrt.anchoredPosition = new Vector2(0, -118);
+
             var sub = UITheme.Label("Sub", _boardPanel.transform,
                 "AVAILABLE CONTRACTS", 16f, UITheme.TextDim, TextAlignmentOptions.Center);
             var srt = sub.rectTransform;
@@ -144,7 +154,7 @@ namespace NeoKyoto.UI
             srt.anchorMax = new Vector2(0.5f, 1f);
             srt.pivot = new Vector2(0.5f, 1f);
             srt.sizeDelta = new Vector2(1200, 30);
-            srt.anchoredPosition = new Vector2(0, -124);
+            srt.anchoredPosition = new Vector2(0, -150);
 
             var listGo = UITheme.Node("List", _boardPanel.transform);
             var lrt = listGo.GetComponent<RectTransform>();
@@ -152,7 +162,7 @@ namespace NeoKyoto.UI
             lrt.anchorMax = new Vector2(0.5f, 1f);
             lrt.pivot = new Vector2(0.5f, 1f);
             lrt.sizeDelta = new Vector2(900, 520);
-            lrt.anchoredPosition = new Vector2(0, -180);
+            lrt.anchoredPosition = new Vector2(0, -206);
 
             var layout = listGo.AddComponent<VerticalLayoutGroup>();
             layout.spacing = 10f;
@@ -337,6 +347,11 @@ namespace NeoKyoto.UI
             _debriefHeader = UITheme.Label("Header", col, "CONTRACT COMPLETE", 18f, UITheme.Good);
             AddLayout(_debriefHeader.gameObject, 28f, 0f);
 
+            var scoreFrame = UITheme.Framed("ScoreFrame", col, UITheme.Border);
+            AddLayout(scoreFrame.parent.gameObject, 82f, 0f);
+            _debriefScore = UITheme.Label("Score", scoreFrame, "", UITheme.BodySize, UITheme.Good);
+            UITheme.Stretch(_debriefScore.rectTransform, 10, 6, 10, 6);
+
             _debriefText = UITheme.ScrollText("DebriefScroll", col, out _debriefScroll);
             _debriefText.richText = true;
             AddLayout(_debriefScroll.gameObject, 0f, 1f);
@@ -351,6 +366,39 @@ namespace NeoKyoto.UI
 
             var row2 = MakeRow(col, 40f);
             UITheme.Button("Board", row2, "CONTRACT BOARD", UITheme.TextDim, () => _gm.BackToBoard());
+        }
+
+        /// <summary>Stars, credits and efficiency for the run that just finished.</summary>
+        private void RefreshDebriefScore()
+        {
+            if (_debriefScore == null || _gm.ActiveContract == null) return;
+
+            var sb = new System.Text.StringBuilder();
+            sb.Append(Scoring.FormatStars(_gm.LastStars)).Append("   ");
+            sb.Append(_gm.LastCreditsEarned > 0
+                ? "+" + _gm.LastCreditsEarned + " cr"
+                : "no new credits — already rated this well");
+            sb.AppendLine();
+
+            if (_gm.ActiveContract.Kind != ContractKind.Terminal && _gm.LastCallsToGoal > 0)
+            {
+                sb.Append("Calls to goal: ").Append(_gm.LastCallsToGoal);
+                int target = _gm.ActiveContract.ThreeStarCalls;
+                if (target > 0 && _gm.LastStars < 3) sb.Append("   (").Append(target).Append(" for ◆◆◆)");
+                sb.AppendLine();
+            }
+            else if (_gm.ActiveContract.HasBonus)
+            {
+                sb.AppendLine(_gm.LastBonusFound
+                    ? "Bonus found."
+                    : "Bonus missed — " + _gm.ActiveContract.BonusHint);
+            }
+
+            sb.Append(_gm.State.Rank).Append("   ·   ")
+              .Append(_gm.State.TotalStars).Append("◆   ·   ")
+              .Append(_gm.State.Credits).Append(" cr total");
+
+            _debriefScore.text = sb.ToString();
         }
 
         private void DebriefAdvance()
@@ -505,6 +553,7 @@ namespace NeoKyoto.UI
                 if (string.IsNullOrEmpty(text)) text = _gm.ActiveContract.GetCompletionMessage();
                 _debriefPages = Contract.Paginate(text);
                 ShowDebriefPage(0);
+                RefreshDebriefScore();
             }
 
             if (s == GameScreen.Workspace && _gm.ActiveContract != null) SetupWorkspace();
@@ -631,6 +680,18 @@ namespace NeoKyoto.UI
 
         private void RebuildBoard()
         {
+            if (_boardStatus != null)
+            {
+                int total = _gm.State.TotalStars;
+                string next = Scoring.NextRankTitle(total);
+                string toNext = next == null
+                    ? ""
+                    : "   ·   " + Scoring.StarsToNextRank(total) + "◆ to " + next;
+                _boardStatus.text = _gm.State.Rank.ToUpperInvariant()
+                    + "   ·   " + _gm.State.Credits + " cr"
+                    + "   ·   " + total + "◆" + toNext;
+            }
+
             for (int i = _boardList.childCount - 1; i >= 0; i--) Destroy(_boardList.GetChild(i).gameObject);
 
             for (int i = 0; i < ContractRegistry.All.Count; i++)
@@ -639,7 +700,10 @@ namespace NeoKyoto.UI
                 bool completed = _gm.State.IsContractCompleted(def.Id);
                 bool available = _gm.IsAvailable(i);
 
-                string status = completed ? "[DONE] ◆" : (available ? "[AVAILABLE]" : "[LOCKED]");
+                int stars = _gm.State.StarsFor(def.Id);
+                string status = completed
+                    ? Scoring.FormatStars(stars)
+                    : (available ? "[AVAILABLE]" : "[LOCKED]");
                 Color color = completed ? UITheme.Good : (available ? UITheme.Accent : UITheme.TextDim);
 
                 string label = "[" + (i + 1) + "]  " +

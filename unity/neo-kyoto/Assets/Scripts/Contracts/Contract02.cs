@@ -31,6 +31,10 @@ namespace NeoKyoto.Contracts
             return cmds;
         }
 
+        public override int BaseCredits { get { return 100; } }
+        public override int ThreeStarCalls { get { return 10; } }
+        public override int TwoStarCalls { get { return 15; } }
+
         public override bool IsGoalMet() { return Router.IsGoalMet(); }
         public override string GetStatusText() { return Router.GetStatusText(); }
 
