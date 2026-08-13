@@ -107,8 +107,11 @@ namespace NeoKyoto.World
             var gm = GameManager.Instance;
             if (gm == null) return;
 
+            // The debrief is docked to the same side panel, so the site stays visible.
             bool inContract = gm.ActiveContract != null &&
-                              (gm.CurrentScreen == GameScreen.Workspace || gm.CurrentScreen == GameScreen.Briefing);
+                              (gm.CurrentScreen == GameScreen.Workspace ||
+                               gm.CurrentScreen == GameScreen.Briefing ||
+                               gm.CurrentScreen == GameScreen.Debrief);
 
             if (!inContract)
             {

@@ -29,6 +29,16 @@ namespace NeoKyoto.UI
             var nav = _field.navigation;
             nav.mode = Navigation.Mode.None;
             _field.navigation = nav;
+
+            // TMP_InputField inserts a literal tab of its own on a multiline field.
+            // Rejecting it here leaves exactly one indent — ours — instead of a tab
+            // stop plus four spaces.
+            _field.onValidateInput = RejectTabs;
+        }
+
+        private static char RejectTabs(string text, int charIndex, char addedChar)
+        {
+            return addedChar == '\t' ? '\0' : addedChar;
         }
 
         private void Update()

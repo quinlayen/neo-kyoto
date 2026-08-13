@@ -22,6 +22,7 @@ namespace NeoKyoto.UI
         private GameObject _titlePanel, _boardPanel, _briefingPanel, _workspacePanel, _debriefPanel;
         private Transform _boardList;
 
+        private TextMeshProUGUI _debriefHeader;
         private TextMeshProUGUI _wsHeader, _wsStatus, _consoleText, _briefingText, _debriefText, _hintText;
         private TMP_InputField _codeInput, _terminalInput;
         private ScrollRect _consoleScroll, _briefingScroll, _debriefScroll;
@@ -212,6 +213,7 @@ namespace NeoKyoto.UI
             AddLayout(header.gameObject, 28f, 0f);
 
             _briefingText = UITheme.ScrollText("BriefingScroll", content, out _briefingScroll);
+            _briefingText.richText = true;
             AddLayout(_briefingScroll.gameObject, 0f, 1f);
 
             // Paged rather than one long scroll.
@@ -238,7 +240,7 @@ namespace NeoKyoto.UI
         {
             if (_briefingPages == null || _briefingPages.Length == 0) return;
             _briefingPage = Mathf.Clamp(index, 0, _briefingPages.Length - 1);
-            _briefingText.text = _briefingPages[_briefingPage];
+            _briefingText.text = TextMarkup.Format(_briefingPages[_briefingPage]);
 
             bool last = _briefingPage == _briefingPages.Length - 1;
             _briefingNextLabel.text = last ? "JACK IN ▸" : "NEXT ▸";
@@ -327,33 +329,19 @@ namespace NeoKyoto.UI
 
         private void BuildDebrief(Transform parent)
         {
-            _debriefPanel = UITheme.Box("DebriefPanel", parent, UITheme.Backdrop).gameObject;
-            UITheme.Stretch(_debriefPanel.GetComponent<RectTransform>());
+            // Docked right like the briefing, so the site the player just fixed stays
+            // on screen behind it instead of the world vanishing at the payoff moment.
+            Transform col;
+            _debriefPanel = MakeRightPanel("DebriefPanel", parent, out col);
 
-            var frameBorder = UITheme.Box("Frame", _debriefPanel.transform, UITheme.Border);
-            var frt = frameBorder.rectTransform;
-            frt.anchorMin = new Vector2(0.5f, 0.5f);
-            frt.anchorMax = new Vector2(0.5f, 0.5f);
-            // Sized to the longest page rather than the screen, so short pages
-            // do not leave a large empty panel.
-            frt.sizeDelta = new Vector2(1120, 720);
+            _debriefHeader = UITheme.Label("Header", col, "CONTRACT COMPLETE", 18f, UITheme.Good);
+            AddLayout(_debriefHeader.gameObject, 28f, 0f);
 
-            var inner = UITheme.Box("Inner", frameBorder.transform, UITheme.PanelSolid);
-            UITheme.Stretch(inner.rectTransform, 2, 2, 2, 2);
-
-            var col = UITheme.Node("Col", inner.transform);
-            UITheme.Stretch(col.GetComponent<RectTransform>(), 18, 18, 18, 18);
-            var layout = col.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 10f;
-            layout.childControlHeight = true;
-            layout.childControlWidth = true;
-            layout.childForceExpandHeight = false;
-            layout.childForceExpandWidth = true;
-
-            _debriefText = UITheme.ScrollText("DebriefScroll", col.transform, out _debriefScroll);
+            _debriefText = UITheme.ScrollText("DebriefScroll", col, out _debriefScroll);
+            _debriefText.richText = true;
             AddLayout(_debriefScroll.gameObject, 0f, 1f);
 
-            var row = MakeRow(col.transform, 46f);
+            var row = MakeRow(col, 46f);
             _debriefPrev = UITheme.Button("Prev", row, "◂ BACK", UITheme.TextDim,
                 () => ShowDebriefPage(_debriefPage - 1));
             _debriefCounter = UITheme.Label("Count", row, "", UITheme.SmallSize,
@@ -361,7 +349,7 @@ namespace NeoKyoto.UI
             _debriefNext = UITheme.Button("Next", row, "NEXT ▸", UITheme.Accent, DebriefAdvance);
             _debriefNextLabel = _debriefNext.GetComponentInChildren<TextMeshProUGUI>();
 
-            var row2 = MakeRow(col.transform, 40f);
+            var row2 = MakeRow(col, 40f);
             UITheme.Button("Board", row2, "CONTRACT BOARD", UITheme.TextDim, () => _gm.BackToBoard());
         }
 
@@ -375,7 +363,7 @@ namespace NeoKyoto.UI
         {
             if (_debriefPages == null || _debriefPages.Length == 0) return;
             _debriefPage = Mathf.Clamp(index, 0, _debriefPages.Length - 1);
-            _debriefText.text = _debriefPages[_debriefPage];
+            _debriefText.text = TextMarkup.Format(_debriefPages[_debriefPage]);
 
             bool last = _debriefPage == _debriefPages.Length - 1;
             // On the last page the button becomes the action the debrief was leading to.

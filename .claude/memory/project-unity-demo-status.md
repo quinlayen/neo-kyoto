@@ -42,6 +42,11 @@ creates everything else. This is deliberate — the game is defined in code, not
   alignment of the ASCII box art.
 - Emissive lights need the URP bloom + Neutral tonemapping volume (built in WorldController),
   otherwise intensities clip to white and the colour-coded status is lost.
+- **Never build runtime materials with `Shader.Find`.** Builds strip any shader no asset
+  references, so it returns null in a player and nothing renders — while the editor looks
+  fine, so this is invisible until you test an actual build. World materials clone
+  `Assets/Resources/WorldLit.mat` instead (emission enabled there, so that variant ships too).
+  Same trap applies to any shader/variant only reached from code.
 
 **Known polish gaps (not blockers):**
 - No save/persistence — progress resets each run.
