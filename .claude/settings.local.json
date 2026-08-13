@@ -55,7 +55,8 @@
       "Bash(rm -rf neo-kyoto-portable)",
       "mcp__unity__unity_console_clear",
       "Bash(git fetch *)",
-      "Bash(git branch *)"
+      "Bash(git branch *)",
+      "Bash(grep -nE \"^#{1,3} \" .claude/skills/game-design/references/domain-guide.md)"
     ]
   },
   "enabledMcpjsonServers": [

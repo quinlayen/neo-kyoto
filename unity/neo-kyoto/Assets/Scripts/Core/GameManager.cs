@@ -394,7 +394,7 @@ namespace NeoKyoto.Core
             // proper follow-up — but only once, and only if they actually used it.
             string followUp = ActiveContract.GetLoopCompletionMessage();
             if (followUp != null && !_followUpDebriefed.Contains(ActiveDef.Id) &&
-                _runner != null && _runner.LastProgramUsedLoop)
+                _runner != null && _runner.LoopDidTheWork(_callsToGoal))
             {
                 _followUpDebriefed.Add(ActiveDef.Id);
                 MarkDirty();
@@ -434,7 +434,11 @@ namespace NeoKyoto.Core
                 // twelve times — both make twelve calls. The lesson is the loop, so the
                 // third star asks for it. This is what makes the design doc's
                 // "1-2★ with basic tools, 3★ on replay with better tools" actually happen.
-                if (LastStars == 3 && !_runner.LastProgramUsedLoop) LastStars = 2;
+                //
+                // It asks whether the loop did the work, not whether one is present:
+                // a decorative `while False:` above repeated calls contains a loop but
+                // runs nothing inside it.
+                if (LastStars == 3 && !_runner.LoopDidTheWork(_callsToGoal)) LastStars = 2;
             }
 
             LastBonusFound = c.HasBonus && c.BonusFound;
