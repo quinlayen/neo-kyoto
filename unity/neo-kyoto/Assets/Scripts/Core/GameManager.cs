@@ -29,6 +29,13 @@ namespace NeoKyoto.Core
         public ContractDef ActiveDef { get; private set; }
         public bool IsRunning { get; private set; }
 
+        /// <summary>
+        /// Source line of the step the script is on, or 0 when nothing is running.
+        /// Only calls and prints emit events, so this tracks the lines that actually
+        /// do something rather than every line the interpreter touches.
+        /// </summary>
+        public int CurrentLine { get; private set; }
+
         private readonly List<string> _console = new List<string>();
         private readonly Dictionary<string, string> _scripts = new Dictionary<string, string>();
         private readonly HashSet<string> _debriefed = new HashSet<string>();
@@ -248,6 +255,7 @@ namespace NeoKyoto.Core
         private IEnumerator RunScriptRoutine()
         {
             IsRunning = true;
+            CurrentLine = 0;
             ClearConsole();
 
             // Each run starts from a clean system, matching the prototype.
@@ -293,6 +301,7 @@ namespace NeoKyoto.Core
                 if (!moved) break;
 
                 var ev = it.Current;
+                if (ev.Line > 0) CurrentLine = ev.Line;
                 if (ev.Kind == ExecEventKind.Print) AppendConsole(PyValue.Str(ev.Text));
                 if (_callsToGoal == 0 && ActiveContract.IsGoalMet()) _callsToGoal = _runner.CallCount;
                 RaiseStatus();
@@ -304,6 +313,7 @@ namespace NeoKyoto.Core
             // Clear the running flag before the final refresh, otherwise the UI's
             // last status update still shows the run in progress.
             IsRunning = false;
+            CurrentLine = 0;
             _runRoutine = null;
 
             AppendConsole(endMessage);
@@ -321,6 +331,7 @@ namespace NeoKyoto.Core
             if (_runRoutine != null) StopCoroutine(_runRoutine);
             _runRoutine = null;
             IsRunning = false;
+            CurrentLine = 0;
 
             AppendConsole("Stopped.");
             AppendConsole("└──────────────────────────────────────────");
