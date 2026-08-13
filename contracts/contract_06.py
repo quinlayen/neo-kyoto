@@ -148,6 +148,8 @@ class Contract06(BaseTerminalContract):
                     node = self.fs.get_node(resolved)
                     if node and self.fs._has_permission(node, "r"):
                         self.backup_read = True
+                if resolved == "/etc/firewall.conf":
+                    self.bonus_found.add("firewall_conf")
 
         if cmd in ("touch", "mkdir"):
             if self.fs.exists("/tmp/report/findings.txt"):

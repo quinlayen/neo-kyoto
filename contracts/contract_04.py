@@ -7,6 +7,8 @@ class Contract04(BaseContract):
     TITLE = "Signal Interference"
     LOCATION = "Transit Hub"
     SCRIPT_FILE = "player_scripts/signals.py"
+    BASE_CREDITS = 150
+    STAR_THRESHOLDS = (14, 18)
 
     def __init__(self):
         super().__init__()

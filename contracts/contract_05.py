@@ -129,6 +129,8 @@ class Contract05(BaseTerminalContract):
                 resolved = self.fs.resolve_path(arg)
                 if resolved == "/opt/neo-kyoto/services/power-grid/error.log":
                     self.target_found = True
+                if resolved == "/home/contractor/.bash_history":
+                    self.bonus_found.add("bash_history")
 
         self.update_completion()
         return output

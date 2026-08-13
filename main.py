@@ -7,6 +7,16 @@ from interpreter import RestrictedInterpreter
 from contracts.contract_01 import Contract01
 
 
+BONUS_DESCRIPTIONS = {
+    "bash_history": "Find the hidden .bash_history",
+    "firewall_conf": "Read the firewall config",
+    "migration_log": "Read the migration log",
+    "commands_file": "Find the hidden command reference",
+    "trace_file": "Find the hidden intrusion trace",
+    "diagnostic_manual": "Find the hidden diagnostic manual",
+}
+
+
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -33,17 +43,17 @@ CONTRACT_DEFS = [
 def _load_contracts():
     try:
         from contracts.contract_02 import Contract02
-        CONTRACT_DEFS.append({"id": "contract_02", "class": Contract02, "title": "Drone Route Cleanup", "location": "Sector 12", "unlock_index": 1})  # conditionals
+        CONTRACT_DEFS.append({"id": "contract_02", "class": Contract02, "title": "Drone Route Cleanup", "location": "Sector 12", "unlock_index": 1})
     except ImportError:
         pass
     try:
         from contracts.contract_03 import Contract03
-        CONTRACT_DEFS.append({"id": "contract_03", "class": Contract03, "title": "Drone Dispatch", "location": "Sector 14", "unlock_index": -1})  # controlled while (no new gate)
+        CONTRACT_DEFS.append({"id": "contract_03", "class": Contract03, "title": "Drone Dispatch", "location": "Sector 14", "unlock_index": -1})
     except ImportError:
         pass
     try:
         from contracts.contract_04 import Contract04
-        CONTRACT_DEFS.append({"id": "contract_04", "class": Contract04, "title": "Signal Interference", "location": "Transit Hub", "unlock_index": -1})  # end of Python Phase 1
+        CONTRACT_DEFS.append({"id": "contract_04", "class": Contract04, "title": "Signal Interference", "location": "Transit Hub", "unlock_index": -1})
     except ImportError:
         pass
     try:
@@ -83,6 +93,62 @@ def _load_contracts():
         pass
 
 
+def show_performance(game_state, contract, cdef, call_count=None):
+    contract_id = cdef["id"]
+
+    if call_count is not None:
+        stars = contract.get_star_rating(call_count)
+    else:
+        stars = contract.get_star_rating()
+
+    credit_delta = game_state.record_stars(contract_id, stars, contract.BASE_CREDITS)
+
+    bonus_credits = 0
+    for bonus_id in contract.check_bonus_objectives():
+        bonus_credits += game_state.record_bonus(contract_id, bonus_id)
+
+    star_display = game_state.format_stars(stars)
+    total_earned = credit_delta + bonus_credits
+
+    print()
+    print("    ─── PERFORMANCE ───")
+    print(f"    Rating:    {star_display}")
+
+    if call_count is not None:
+        three_star, _ = contract.STAR_THRESHOLDS
+        if three_star > 0:
+            print(f"    Calls:     {call_count}  (3★ target: ≤ {three_star})")
+
+    if total_earned > 0:
+        print(f"    Credits:   +{total_earned}cr")
+    else:
+        print(f"    Credits:   (no improvement)")
+
+    bonuses = contract.check_bonus_objectives()
+    for bonus_id, desc in BONUS_DESCRIPTIONS.items():
+        if bonus_id in bonuses:
+            was_new = game_state.is_bonus_completed(contract_id, bonus_id)
+            print(f"    Bonus:     [OK] {desc}  +50cr")
+        elif _is_relevant_bonus(contract_id, bonus_id):
+            print(f"    Bonus:     [  ] {desc}")
+
+    print(f"    Rank:      {game_state.get_rank()}")
+    print()
+
+
+def _is_relevant_bonus(contract_id, bonus_id):
+    relevance = {
+        "contract_05": ["bash_history"],
+        "contract_06": ["firewall_conf"],
+        "contract_07": ["migration_log"],
+        "contract_08": ["commands_file"],
+        "contract_09": ["trace_file"],
+        "contract_10": ["commands_file"],
+        "contract_11": ["diagnostic_manual"],
+    }
+    return bonus_id in relevance.get(contract_id, [])
+
+
 def show_title_screen():
     clear()
     print("╔══════════════════════════════════════════════╗")
@@ -103,6 +169,13 @@ def show_contract_board(game_state):
         print("║   NEO-KYOTO — CONTRACTOR TERMINAL           ║")
         print("╚══════════════════════════════════════════════╝")
         print()
+
+        rank = game_state.get_rank()
+        credits = game_state.credits
+        total_stars = game_state.get_total_stars()
+        max_stars = game_state.get_max_stars(len(CONTRACT_DEFS))
+        print(f"  {rank}    {credits}cr    {total_stars}/{max_stars}★")
+        print()
         print("  ─── AVAILABLE CONTRACTS ───")
         print()
 
@@ -111,13 +184,16 @@ def show_contract_board(game_state):
             label = f"{cdef['title']} — {cdef['location']}"
 
             if game_state.is_contract_completed(cdef["id"]):
-                status = "[DONE] ★"
+                best = game_state.get_best_stars(cdef["id"])
+                star_display = game_state.format_stars(best)
+                earned = best * cdef["class"].BASE_CREDITS
+                status = f"{star_display} {earned}cr"
             elif i == 0 or game_state.is_contract_completed(CONTRACT_DEFS[i - 1]["id"]):
                 status = "[AVAILABLE]"
             else:
                 status = "[LOCKED]"
 
-            print(f"  [{num}]  {label:<40s} {status}")
+            print(f"  [{num:>2d}]  {label:<38s} {status}")
 
         print()
         print("  ──────────────────────────────────────────────")
@@ -231,6 +307,7 @@ def run_contract(cdef, game_state):
                 game_state.mark_completed(cdef["id"], cdef["unlock_index"])
                 game_state.retire_commands(contract.get_commands())
                 print(contract.get_completion_message(), flush=True)
+                show_performance(game_state, contract, cdef, call_count=interpreter._call_count)
 
             input("\n  Press Enter to continue...")
 
@@ -303,6 +380,7 @@ def run_terminal_contract(cdef, game_state):
                 game_state.mark_completed(cdef["id"], cdef["unlock_index"])
                 print()
                 print(contract.get_completion_message(), flush=True)
+                show_performance(game_state, contract, cdef)
                 input("\n  Press Enter to continue...")
                 break
 
@@ -402,6 +480,7 @@ def run_combined_contract(cdef, game_state):
                 if contract.consume_completion_announcement():
                     game_state.mark_completed(cdef["id"], cdef["unlock_index"])
                     print(contract.get_completion_message(), flush=True)
+                    show_performance(game_state, contract, cdef, call_count=interpreter._call_count)
 
                 input("\n  Press Enter to continue...")
                 break

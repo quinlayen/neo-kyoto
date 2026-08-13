@@ -139,6 +139,16 @@ class Contract09(BaseTerminalContract):
 
     def on_command(self, command_line):
         output = self.terminal.execute(command_line)
+
+        parts = command_line.strip().split()
+        if parts and parts[0] == "cat":
+            for arg in parts[1:]:
+                resolved = self.fs.resolve_path(arg)
+                if resolved == "/var/log/.incident/trace.log":
+                    node = self.fs.get_node(resolved)
+                    if node and self.fs._has_permission(node, "r"):
+                        self.bonus_found.add("trace_file")
+
         self.update_completion()
         return output
 

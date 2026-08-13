@@ -7,6 +7,8 @@ class Contract01(BaseContract):
     TITLE = "Keep the Lights On"
     LOCATION = "Block 7"
     SCRIPT_FILE = "player_scripts/block7.py"
+    BASE_CREDITS = 100
+    STAR_THRESHOLDS = (13, 16)
 
     def __init__(self):
         super().__init__()

@@ -109,6 +109,13 @@ class Contract07(BaseTerminalContract):
     def on_command(self, command_line):
         output = self.terminal.execute(command_line)
 
+        parts = command_line.strip().split()
+        if parts and parts[0] == "cat":
+            for arg in parts[1:]:
+                resolved = self.fs.resolve_path(arg)
+                if resolved == "/legacy/logs/migration.log":
+                    self.bonus_found.add("migration_log")
+
         if self.fs.exists("/srv/database/database.conf"):
             self.objectives["db_config_moved"] = True
 

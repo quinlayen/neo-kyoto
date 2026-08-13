@@ -7,12 +7,14 @@ class BaseTerminalContract:
     TITLE = ""
     LOCATION = ""
     CONTRACT_TYPE = "terminal"
+    BASE_CREDITS = 150
 
     def __init__(self):
         self.completed = False
         self._completion_announced = False
         self.fs = None
         self.terminal = None
+        self.bonus_found = set()
         self.reset_system()
 
     def build_filesystem(self) -> VirtualFilesystem:
@@ -32,6 +34,14 @@ class BaseTerminalContract:
 
     def get_status_text(self) -> str:
         raise NotImplementedError
+
+    def check_bonus_objectives(self):
+        return self.bonus_found
+
+    def get_star_rating(self):
+        if self.bonus_found:
+            return 3
+        return 2
 
     def reset_system(self):
         self.fs = self.build_filesystem()

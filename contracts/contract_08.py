@@ -9,6 +9,8 @@ class Contract08(BaseCombinedContract):
     LOCATION = "Central Grid"
     SCRIPT_FILE = "player_scripts/grid.py"
     MAX_CALLS = 40
+    BASE_CREDITS = 200
+    STAR_THRESHOLDS = (15, 25)
 
     def __init__(self):
         self.grid = None
@@ -102,6 +104,21 @@ class Contract08(BaseCombinedContract):
                      "2189-08-11 02:31:00 [INFO]  Contractor dispatched\n")
 
         return fs
+
+    def on_command(self, command_line):
+        output = self.terminal.execute(command_line)
+
+        parts = command_line.strip().split()
+        if parts and parts[0] == "cat":
+            for arg in parts[1:]:
+                resolved = self.fs.resolve_path(arg)
+                if resolved == "/opt/grid/.commands.txt":
+                    node = self.fs.get_node(resolved)
+                    if node and self.fs._has_permission(node, "r"):
+                        self.bonus_found.add("commands_file")
+
+        self.update_completion()
+        return output
 
     def reset_game_system(self):
         self.grid = PowerGrid()

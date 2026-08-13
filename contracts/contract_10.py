@@ -9,6 +9,8 @@ class Contract10(BaseCombinedContract):
     LOCATION = "Underground Plant"
     SCRIPT_FILE = "player_scripts/treatment.py"
     MAX_CALLS = 60
+    BASE_CREDITS = 250
+    STAR_THRESHOLDS = (32, 42)
 
     def __init__(self):
         self.water = None
@@ -89,6 +91,21 @@ class Contract10(BaseCombinedContract):
                      "2189-08-12 04:11:00 [INFO]  Contractor dispatched\n")
 
         return fs
+
+    def on_command(self, command_line):
+        output = self.terminal.execute(command_line)
+
+        parts = command_line.strip().split()
+        if parts and parts[0] == "cat":
+            for arg in parts[1:]:
+                resolved = self.fs.resolve_path(arg)
+                if resolved == "/opt/water/.commands.txt":
+                    node = self.fs.get_node(resolved)
+                    if node and self.fs._has_permission(node, "r"):
+                        self.bonus_found.add("commands_file")
+
+        self.update_completion()
+        return output
 
     def reset_game_system(self):
         self.water = WaterProcessor()

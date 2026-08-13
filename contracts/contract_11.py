@@ -9,6 +9,8 @@ class Contract11(BaseCombinedContract):
     LOCATION = "Industrial Zone"
     SCRIPT_FILE = "player_scripts/factory.py"
     MAX_CALLS = 50
+    BASE_CREDITS = 300
+    STAR_THRESHOLDS = (33, 40)
 
     def __init__(self):
         self.floor = None
@@ -97,6 +99,19 @@ class Contract11(BaseCombinedContract):
                      "2189-08-12 06:01:00 [INFO]  Contractor dispatched\n")
 
         return fs
+
+    def on_command(self, command_line):
+        output = self.terminal.execute(command_line)
+
+        parts = command_line.strip().split()
+        if parts and parts[0] == "cat":
+            for arg in parts[1:]:
+                resolved = self.fs.resolve_path(arg)
+                if resolved == "/opt/factory/.diagnostic_manual.txt":
+                    self.bonus_found.add("diagnostic_manual")
+
+        self.update_completion()
+        return output
 
     def reset_game_system(self):
         self.floor = ProductionFloor()

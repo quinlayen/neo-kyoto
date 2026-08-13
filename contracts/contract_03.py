@@ -7,6 +7,8 @@ class Contract03(BaseContract):
     TITLE = "Drone Dispatch"
     LOCATION = "Sector 14"
     SCRIPT_FILE = "player_scripts/dispatch.py"
+    BASE_CREDITS = 150
+    STAR_THRESHOLDS = (17, 19)
 
     def __init__(self):
         super().__init__()

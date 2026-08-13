@@ -7,6 +7,8 @@ class Contract02(BaseContract):
     TITLE = "Drone Route Cleanup"
     LOCATION = "Sector 12"
     SCRIPT_FILE = "player_scripts/drone_zone.py"
+    BASE_CREDITS = 100
+    STAR_THRESHOLDS = (10, 15)
 
     def __init__(self):
         super().__init__()
