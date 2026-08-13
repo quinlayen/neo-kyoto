@@ -90,3 +90,6 @@ unity/*/Assets/Screenshots/
 *.slnx
 unity/*/Builds/
 unity/dist/
+
+# Burst artefacts left behind by WebGL builds
+unity/*/Data/
