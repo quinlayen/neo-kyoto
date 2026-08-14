@@ -1,15 +1,20 @@
 ---
 name: project-prototype-status
-description: "Current prototype state: 8 contracts (4 Python, 3 terminal, 1 combined), ready for Unity game design phase"
+description: "Python prototype: 11 contracts (C1-C8 original, C9-C11 added later). C1-C5 are the ones ported to Unity"
 metadata: 
   node_type: memory
   type: project
   originSessionId: 95c6bdc1-46af-4303-ba42-a2e49afc13aa
 ---
 
-## Prototype Status (as of 2026-08-11)
+## Prototype Status
 
-**8 contracts implemented and working:**
+**As of 2026-08-13 the prototype has 11 contracts.** C9-C11 (process
+management, water treatment, and the first `def` contract) were added by the other
+agent — see `contracts/contract_09..11.py` and `docs/DESIGN_DIRECTION.md`. Only
+**C1-C5 are ported to Unity**.
+
+The original 8, as of 2026-08-11:
 
 | # | Title | Type | Location | Teaches |
 |---|-------|------|----------|---------|

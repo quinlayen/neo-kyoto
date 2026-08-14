@@ -33,6 +33,10 @@ namespace NeoKyoto.Contracts
             return cmds;
         }
 
+        public override int BaseCredits { get { return 150; } }
+        public override int ThreeStarCalls { get { return 17; } }
+        public override int TwoStarCalls { get { return 19; } }
+
         public override bool IsGoalMet() { return Dispatch.IsGoalMet(); }
         public override string GetStatusText() { return Dispatch.GetStatusText(); }
 
@@ -55,7 +59,7 @@ namespace NeoKyoto.Contracts
         public override string GetBriefing()
         {
             return @"    ╔══════════════════════════════════════════════╗
-    ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
+    ║   ONCALL:// SYSTEMS CONTRACTOR              ║
     ║   Contract #2479 – Drone Dispatch           ║
     ╚══════════════════════════════════════════════╝
 

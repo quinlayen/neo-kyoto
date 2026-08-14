@@ -9,3 +9,5 @@
 - [Unity Demo Status](project-unity-demo-status.md) — First playable demo (C1-C5) complete; architecture + gotchas
 - [itch.io Page](reference-itch-page.md) — Live demo URL and butler publish workflow
 - [Design-Only Workflow](project-design-only-workflow.md) — Working on design without Unity; expect the Unity MCP to fail there
+- [Gamification Status](project-gamification-status.md) — Stars/credits/rank ported on unity/gamification, awaiting review
+- [Branching Workflow](project-branching-workflow.md) — Two agents, who owns which paths, fetch before starting

@@ -29,6 +29,13 @@ namespace NeoKyoto.Core
         public ContractDef ActiveDef { get; private set; }
         public bool IsRunning { get; private set; }
 
+        /// <summary>
+        /// Source line of the step the script is on, or 0 when nothing is running.
+        /// Only calls and prints emit events, so this tracks the lines that actually
+        /// do something rather than every line the interpreter touches.
+        /// </summary>
+        public int CurrentLine { get; private set; }
+
         private readonly List<string> _console = new List<string>();
         private readonly Dictionary<string, string> _scripts = new Dictionary<string, string>();
         private readonly HashSet<string> _debriefed = new HashSet<string>();
@@ -36,6 +43,7 @@ namespace NeoKyoto.Core
         private ScriptRunner _runner;
         private Coroutine _runRoutine;
         private bool _goalWasMet;
+        private int _callsToGoal;
 
         public IList<string> ConsoleLines { get { return _console; } }
 
@@ -82,6 +90,15 @@ namespace NeoKyoto.Core
             {
                 if (!string.IsNullOrEmpty(entry.contractId)) _scripts[entry.contractId] = entry.code;
             }
+
+            var scores = new Dictionary<string, ContractScore>();
+            foreach (var e in data.scores)
+            {
+                if (string.IsNullOrEmpty(e.contractId)) continue;
+                scores[e.contractId] = new ContractScore {
+                    Stars = e.stars, CallsToGoal = e.callsToGoal, BonusFound = e.bonusFound };
+            }
+            State.RestoreScores(scores, data.credits);
         }
 
         private SaveData BuildSaveData()
@@ -94,6 +111,11 @@ namespace NeoKyoto.Core
             foreach (var id in _followUpDebriefed) data.followUpDebriefed.Add(id);
             foreach (var kv in _scripts)
                 data.scripts.Add(new ScriptEntry { contractId = kv.Key, code = kv.Value });
+            foreach (var kv in State.Scores)
+                data.scores.Add(new ScoreEntry {
+                    contractId = kv.Key, stars = kv.Value.Stars,
+                    callsToGoal = kv.Value.CallsToGoal, bonusFound = kv.Value.BonusFound });
+            data.credits = State.Credits;
             return data;
         }
 
@@ -233,6 +255,7 @@ namespace NeoKyoto.Core
         private IEnumerator RunScriptRoutine()
         {
             IsRunning = true;
+            CurrentLine = 0;
             ClearConsole();
 
             // Each run starts from a clean system, matching the prototype.
@@ -257,6 +280,12 @@ namespace NeoKyoto.Core
             var it = _runner.Execute();
             string endMessage = "Script executed successfully.";
 
+            // Calls are counted only up to the moment the goal is reached. A
+            // `while True` loop cannot stop itself and always burns the call cap,
+            // so scoring the whole run would rate the loop worse than writing the
+            // command out by hand — the opposite of what the contract teaches.
+            _callsToGoal = 0;
+
             while (true)
             {
                 bool moved;
@@ -272,7 +301,9 @@ namespace NeoKyoto.Core
                 if (!moved) break;
 
                 var ev = it.Current;
+                if (ev.Line > 0) CurrentLine = ev.Line;
                 if (ev.Kind == ExecEventKind.Print) AppendConsole(PyValue.Str(ev.Text));
+                if (_callsToGoal == 0 && ActiveContract.IsGoalMet()) _callsToGoal = _runner.CallCount;
                 RaiseStatus();
 
                 if (stepDelay > 0f) yield return new WaitForSeconds(stepDelay);
@@ -282,6 +313,7 @@ namespace NeoKyoto.Core
             // Clear the running flag before the final refresh, otherwise the UI's
             // last status update still shows the run in progress.
             IsRunning = false;
+            CurrentLine = 0;
             _runRoutine = null;
 
             AppendConsole(endMessage);
@@ -299,6 +331,7 @@ namespace NeoKyoto.Core
             if (_runRoutine != null) StopCoroutine(_runRoutine);
             _runRoutine = null;
             IsRunning = false;
+            CurrentLine = 0;
 
             AppendConsole("Stopped.");
             AppendConsole("└──────────────────────────────────────────");
@@ -349,6 +382,7 @@ namespace NeoKyoto.Core
 
             ActiveContract.ConsumeCompletionAnnouncement();
             State.MarkCompleted(ActiveDef.Id, ActiveDef.UnlockIndex);
+            AwardScore();
             MarkDirty();
 
             // Finished systems keep their commands callable but inert.
@@ -371,7 +405,7 @@ namespace NeoKyoto.Core
             // proper follow-up — but only once, and only if they actually used it.
             string followUp = ActiveContract.GetLoopCompletionMessage();
             if (followUp != null && !_followUpDebriefed.Contains(ActiveDef.Id) &&
-                _runner != null && _runner.LastProgramUsedLoop)
+                _runner != null && _runner.LoopDidTheWork(_callsToGoal))
             {
                 _followUpDebriefed.Add(ActiveDef.Id);
                 MarkDirty();
@@ -383,6 +417,44 @@ namespace NeoKyoto.Core
 
             AppendConsole("");
             AppendConsole("◆ " + ActiveContract.GetSolvedAgainMessage());
+        }
+
+        /// <summary>Summary of the run just scored, shown above the debrief.</summary>
+        public int LastStars { get; private set; }
+        public int LastCreditsEarned { get; private set; }
+        public int LastCallsToGoal { get; private set; }
+        public bool LastBonusFound { get; private set; }
+
+        private void AwardScore()
+        {
+            var c = ActiveContract;
+
+            if (c.Kind == ContractKind.Terminal)
+            {
+                // Exploration is the skill here, so finishing is worth two stars and
+                // turning up the hidden extra is worth the third.
+                LastStars = c.HasBonus && c.BonusFound ? 3 : 2;
+                LastCallsToGoal = 0;
+            }
+            else
+            {
+                LastCallsToGoal = _callsToGoal;
+                LastStars = Scoring.RateContract(_callsToGoal, c.ThreeStarCalls, c.TwoStarCalls);
+
+                // Call count alone cannot tell a loop from the same command typed out
+                // twelve times — both make twelve calls. The lesson is the loop, so the
+                // third star asks for it. This is what makes the design doc's
+                // "1-2★ with basic tools, 3★ on replay with better tools" actually happen.
+                //
+                // It asks whether the loop did the work, not whether one is present:
+                // a decorative `while False:` above repeated calls contains a loop but
+                // runs nothing inside it.
+                if (LastStars == 3 && !_runner.LoopDidTheWork(_callsToGoal)) LastStars = 2;
+            }
+
+            LastBonusFound = c.HasBonus && c.BonusFound;
+            LastCreditsEarned = State.RecordScore(
+                ActiveDef.Id, LastStars, LastCallsToGoal, LastBonusFound, c.BaseCredits);
         }
 
         /// <summary>Text the debrief screen should show — first pass or follow-up.</summary>

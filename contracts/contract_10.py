@@ -134,7 +134,7 @@ class Contract10(BaseCombinedContract):
     def get_briefing(self):
         return """
     ╔══════════════════════════════════════════════╗
-    ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
+    ║   ONCALL:// SYSTEMS CONTRACTOR              ║
     ║   Contract #2487 – Water Treatment          ║
     ╚══════════════════════════════════════════════╝
 

@@ -103,6 +103,10 @@ namespace NeoKyoto.Contracts
     Take the contract when you are ready.";
         }
 
+        public override int BaseCredits { get { return 100; } }
+        public override int ThreeStarCalls { get { return 13; } }
+        public override int TwoStarCalls { get { return 16; } }
+
         public override bool IsGoalMet() { return Node.IsGoalMet(); }
         public override string GetStatusText() { return Node.GetStatusText(); }
 
@@ -124,7 +128,7 @@ namespace NeoKyoto.Contracts
         public override string GetBriefing()
         {
             return @"    ╔══════════════════════════════════════════════╗
-    ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
+    ║   ONCALL:// SYSTEMS CONTRACTOR              ║
     ║   Contract #2477 – Keep the Lights On       ║
     ╚══════════════════════════════════════════════╝
 

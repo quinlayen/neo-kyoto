@@ -152,7 +152,7 @@ class Contract05(BaseTerminalContract):
     def get_briefing(self):
         return """
     ╔══════════════════════════════════════════════╗
-    ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
+    ║   ONCALL:// SYSTEMS CONTRACTOR              ║
     ║   Contract #2481 – System Recovery          ║
     ╚══════════════════════════════════════════════╝
 

@@ -117,6 +117,20 @@ namespace NeoKyoto.Interpreter
 
         public int CallCount { get { return _evaluator != null ? _evaluator.CallCount : 0; } }
 
+        /// <summary>Calls the script made from inside a loop body.</summary>
+        public int CallsInsideLoop { get { return _evaluator != null ? _evaluator.CallsInsideLoop : 0; } }
+
+        /// <summary>
+        /// True when a loop actually carried the work, rather than merely appearing
+        /// in the source. A decorative `while False:` above a block of repeated calls
+        /// contains a loop but performs nothing inside it.
+        /// </summary>
+        public bool LoopDidTheWork(int callsToGoal)
+        {
+            if (callsToGoal <= 0) return false;
+            return CallsInsideLoop * 2 >= callsToGoal;
+        }
+
         private string CheckFeatureGates(List<Stmt> body)
         {
             foreach (var stmt in body)

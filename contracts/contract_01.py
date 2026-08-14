@@ -29,7 +29,7 @@ class Contract01(BaseContract):
     def get_briefing(self):
         return """
     ╔══════════════════════════════════════════════╗
-    ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
+    ║   ONCALL:// SYSTEMS CONTRACTOR              ║
     ║   Contract #2477 – Keep the Lights On       ║
     ╚══════════════════════════════════════════════╝
 

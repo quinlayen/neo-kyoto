@@ -144,7 +144,7 @@ class Contract08(BaseCombinedContract):
     def get_briefing(self):
         return """
     ╔══════════════════════════════════════════════╗
-    ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
+    ║   ONCALL:// SYSTEMS CONTRACTOR              ║
     ║   Contract #2485 – Grid Restoration         ║
     ╚══════════════════════════════════════════════╝
 
