@@ -1,8 +1,8 @@
-# Neo-Kyoto Systems Contractor – Project Overview & Scope
+# ONCALL: Systems Contractor – Project Overview & Scope
 
 ## What This Project Is
 
-Neo-Kyoto Systems Contractor is a programming education game set in a cyberpunk world. The player takes the role of a freelance systems contractor who fixes and automates broken city infrastructure by writing real code.
+ONCALL: Systems Contractor is a programming education game set in a cyberpunk world (Neo-Kyoto, 2189). The player takes the role of a freelance systems contractor who fixes and automates broken city infrastructure by writing real code.
 
 The game teaches practical technical skills through gameplay:
 - Python-style programming (custom restricted language)

@@ -102,7 +102,7 @@ namespace NeoKyoto.UI
             UITheme.Stretch(_titlePanel.GetComponent<RectTransform>());
 
             var title = UITheme.Label("Title", _titlePanel.transform,
-                "NEO-KYOTO\nSYSTEMS CONTRACTOR", 64f, UITheme.Accent, TextAlignmentOptions.Center);
+                "ONCALL://\nSYSTEMS CONTRACTOR", 64f, UITheme.Accent, TextAlignmentOptions.Center);
             var rt = title.rectTransform;
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
@@ -120,7 +120,7 @@ namespace NeoKyoto.UI
             trt.anchoredPosition = new Vector2(0, 20);
 
             var btn = UITheme.Button("Connect", _titlePanel.transform,
-                "CONNECT TO CONTRACTOR TERMINAL", UITheme.Accent, () => _gm.StartGame());
+                "CONNECT TO ONCALL TERMINAL", UITheme.Accent, () => _gm.StartGame());
             var brt = btn.GetComponent<RectTransform>();
             brt.anchorMin = new Vector2(0.5f, 0.5f);
             brt.anchorMax = new Vector2(0.5f, 0.5f);
@@ -134,7 +134,7 @@ namespace NeoKyoto.UI
             UITheme.Stretch(_boardPanel.GetComponent<RectTransform>());
 
             var header = UITheme.Label("Header", _boardPanel.transform,
-                "NEO-KYOTO — CONTRACTOR TERMINAL", UITheme.TitleSize, UITheme.Accent,
+                "ONCALL > CONTRACTOR TERMINAL", UITheme.TitleSize, UITheme.Accent,
                 TextAlignmentOptions.Center);
             var hrt = header.rectTransform;
             hrt.anchorMin = new Vector2(0.5f, 1f);

@@ -35,7 +35,7 @@ class Contract03(BaseContract):
     def get_briefing(self):
         return """
     ╔══════════════════════════════════════════════╗
-    ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
+    ║   ONCALL:// SYSTEMS CONTRACTOR              ║
     ║   Contract #2479 – Drone Dispatch           ║
     ╚══════════════════════════════════════════════╝
 

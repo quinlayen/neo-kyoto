@@ -139,7 +139,7 @@ class Contract11(BaseCombinedContract):
     def get_briefing(self):
         return """
     ╔══════════════════════════════════════════════╗
-    ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
+    ║   ONCALL:// SYSTEMS CONTRACTOR              ║
     ║   Contract #2488 – Sector Sweep             ║
     ╚══════════════════════════════════════════════╝
 

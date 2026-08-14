@@ -128,7 +128,7 @@ namespace NeoKyoto.Contracts
         public override string GetBriefing()
         {
             return @"    ╔══════════════════════════════════════════════╗
-    ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
+    ║   ONCALL:// SYSTEMS CONTRACTOR              ║
     ║   Contract #2477 – Keep the Lights On       ║
     ╚══════════════════════════════════════════════╝
 

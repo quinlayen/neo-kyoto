@@ -184,7 +184,7 @@ class Contract06(BaseTerminalContract):
     def get_briefing(self):
         return """
     ╔══════════════════════════════════════════════╗
-    ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
+    ║   ONCALL:// SYSTEMS CONTRACTOR              ║
     ║   Contract #2482 – Log Analysis             ║
     ╚══════════════════════════════════════════════╝
 

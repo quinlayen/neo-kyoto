@@ -1,13 +1,14 @@
-# Neo-Kyoto Systems Contractor — Game Design Document
+# ONCALL: Systems Contractor — Game Design Document
 
 **Status**: Draft
-**Last Updated**: 2026-08-11
+**Last Updated**: 2026-08-13
 
 ---
 
 ## 1. Game Identity
 
-**Title**: Neo-Kyoto Systems Contractor
+**Title**: ONCALL: Systems Contractor
+**Setting**: Neo-Kyoto, 2189
 
 **Genre**: Programming puzzle / automation game
 

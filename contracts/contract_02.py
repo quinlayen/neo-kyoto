@@ -32,7 +32,7 @@ class Contract02(BaseContract):
     def get_briefing(self):
         return """
     ╔══════════════════════════════════════════════╗
-    ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
+    ║   ONCALL:// SYSTEMS CONTRACTOR              ║
     ║   Contract #2478 – Drone Route Cleanup      ║
     ╚══════════════════════════════════════════════╝
 

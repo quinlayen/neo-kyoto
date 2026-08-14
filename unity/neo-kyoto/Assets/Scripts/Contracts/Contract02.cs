@@ -56,7 +56,7 @@ namespace NeoKyoto.Contracts
         public override string GetBriefing()
         {
             return @"    ╔══════════════════════════════════════════════╗
-    ║   NEO-KYOTO SYSTEMS CONTRACTOR              ║
+    ║   ONCALL:// SYSTEMS CONTRACTOR              ║
     ║   Contract #2478 – Drone Route Cleanup      ║
     ╚══════════════════════════════════════════════╝
 

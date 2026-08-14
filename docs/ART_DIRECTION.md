@@ -30,7 +30,7 @@ requires no new art assets.
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Console framing | **Diegetic monitor** — RenderTexture on a world-space quad | Literalises the jack-in fantasy |
-| Asset licensing | **Free / CC0 only** | No budget; forces lighting-led art |
+| Asset licensing | **Free / CC0 only (temporary)** | Current budget constraint, not a design choice. Professional assets will replace placeholders as investment allows. Forces lighting-led art for now, which is the right priority regardless. |
 | District style | Stylized-primitive elevated by lighting, emissive trim, fog, decals | CC0 cyberpunk model coverage is thin; lighting scales better than geometry |
 
 ---

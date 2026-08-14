@@ -152,21 +152,21 @@ def _is_relevant_bonus(contract_id, bonus_id):
 def show_title_screen():
     clear()
     print("╔══════════════════════════════════════════════╗")
-    print("║        NEO-KYOTO SYSTEMS CONTRACTOR         ║")
+    print("║        ONCALL:// SYSTEMS CONTRACTOR         ║")
     print("║                                              ║")
     print("║    \"The city doesn't sleep. Neither do its   ║")
     print("║     systems. When they break, you get        ║")
     print("║     the call.\"                               ║")
     print("╚══════════════════════════════════════════════╝")
     print()
-    input("  Press Enter to connect to the contractor terminal...")
+    input("  Press Enter to connect to ONCALL terminal...")
 
 
 def show_contract_board(game_state):
     while True:
         clear()
         print("╔══════════════════════════════════════════════╗")
-        print("║   NEO-KYOTO — CONTRACTOR TERMINAL           ║")
+        print("║   ONCALL > CONTRACTOR TERMINAL              ║")
         print("╚══════════════════════════════════════════════╝")
         print()
 
@@ -238,7 +238,7 @@ def run_contract(cdef, game_state):
     while True:
         clear()
         print("══════════════════════════════════════════════")
-        print(f"  NEO-KYOTO — {contract.TITLE} — {contract.LOCATION}")
+        print(f"  ONCALL > {contract.TITLE} — {contract.LOCATION}")
         print("══════════════════════════════════════════════")
         print()
         print(contract.get_status_text())
@@ -327,7 +327,7 @@ def run_terminal_contract(cdef, game_state):
     while True:
         clear()
         print("══════════════════════════════════════════════")
-        print(f"  NEO-KYOTO — {contract.TITLE} — {contract.LOCATION}")
+        print(f"  ONCALL > {contract.TITLE} — {contract.LOCATION}")
         print("══════════════════════════════════════════════")
         print()
         print(contract.get_status_text())
@@ -397,7 +397,7 @@ def run_combined_contract(cdef, game_state):
     while True:
         clear()
         print("══════════════════════════════════════════════")
-        print(f"  NEO-KYOTO — {contract.TITLE} — {contract.LOCATION}")
+        print(f"  ONCALL > {contract.TITLE} — {contract.LOCATION}")
         print("══════════════════════════════════════════════")
         print()
         print(contract.get_status_text())
