@@ -134,68 +134,78 @@ namespace NeoKyoto.Contracts
 
     ─── INCOMING TRANSMISSION ───
 
-    Contractor,
+        FROM:  VOSS // CONTRACTOR DISPATCH
+        TO:    CONTRACTOR #4471
+        RE:    #2477 — Block 7 power node
 
-    Welcome to Neo-Kyoto. The year is 2189.
+    New ID on my list, so I'll assume you're new to
+    this. Welcome to Neo-Kyoto. Try not to get
+    attached.
 
-    This city runs on thousands of automated
-    systems — power grids, cargo drones, water
-    recyclers, transit networks. When those systems
-    break, people like you get the call.
+    Block 7's node has been flickering six hours.
+    Four hundred units up there. About a third of
+    them have no light tonight.
 
-    You are an engineer. You write small programs
-    that tell machines what to do. Right now,
-    Block 7's power node is flickering and the
-    residents are losing power. You need to
-    stabilize it by writing a short program.
+    Management filed it non-urgent. Make of that
+    what you will.
+
+    The node's old. It won't take one big correction
+    — it'll trip, and you'll be starting over. You
+    have to walk it down. Small steps, as many as it
+    takes, until it settles.
+
+    You'll know when it's stable. So will they.
+
+    — V
 " + PageBreak + @"
-    ─── WHAT IS A PROGRAM? ───
+    ─── CONTRACT BRIEF ───
 
-    A program is a list of instructions the
-    computer follows from top to bottom, one line
-    at a time. Each line is a command — it tells
-    the computer to do one thing. A command looks
-    like this:
+        OBJECTIVE    Block 7 power node → STABLE
+        SCRIPT       block7.py
+
+    ─── COMMANDS ───
+
+        rebalance()       reduce node load
+        print(""text"")     display a message
+
+    ─── HOW A PROGRAM WORKS ───
+
+    A program is a list of instructions, run from
+    top to bottom, one line at a time.
+
+    A command is a name followed by parentheses:
 
         rebalance()
 
-    The name tells the computer which command you
-    mean. The parentheses () tell it ""do it now.""
-    Without () the computer sees the name but does
-    nothing with it.
+    The name says which command. The () means
+    ""do it now."" Without them the computer sees
+    the name and does nothing with it.
+" + PageBreak + @"
+    ─── WATCHING YOUR WORK ───
 
-    You also have print() — it displays a message
-    on screen. Put text in quotes inside it:
+    print() displays a message on screen. Put text
+    in quotes inside it:
 
         print(""hello"")
 
-    You can also use print() to see what a command
-    gives back. It is your best tool for watching
-    what your program is doing.
-" + PageBreak + @"
-    ─── YOUR COMMAND ───
+    It is your best tool for seeing what your
+    program is actually doing.
 
-        rebalance()  — rebalances the power node
-
-    One rebalance is not enough. The node needs
-    many rebalances before it reaches a STABLE
-    state. Each call on its own line.
-" + PageBreak + @"
-    ─── YOUR GOAL ───
-
-    Bring the power node from FLICKERING to STABLE.
-
-    If your first attempt is not enough, edit your
-    script, add more, and run again.
-" + PageBreak + @"
     ─── HOW TO WORK ───
-
-    Your script file is: block7.py
 
     1. Write your program in the editor
     2. Press RUN to execute it
-    3. Watch the system respond, then adjust
+    3. Watch the node respond, then adjust
        and run again
+
+    ─── YOU CANNOT BREAK THIS ───
+
+    The sandbox stops a runaway script on its own
+    and hands the node back untouched. Nothing you
+    write can damage Block 7, and nothing you get
+    wrong costs you anything.
+
+    Go and see what happens.
     ";
         }
 
@@ -206,19 +216,24 @@ namespace NeoKyoto.Contracts
     ║   Block 7 Power Node — STABLE               ║
     ╚══════════════════════════════════════════════╝
 
-    Power restored. The lights in Block 7 are steady
-    again. District management has logged your work.
-    Payment processed.
+    ─── INCOMING TRANSMISSION ───
 
-    ─── WHAT YOU JUST DID ───
+        FROM:  VOSS // CONTRACTOR DISPATCH
 
-    You wrote a program — a real one. You gave the
-    computer a list of instructions, it read them from
-    top to bottom, and it followed every one in order.
+    Node's holding. Block 7 has lights.
 
-    That is how all software works, from the simplest
-    script to the systems that run this city. A list
-    of steps. Nothing magical.
+    Logged it, pushed your payment. That's a real
+    program you wrote — instructions in order, machine
+    followed them. That's all software is, all the way
+    up to the things running this city.
+
+    Between us: you typed that same line a lot of
+    times, didn't you.
+
+    There's a better way. It'll be on your deck by
+    morning.
+
+    — V
 " + PageBreak + @"
     ─── THE LIMITATION ───
 
