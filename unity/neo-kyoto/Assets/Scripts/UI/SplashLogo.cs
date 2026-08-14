@@ -1,6 +1,5 @@
 using NeoKyoto.Core;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace NeoKyoto.UI
@@ -20,11 +19,14 @@ namespace NeoKyoto.UI
     [RequireComponent(typeof(Image))]
     public class SplashLogo : MonoBehaviour
     {
-        [Tooltip("Seconds for the mark to wipe on. Any input skips to the end.")]
-        public float revealSeconds = 1.6f;
+        [Tooltip("Seconds for the mark to wipe on.")]
+        public float revealSeconds = 2f;
 
         [Tooltip("Signal instability early game. Turn off for photosensitivity.")]
         public bool flicker = true;
+
+        [Tooltip("Off when SplashSequence cues the reveal instead.")]
+        public bool autoStart = true;
 
         // Starting values. Gap is divided by instability, so a player at full rank
         // effectively never sees a dip.
@@ -34,6 +36,7 @@ namespace NeoKyoto.UI
 
         private Image _image;
         private float _elapsed;
+        private bool _started;
         private bool _revealed;
 
         private float _instability = 1f;
@@ -47,9 +50,35 @@ namespace NeoKyoto.UI
             _image.fillOrigin = (int)Image.OriginHorizontal.Left;
         }
 
+        /// <summary>
+        /// Holds the mark dark until <see cref="Begin"/>. Awake has already run by
+        /// the time the sequence binds, so the hold has to be applied explicitly
+        /// rather than left to <see cref="autoStart"/>.
+        /// </summary>
+        public void PrepareForCue()
+        {
+            autoStart = false;
+            _started = false;
+            _revealed = false;
+            _elapsed = 0f;
+            if (_image != null) _image.fillAmount = 0f;
+        }
+
+        /// <summary>Starts the wipe. Used by <see cref="SplashSequence"/> to cue it.</summary>
+        public void Begin() { _started = true; }
+
+        /// <summary>Snaps the mark fully on, for a skipped intro.</summary>
+        public void CompleteReveal()
+        {
+            _started = true;
+            _revealed = true;
+            _image.fillAmount = 1f;
+        }
+
         private void OnEnable()
         {
             _elapsed = 0f;
+            _started = autoStart;
             _revealed = false;
             _image.fillAmount = 0f;
             SetAlpha(1f);
@@ -68,6 +97,7 @@ namespace NeoKyoto.UI
 
         private void Update()
         {
+            if (!_started) return;
             if (!_revealed) { Reveal(); return; }
             if (flicker) Flicker();
         }
@@ -75,25 +105,10 @@ namespace NeoKyoto.UI
         private void Reveal()
         {
             _elapsed += Time.unscaledDeltaTime;
-
-            // Never trap someone who has already decided to play.
-            if (Skipped() || _elapsed >= revealSeconds)
-            {
-                _image.fillAmount = 1f;
-                _revealed = true;
-                return;
-            }
+            if (_elapsed >= revealSeconds) { CompleteReveal(); return; }
 
             float t = _elapsed / revealSeconds;
             _image.fillAmount = 1f - (1f - t) * (1f - t);   // ease out
-        }
-
-        private static bool Skipped()
-        {
-            var kb = Keyboard.current;
-            if (kb != null && kb.anyKey.wasPressedThisFrame) return true;
-            var mouse = Mouse.current;
-            return mouse != null && mouse.leftButton.wasPressedThisFrame;
         }
 
         private void Flicker()

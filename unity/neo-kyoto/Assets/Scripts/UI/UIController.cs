@@ -109,18 +109,26 @@ namespace NeoKyoto.UI
             _titlePanel = UITheme.Box("TitlePanel", parent, UITheme.PanelSolid).gameObject;
             UITheme.Stretch(_titlePanel.GetComponent<RectTransform>());
 
-            var panorama = UITheme.Art("ONCALL_CityPanorama");
-            UITheme.CoverImage("Panorama", _titlePanel.transform, panorama);
+            // Backdrop art rides in one group so it fades and rises together. It is
+            // oversized by the rise distance, otherwise sliding it up would expose a
+            // strip of empty panel along the bottom edge.
+            var backdrop = UITheme.Node("Backdrop", _titlePanel.transform);
+            const float over = SplashSequence.CityRise;
+            UITheme.Stretch(backdrop.GetComponent<RectTransform>(), -over, -over, -over, -over);
+            var backdropGroup = backdrop.AddComponent<CanvasGroup>();
+
+            UITheme.CoverImage("Panorama", backdrop.transform, UITheme.Art("ONCALL_CityPanorama"));
 
             // The panorama is dense and brightly lit, and the logo and copy sit dead
             // centre where it is busiest. A flat scrim under the vignette pushes the
             // city back so it frames the mark instead of competing with it.
-            var scrim = UITheme.Box("Scrim", _titlePanel.transform, new Color(0.02f, 0.03f, 0.05f, 0.45f));
+            var scrim = UITheme.Box("Scrim", backdrop.transform, new Color(0.02f, 0.03f, 0.05f, 0.45f));
             UITheme.Stretch(scrim.rectTransform);
             scrim.raycastTarget = false;
 
-            UITheme.CoverImage("Vignette", _titlePanel.transform, UITheme.Art("SplashVignette"));
+            UITheme.CoverImage("Vignette", backdrop.transform, UITheme.Art("SplashVignette"));
 
+            SplashLogo splashLogo = null;
             var logoSprite = UITheme.Art("ONCALL_Logo");
             if (logoSprite != null)
             {
@@ -131,7 +139,7 @@ namespace NeoKyoto.UI
                 // fight the fill wipe SplashLogo drives.
                 Place(logo.rectTransform, 0.5f, 0.5f, new Vector2(0, 210),
                       new Vector2(LogoWidth, LogoWidth * logoSprite.rect.height / logoSprite.rect.width));
-                logo.gameObject.AddComponent<SplashLogo>();
+                splashLogo = logo.gameObject.AddComponent<SplashLogo>();
             }
             else
             {
@@ -146,15 +154,24 @@ namespace NeoKyoto.UI
                 " When they break, you get the call.\"", 22f, UITheme.Text,
                 TextAlignmentOptions.Center);
             Place(tag.rectTransform, 0.5f, 0.5f, new Vector2(0, -20), new Vector2(1200, 120));
+            var tagGroup = tag.gameObject.AddComponent<CanvasGroup>();
 
-            var btn = UITheme.Button("Connect", _titlePanel.transform,
+            // Button and its hint share a group: the call to action arrives as one beat.
+            var action = UITheme.Node("Action", _titlePanel.transform);
+            UITheme.Stretch(action.GetComponent<RectTransform>());
+            var actionGroup = action.AddComponent<CanvasGroup>();
+
+            var btn = UITheme.Button("Connect", action.transform,
                 "CONNECT TO ONCALL TERMINAL", UITheme.Accent, () => _gm.StartGame());
             Place(btn.GetComponent<RectTransform>(), 0.5f, 0.5f, new Vector2(0, -180), new Vector2(520, 54));
 
-            var hint = UITheme.Label("TitleHint", _titlePanel.transform,
+            var hint = UITheme.Label("TitleHint", action.transform,
                 "Progress saves automatically.", UITheme.MicroSize, UITheme.TextDim,
                 TextAlignmentOptions.Center);
             Place(hint.rectTransform, 0.5f, 0.5f, new Vector2(0, -240), new Vector2(600, 24));
+
+            _titlePanel.AddComponent<SplashSequence>()
+                       .Bind(backdropGroup, splashLogo, tagGroup, actionGroup);
         }
 
         private void BuildBoard(Transform parent)
