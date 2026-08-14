@@ -164,7 +164,18 @@ MonoBehaviour:
     complete: 1
     error: 1
     tick: 1
-    crackle: 2.2
+    crackle: 2.84
+  splashTiming:
+    cityAt: 0.8
+    cityFor: 4
+    cityRise: 50
+    logoAt: 5.2
+    logoFor: 3.5
+    logoStagger: 0.8
+    taglineAt: 9.2
+    taglineFor: 1.4
+    buttonAt: 10.8
+    buttonFor: 0.6
 --- !u!4 &1443013671
 Transform:
   m_ObjectHideFlags: 0

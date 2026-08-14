@@ -17,6 +17,9 @@ namespace NeoKyoto.UI
         [Tooltip("Right-hand share of the screen taken by the work panel.")]
         public float panelWidth = 0.42f;
 
+        /// <summary>Splash choreography. Set by Bootstrap before this object activates.</summary>
+        public SplashTiming splashTiming = new SplashTiming();
+
         private GameManager _gm;
 
         private GameObject _titlePanel, _boardPanel, _briefingPanel, _workspacePanel, _debriefPanel;
@@ -126,7 +129,7 @@ namespace NeoKyoto.UI
             // oversized by the rise distance, otherwise sliding it up would expose a
             // strip of empty panel along the bottom edge.
             var backdrop = UITheme.Node("Backdrop", _titlePanel.transform);
-            const float over = SplashSequence.CityRise;
+            const float over = SplashSequence.BackdropOversize;
             UITheme.Stretch(backdrop.GetComponent<RectTransform>(), -over, -over, -over, -over);
             var backdropGroup = backdrop.AddComponent<CanvasGroup>();
 
@@ -184,8 +187,9 @@ namespace NeoKyoto.UI
                 TextAlignmentOptions.Center);
             Place(hint.rectTransform, 0.5f, 0.5f, new Vector2(0, -240), new Vector2(600, 24));
 
-            _titlePanel.AddComponent<SplashSequence>()
-                       .Bind(backdropGroup, splashLogo, tagGroup, actionGroup);
+            var sequence = _titlePanel.AddComponent<SplashSequence>();
+            sequence.timing = splashTiming;
+            sequence.Bind(backdropGroup, splashLogo, tagGroup, actionGroup);
         }
 
         private void BuildBoard(Transform parent)

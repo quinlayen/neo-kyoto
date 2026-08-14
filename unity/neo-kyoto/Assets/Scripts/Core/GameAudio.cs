@@ -252,24 +252,54 @@ namespace NeoKyoto.Core
             return clip;
         }
 
-        /// <summary>A tube arcing: a few noise spits with hard decay.</summary>
+        /// <summary>
+        /// A tube arcing itself to death: irregular spits of noise over a sagging
+        /// mains buzz, with a low thump on the first hit.
+        ///
+        /// The earlier version was a short bright burst, which read as a click. Weight
+        /// comes from the low-mid content — a detuned buzz around 90 Hz and a filtered
+        /// noise band — not from turning a thin sound up, which only makes it harsh.
+        /// </summary>
         private static AudioClip Crackle()
         {
-            int count = (int)(0.13f * Rate);
+            const float seconds = 0.55f;
+            int count = (int)(seconds * Rate);
             var data = new float[count];
             var rnd = new System.Random(19);
-            float lo = 0f;
+
+            float lo = 0f, band = 0f, buzzPhase = 0f;
+
+            // Irregular arcing rather than an even stutter.
+            float[] spitAt = { 0.00f, 0.07f, 0.13f, 0.26f, 0.34f, 0.44f };
+            float[] spitGain = { 1.00f, 0.55f, 0.80f, 0.45f, 0.62f, 0.30f };
 
             for (int i = 0; i < count; i++)
             {
-                float t = (float)i / count;
-                float white = (float)(rnd.NextDouble() * 2.0 - 1.0);
-                lo += (white - lo) * 0.6f;                       // keep it bright, not hissy
+                float t = (float)i / Rate;
 
-                // Three spits inside the window rather than one flat burst.
-                float spit = Mathf.Max(0f, Mathf.Sin(t * Mathf.PI * 7f));
-                float env = Mathf.Exp(-7f * t) * spit;
-                data[i] = lo * env * 0.55f;
+                // Mains buzz that sags in pitch as the tube gives out.
+                float hz = Mathf.Lerp(92f, 63f, t / seconds);
+                buzzPhase += hz / Rate;
+                if (buzzPhase > 1f) buzzPhase -= 1f;
+                float buzz = (buzzPhase < 0.5f ? 1f : -1f) * 0.35f
+                           + Mathf.Sin(buzzPhase * Mathf.PI * 2f) * 0.4f;
+
+                // Noise pushed into the low-mids rather than left as hiss.
+                float white = (float)(rnd.NextDouble() * 2.0 - 1.0);
+                lo += (white - lo) * 0.12f;
+                band += (lo - band) * 0.55f;
+
+                // Sum the spit envelopes so hits overlap instead of gating cleanly.
+                float spit = 0f;
+                for (int s = 0; s < spitAt.Length; s++)
+                {
+                    float d = t - spitAt[s];
+                    if (d >= 0f) spit += spitGain[s] * Mathf.Exp(-38f * d);
+                }
+                spit = Mathf.Min(spit, 1.6f);
+
+                float tail = Mathf.Exp(-3.4f * t);               // the whole event dying away
+                data[i] = (band * 1.5f + buzz * 0.5f) * spit * tail * 0.5f;
             }
 
             var clip = AudioClip.Create("sfxCrackle", count, 1, Rate, false);

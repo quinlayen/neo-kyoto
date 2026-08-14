@@ -24,8 +24,11 @@ namespace NeoKyoto.UI
     /// </summary>
     public class SplashLogo : MonoBehaviour
     {
-        [Tooltip("Seconds for the whole mark to light up, glyph by glyph.")]
-        public float revealSeconds = 2.6f;
+        [Tooltip("Seconds for the whole mark to light up.")]
+        public float revealSeconds = 3.5f;
+
+        [Tooltip("0 fades the whole mark at once; 1 strikes glyphs on one after another.")]
+        [Range(0f, 1f)] public float stagger = 0.8f;
 
         [Tooltip("Failing-power behaviour. Turn off for photosensitivity.")]
         public bool flicker = true;
@@ -40,8 +43,6 @@ namespace NeoKyoto.UI
         public Color tint = new Color(0.50f, 0.85f, 0.72f, 1f);
 
         // Starting values.
-        private const float GlyphStagger = 0.80f;   // share of the reveal spent staggering
-        private const float StrikeTime = 0.22f;     // per-glyph strike-on, seconds
         private const float MinGap = 1.4f, MaxGap = 4.5f;
         private const float MinDip = 0.05f, MaxDip = 0.11f;
         private const float DeadLevel = 0.06f;      // an unlit tube, not truly absent
@@ -105,11 +106,13 @@ namespace NeoKyoto.UI
                         if (px[y * w + x].a > ClearThreshold) return true;
                     return false;
                 });
+                // Raw 0..1 position. Stagger is applied at reveal time, not baked in,
+                // so the slider stays live.
                 for (int c = 0; c < cols.Count; c++)
                 {
                     float order = cols.Count > 1 ? (float)c / (cols.Count - 1) : 0f;
                     AddPart(tex, sprite, new RectInt(cols[c].Start, band.Start, cols[c].Length, band.Length),
-                            true, order * GlyphStagger);
+                            true, order);
                 }
             }
         }
@@ -212,15 +215,20 @@ namespace NeoKyoto.UI
             if (flicker) Failing();
         }
 
-        /// <summary>Glyphs strike on left to right, like a sign warming up.</summary>
+        /// <summary>
+        /// Glyphs light up across the reveal window. Each one starts at its own
+        /// position scaled by stagger and takes whatever is left of the window, so the
+        /// last glyph always finishes exactly on time: at stagger 0 the whole mark
+        /// fades together over the full duration, at 1 they strike on in sequence.
+        /// </summary>
         private void Reveal()
         {
             _elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(_elapsed / revealSeconds);
-            float strike = Mathf.Max(0.0001f, StrikeTime / revealSeconds);
+            float t = Mathf.Clamp01(_elapsed / Mathf.Max(0.0001f, revealSeconds));
+            float window = Mathf.Max(0.05f, 1f - stagger);
 
             foreach (var g in _glyphs)
-                SetLevel(g, Mathf.Clamp01((t - g.Order) / strike));
+                SetLevel(g, Mathf.Clamp01((t - g.Order * stagger) / window));
 
             if (t >= 1f) { _revealed = true; _elapsed = revealSeconds; }
         }

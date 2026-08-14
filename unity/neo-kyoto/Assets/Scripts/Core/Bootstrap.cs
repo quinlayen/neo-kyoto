@@ -24,6 +24,10 @@ namespace NeoKyoto.Core
                  "in edit mode to keep it.")]
         public AudioMix audioMix = new AudioMix();
 
+        [Tooltip("Splash intro beats. 'At' is when something starts, 'For' is how long " +
+                 "it takes once it does.")]
+        public SplashTiming splashTiming = new SplashTiming();
+
         private void Awake()
         {
             // Created inactive on purpose: AddComponent runs Awake immediately, so a
@@ -71,9 +75,13 @@ namespace NeoKyoto.Core
             var world = worldGo.AddComponent<WorldController>();
             world.worldCamera = cam;
 
+            // Inactive first: UIController builds the whole splash in Awake, so the
+            // timing has to be in place before it runs.
             var uiGo = new GameObject("UI");
+            uiGo.SetActive(false);
             uiGo.transform.SetParent(transform, false);
-            uiGo.AddComponent<UIController>();
+            uiGo.AddComponent<UIController>().splashTiming = splashTiming;
+            uiGo.SetActive(true);
         }
     }
 }

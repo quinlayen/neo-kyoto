@@ -5,6 +5,42 @@ using UnityEngine.UI;
 namespace NeoKyoto.UI
 {
     /// <summary>
+    /// Splash choreography, in one serialisable block so it can be tuned in the
+    /// inspector instead of recompiled.
+    ///
+    /// Every beat is a pair: "At" is when it starts, measured in seconds from the
+    /// moment the splash appears, and "For" is how long it takes once it does. So
+    /// cityAt 0.5 / cityFor 4 means half a second of black, then a four second fade.
+    /// </summary>
+    [System.Serializable]
+    public class SplashTiming
+    {
+        [Header("City — black holds until it starts")]
+        public float cityAt = 0.5f;
+        public float cityFor = 4f;
+        [Tooltip("Pixels the city drifts upward while fading. 0 for a pure fade.")]
+        [Range(0f, SplashSequence.BackdropOversize)] public float cityRise = 50f;
+
+        [Header("Logo")]
+        public float logoAt = 5f;
+        public float logoFor = 3.5f;
+        [Tooltip("0 lights the whole mark at once as a plain fade; 1 strikes the " +
+                 "glyphs on one after another like a sign warming up.")]
+        [Range(0f, 1f)] public float logoStagger = 0.8f;
+
+        [Header("Tagline")]
+        public float taglineAt = 9f;
+        public float taglineFor = 1.4f;
+
+        [Header("Connect button")]
+        public float buttonAt = 10.5f;
+        public float buttonFor = 0.6f;
+
+        /// <summary>When the intro is over and everything is at rest.</summary>
+        public float TotalSeconds { get { return buttonAt + buttonFor; } }
+    }
+
+    /// <summary>
     /// Times the splash intro: black, city, mark, tagline, button. Beats and
     /// durations come from the table in docs/ART_BRIEF_SPLASH.md.
     ///
@@ -24,19 +60,14 @@ namespace NeoKyoto.UI
             public float Start, Duration, RiseFrom;
         }
 
-        // Beats follow docs/ART_BRIEF_SPLASH.md, slowed: the city takes its time
-        // arriving, and the mark waits a clear beat after it has settled rather than
-        // striking on while the background is still moving.
-        private const float CityAt = 0.5f, CityFor = 3.0f;
-        private const float LogoAt = 3.9f;
-        private const float TaglineAt = 6.6f, TaglineFor = 1.3f;
-        private const float ButtonAt = 8.0f, ButtonFor = 0.6f;
-
         /// <summary>
-        /// How far the city rises as it fades up, in reference pixels. The backdrop
-        /// must be oversized by at least this much or the slide exposes bare panel.
+        /// Fixed headroom the backdrop is built with. cityRise is tunable, so the
+        /// oversize cannot track it — it is sized once for the largest rise allowed,
+        /// otherwise a slide would expose bare panel along the bottom edge.
         /// </summary>
-        public const float CityRise = 50f;
+        public const float BackdropOversize = 120f;
+
+        public SplashTiming timing = new SplashTiming();
 
         private Beat[] _beats;
         private SplashLogo _logo;
@@ -48,9 +79,10 @@ namespace NeoKyoto.UI
             _logo = logo;
             _beats = new[]
             {
-                new Beat { Group = city,    Start = CityAt,    Duration = CityFor,    RiseFrom = CityRise },
-                new Beat { Group = tagline, Start = TaglineAt, Duration = TaglineFor },
-                new Beat { Group = button,  Start = ButtonAt,  Duration = ButtonFor },
+                new Beat { Group = city,    Start = timing.cityAt,    Duration = timing.cityFor,
+                           RiseFrom = timing.cityRise },
+                new Beat { Group = tagline, Start = timing.taglineAt, Duration = timing.taglineFor },
+                new Beat { Group = button,  Start = timing.buttonAt,  Duration = timing.buttonFor },
             };
             Rewind();
         }
@@ -64,7 +96,12 @@ namespace NeoKyoto.UI
             if (_beats == null) return;
 
             foreach (var b in _beats) Apply(b, 0f);
-            if (_logo != null) _logo.PrepareForCue();
+            if (_logo != null)
+            {
+                _logo.revealSeconds = timing.logoFor;
+                _logo.stagger = timing.logoStagger;
+                _logo.PrepareForCue();
+            }
         }
 
         private void Update()
@@ -75,18 +112,18 @@ namespace NeoKyoto.UI
 
             _elapsed += Time.unscaledDeltaTime;
             foreach (var b in _beats)
-                Apply(b, Mathf.Clamp01((_elapsed - b.Start) / b.Duration));
+                Apply(b, Mathf.Clamp01((_elapsed - b.Start) / Mathf.Max(0.0001f, b.Duration)));
 
-            if (_logo != null && _elapsed >= LogoAt) _logo.Begin();
+            if (_logo != null && _elapsed >= timing.logoAt) _logo.Begin();
 
-            if (_elapsed >= ButtonAt + ButtonFor) _finished = true;
+            if (_elapsed >= timing.TotalSeconds) _finished = true;
         }
 
         /// <summary>Jumps to the resting state — everything on, mark fully lit.</summary>
         public void Finish()
         {
             _finished = true;
-            _elapsed = ButtonAt + ButtonFor;
+            _elapsed = timing.TotalSeconds;
             if (_beats != null) foreach (var b in _beats) Apply(b, 1f);
             if (_logo != null) _logo.CompleteReveal();
         }
