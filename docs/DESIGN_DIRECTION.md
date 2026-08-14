@@ -50,7 +50,11 @@ Every contract now awards a performance rating:
 
 **Python/Combined contracts** — rated by function call efficiency:
 
-> ⚠ **These thresholds are known-defective — see `ECONOMY.md` Part 1 (audit, 2026-08-14).** Two confirmed problems: (1) randomised contracts (C8/C10/C11) grade partly on the dice roll, because thresholds are absolute while the optimal call count varies; (2) call count cannot distinguish an unrolled solution from a loop — they make identical calls — so the "replay with better tools for 3★" loop is structurally impossible on C1–C4, and C1's naive first attempt already scores 3★. Do not treat the table below as authoritative.
+> ⚠ **This table documents the Python prototype, not the Unity build — see `ECONOMY.md` Part 1 (audit, 2026-08-14).**
+>
+> **Unity has already fixed the serious problem.** It counts calls *to goal* rather than for the whole run, and downgrades 3★ to 2★ unless a loop genuinely did the work (`GameManager.cs:486`, `ScriptRunner.LoopDidTheWork`). So in Unity, an unrolled solution cannot score 3★ and the replay loop works as intended.
+>
+> **Still outstanding:** (1) the Python prototype has neither mechanism, so its C1 naive solution does score 3★; (2) randomised contracts (C8/C10/C11, not yet ported to Unity) grade partly on the dice roll, because thresholds are absolute while the optimal call count varies with the roll.
 
 | Contract | 3★ | 2★ | Min Calls |
 |----------|-----|-----|-----------|

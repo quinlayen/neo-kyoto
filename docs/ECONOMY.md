@@ -36,6 +36,28 @@ Identical play earns different grades. A slightly sloppy solution passes on a li
 
 ## Defect 2 · Call count cannot detect the thing it's meant to reward
 
+> ### ✅ Already solved in the Unity build — corrected 2026-08-14
+>
+> This defect is **live in the Python prototype and in the `DESIGN_DIRECTION.md` table, but already fixed in the Unity code.** The audit below was written from the prototype and overstated the problem. Two mechanisms in Unity that the prototype lacks:
+>
+> **1. Calls are counted to goal, not for the whole run** (`GameManager.cs:340`, `Scoring.cs`). A `while True` loop cannot stop itself and always burns the sandbox cap, so scoring the full run would rank the loop *below* the unrolled version — the opposite of the lesson. The comment in `Scoring.RateContract` shows this was reasoned about deliberately.
+>
+> **2. 3★ requires that a loop actually did the work** (`GameManager.cs:486`):
+>
+> ```csharp
+> if (LastStars == 3 && !_runner.LoopDidTheWork(_callsToGoal)) LastStars = 2;
+> ```
+>
+> `ScriptRunner.LoopDidTheWork` requires at least half the calls-to-goal to have occurred inside a loop body, and is explicitly defended against a decorative `while False:` sitting above a block of repeated calls.
+>
+> **This is the "score source structure, not just calls" fix proposed below, already implemented.** The Unity build therefore *can* distinguish an unrolled solution from a looped one, and C1's naive first attempt scores 2★, not 3★.
+>
+> **What remains:** port both mechanisms to the Python prototype, or retire the prototype's scoring; and update the `DESIGN_DIRECTION.md` table, which documents the prototype's behaviour.
+
+The analysis below stands as the reasoning for *why* those two mechanisms are necessary.
+
+---
+
 This is the serious one.
 
 `DESIGN_DIRECTION.md` states the intent plainly:

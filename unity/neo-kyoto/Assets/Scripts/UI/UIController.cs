@@ -33,6 +33,7 @@ namespace NeoKyoto.UI
         private RunLineHighlight _runLine;
         private Button _runButton, _debriefButton;
         private TextMeshProUGUI _runButtonLabel;
+        private TextMeshProUGUI _runMeter;
         private LayoutElement _statusLayout;
 
         private TextMeshProUGUI _debriefScore;
@@ -443,6 +444,13 @@ namespace NeoKyoto.UI
             UITheme.Button("Brief", _runRow.transform, "BRIEFING", UITheme.TextDim,
                 () => _gm.GoTo(GameScreen.Briefing));
 
+            // Call meter. The star rating is otherwise only revealed at the debrief,
+            // by which point the script is closed and the player can no longer act on
+            // it. Putting the count here is what turns "I finished it" into "I could
+            // do that in fewer".
+            _runMeter = UITheme.Label("RunMeter", content, "", UITheme.SmallSize, UITheme.TextDim);
+            AddLayout(_runMeter.gameObject, 20f, 0f);
+
             // ── Console (both kinds of contract) ──
             var consoleLabel = UITheme.Label("ConsoleLabel", content, "OUTPUT",
                 UITheme.SmallSize, UITheme.TextDim);
@@ -784,6 +792,70 @@ namespace NeoKyoto.UI
                 _runButtonLabel.text = _gm.IsRunning ? "■ STOP" : "▶ RUN";
                 _runButtonLabel.color = _gm.IsRunning ? UITheme.Fault : UITheme.Good;
             }
+
+            RefreshRunMeter();
+        }
+
+        /// <summary>
+        /// Shows what the last run cost, next to the button that starts the next one.
+        ///
+        /// The three-star target stays hidden until the contract has been solved once.
+        /// The player should reach their own answer first and only then learn there was
+        /// a tighter one — showing the target up front turns a discovery into a chore.
+        /// </summary>
+        private void RefreshRunMeter()
+        {
+            if (_runMeter == null) return;
+
+            var c = _gm.ActiveContract;
+            bool scripted = c != null && c.Kind != ContractKind.Terminal;
+
+            if (!scripted || _gm.IsRunning)
+            {
+                _runMeter.text = "";
+                return;
+            }
+
+            // Before the first run of a session, show the standing best instead.
+            // Solving the contract jumps to the debrief, so a rating shown only after
+            // a successful run is a rating nobody reads. Coming back to improve one is
+            // exactly when the number matters, and this is what the player sees then.
+            if (!_gm.HasRunThisSession)
+            {
+                var best = _gm.State.ScoreFor(_gm.ActiveDef.Id);
+                if (best == null || best.CallsToGoal <= 0) { _runMeter.text = ""; return; }
+
+                string bestLine = "best · " + best.CallsToGoal + " calls · " +
+                                  Scoring.FormatStars(best.Stars);
+                if (best.Stars < 3 && c.ThreeStarCalls > 0)
+                    bestLine += "    " + c.ThreeStarCalls + " = " + Scoring.FormatStars(3);
+
+                _runMeter.text = bestLine;
+                _runMeter.color = best.Stars == 3 ? UITheme.Good : UITheme.TextDim;
+                return;
+            }
+
+            int calls = _gm.LastRunCallsToGoal;
+
+            if (calls <= 0)
+            {
+                _runMeter.text = "ran · " + _gm.LastRunTotalCalls + " calls · goal not met";
+                _runMeter.color = UITheme.TextDim;
+                return;
+            }
+
+            int stars = Scoring.RateContract(calls, c.ThreeStarCalls, c.TwoStarCalls);
+            if (stars == 3 && !_gm.LastRunLoopDidWork) stars = 2;
+
+            string line = "ran · " + calls + " calls · " + Scoring.FormatStars(stars);
+
+            // Only once they have a completion behind them.
+            var prior = _gm.State.ScoreFor(_gm.ActiveDef.Id);
+            if (prior != null && stars < 3 && c.ThreeStarCalls > 0)
+                line += "    " + c.ThreeStarCalls + " = " + Scoring.FormatStars(3);
+
+            _runMeter.text = line;
+            _runMeter.color = stars == 3 ? UITheme.Good : UITheme.TextDim;
         }
 
         private void RefreshConsole()

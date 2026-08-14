@@ -19,33 +19,39 @@ Everything here serves one constraint: **the deck must never become a full-scree
 
 Three vertical bands. This is the load-bearing decision.
 
+**Orientation follows the existing build.** `WorldController.worldViewportWidth = 0.58f` already places the world on the **left** and the work panel on the **right**, and the C1–C5 site cameras are framed against it. Flipping the spec is free; flipping the build and re-framing every site camera is not.
+
 ```
-┌────┬───────────────────────────────────┬──────────────────┐
-│    │                                   │                  │
-│ R  │        WINDOW FIELD               │   PROTECTED      │
-│ A  │        windows spawn and          │   FOCAL          │
-│ I  │        drag freely here           │   REGION         │
-│ L  │                                   │                  │
-│    │   ┌──────────────┐                │   the failing    │
-│ □  │   │ main.py  ▁ ✕ │                │   system is      │
-│ □  │   │──────────────│                │   framed here    │
-│ □  │   │ 1 rebalance()│                │                  │
-│ □  │   │ 2 ▏          │                │   windows never  │
-│    │   │              │                │   spawn here     │
-│ ▤  │   │    [▶ RUN]   │                │   and snapping   │
-│ ▤  │   └──────────────┘                │   avoids it      │
-│    │                                   │                  │
-│ ◈  │   ┌────────┐                      │                  │
-│    │   │ toast  │                      │                  │
-└────┴───────────────────────────────────┴──────────────────┘
-  8%              ~57%                          35%
+┌──────────────────┬───────────────────────────────────┬────┐
+│                  │                                   │    │
+│   PROTECTED      │        WINDOW FIELD               │ R  │
+│   FOCAL          │        windows spawn and          │ A  │
+│   REGION         │        drag freely here           │ I  │
+│                  │                                   │ L  │
+│   the failing    │            ┌──────────────┐       │    │
+│   system is      │            │ main.py  ▁ ✕ │       │ □  │
+│   framed here    │            │──────────────│       │ □  │
+│                  │            │ 1 rebalance()│       │ □  │
+│   windows never  │            │ 2 ▏          │       │ □  │
+│   spawn here     │            │              │       │    │
+│   and snapping   │            │    [▶ RUN]   │       │ ▤  │
+│   avoids it      │            └──────────────┘       │ ▤  │
+│                  │                                   │    │
+│                  │   ┌────────┐                      │ ◈  │
+│                  │   │ toast  │                      │    │
+└──────────────────┴───────────────────────────────────┴────┘
+       ~35%                     ~57%                     8%
 ```
 
 | Band | Contents |
 |------|----------|
-| **Rail** | Persistent deck chrome. Never occluded, never moves |
-| **Window field** | Free-floating windows. The player's workspace |
-| **Protected focal region** | The world. Reserved by the camera authoring rule in `ENVIRONMENT_BRIEF.md` |
+| **Protected focal region** (left) | The world. Reserved by the camera authoring rule in `ENVIRONMENT_BRIEF.md` |
+| **Window field** (centre) | Free-floating windows. The player's workspace |
+| **Rail** (right edge) | Persistent deck chrome. Never occluded, never moves |
+
+The rail sits on the far right because it must be on the *same side as the UI* — a rail on the left would overlay the world.
+
+**Toasts move with it:** bottom of the window field, left-adjacent to the rail, stacking upward. Still clear of the world.
 
 ### Why a rail and not a desktop
 
@@ -160,9 +166,9 @@ Objectives are **not** a window — they live in the rail, always visible.
 
 ## 7. Toasts
 
-**Bottom-left, above the rail, stacking upward.**
+**Bottom of the window field, left-adjacent to the rail, stacking upward.**
 
-Hacker's Journey puts them bottom-right, but our right band is the world. Bottom-left keeps the protected region clear.
+Hacker's Journey puts them bottom-right. Ours sit at the bottom of the centre band — clear of the world on the left, clear of the rail on the right.
 
 Toasts fire on: bonus objective discovered, tool unlocked, credits awarded, rank change. They are the second feedback channel for events that currently have none — a hidden file found today produces nothing until the summary screen minutes later, which fails the two-channel minimum.
 
@@ -232,7 +238,7 @@ Option B throughout — starting values with test plans. No sourced benchmarks; 
 | Value | Starting | Test / Pass | If it fails |
 |---|---|---|---|
 | Rail width | 8% of viewport width | All rail content legible without truncation | Truncating → 10%; if still bad, move status to a flyout |
-| Protected focal region | Right 35% | Observer can watch the system respond during RUN without moving a window, 8/10 | → 45% before considering auto-hide. Auto-hide steals control; Response outranks Clarity |
+| Protected focal region | **Left** 35% (build currently 58%) | Observer can watch the system respond during RUN without moving a window, 8/10 | → 45% before considering auto-hide. Auto-hide steals control; Response outranks Clarity |
 | Window background opacity floor | 92% | Code readable with a neon sign directly behind, 10/10 | Anything below 10/10 → raise to 96%, then opaque |
 | Backdrop scrim | 40% darken, 24px beyond window edge | Window edges read as distinct from the world | Edges lost → increase darken before increasing spread |
 | Title bar height | 28px at 1080p, scaling with text scale | Grabbable without precision aiming | Mis-grabs → 32px |
@@ -257,7 +263,8 @@ Option B throughout — starting values with test plans. No sourced benchmarks; 
 
 ## 14. Open
 
-- **Rail on the left or the right?** Left assumed here, matching Hacker's Journey and pairing with a right-side protected region. Worth testing against a right rail with a left-side protected region — reading order may favour one.
+- ~~Rail on the left or the right?~~ **Resolved 2026-08-14** — rail right, world left, following the existing build (`worldViewportWidth = 0.58f`).
+- **Does the world band stay at 58%, or shrink toward 35%?** The build gives the world more room than this spec assumes. 58% is likely better once the asset kit lands and there is something worth looking at; revisit after import.
 - **Does the rail persist in SITE view**, before the plug-in, or appear only in DECK view?
 - **Default window set per contract type** — what's open when the boot surface clears.
 - **A "reset layout" affordance** — cheap, and prevents the abuse case above from becoming a support issue.

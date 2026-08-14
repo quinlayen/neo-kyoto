@@ -221,6 +221,11 @@ namespace NeoKyoto.Core
             _console.Clear();
             _goalWasMet = false;
 
+            HasRunThisSession = false;
+            LastRunTotalCalls = 0;
+            LastRunCallsToGoal = 0;
+            LastRunLoopDidWork = false;
+
             var terminal = ActiveContract as TerminalContract;
             if (terminal != null) AppendConsole(terminal.GetPrompt());
 
@@ -350,6 +355,15 @@ namespace NeoKyoto.Core
             CurrentLine = 0;
             _runRoutine = null;
 
+            // Snapshot the run so the workspace can show a call meter. Star ratings
+            // are only revealed at the debrief, minutes after the player could have
+            // acted on them; the meter puts the same number in front of them while
+            // the script is still open and worth improving.
+            HasRunThisSession = true;
+            LastRunTotalCalls = _runner.CallCount;
+            LastRunCallsToGoal = _callsToGoal;
+            LastRunLoopDidWork = _runner.LoopDidTheWork(_callsToGoal);
+
             AppendConsole(endMessage);
             AppendConsole("└──────────────────────────────────────────");
             RaiseStatus();
@@ -458,6 +472,20 @@ namespace NeoKyoto.Core
         public int LastCreditsEarned { get; private set; }
         public int LastCallsToGoal { get; private set; }
         public bool LastBonusFound { get; private set; }
+
+        // ── Last-run meter, shown in the workspace while the script is still open ──
+
+        /// <summary>False until the player has run anything for this contract.</summary>
+        public bool HasRunThisSession { get; private set; }
+
+        /// <summary>Every counted call the last run made, goal reached or not.</summary>
+        public int LastRunTotalCalls { get; private set; }
+
+        /// <summary>Calls at the moment the goal was met, or 0 if it never was.</summary>
+        public int LastRunCallsToGoal { get; private set; }
+
+        /// <summary>Whether a loop carried the work — the third star depends on it.</summary>
+        public bool LastRunLoopDidWork { get; private set; }
 
         private void AwardScore()
         {
