@@ -1,5 +1,15 @@
 # ONCALL: Systems Contractor – Project Overview & Scope
 
+> **Status note (2026-08-14): this document describes the original Python-prototype phase and is largely historical.**
+>
+> The prototype validated C1–C11 and its teaching mechanics. Development has since moved to Unity, and the game has pivoted to **on-site contracts** — the player travels to a district and works at the failing system rather than jacking in remotely.
+>
+> The "Out of Scope" list at the foot of this document is no longer accurate: Unity work, multiple contracts, graphics, and save/load are all now in scope.
+>
+> Current sources of truth: `GDD.md`, `ONSITE_PIVOT.md`, `ENVIRONMENT_BRIEF.md`, `DESIGN_DIRECTION.md`.
+>
+> **What remains valid and worth keeping:** the core fantasy, the language progression philosophy, and the early-game design principles below. Those have not changed.
+
 ## What This Project Is
 
 ONCALL: Systems Contractor is a programming education game set in a cyberpunk world (Neo-Kyoto, 2189). The player takes the role of a freelance systems contractor who fixes and automates broken city infrastructure by writing real code.

@@ -40,7 +40,7 @@ Stars apply to Phase 3 (the script run), not Phase 1 (the REPL). Phase 1 is pure
 
 ### Unity Translation
 
-Phase 1: The power node is visually flickering. A small command input at the bottom of the screen (not the full editor). Type `rebalance()` and watch a conduit stabilize with a pulse of light. Phase 3: Full jack-in view opens — editor on the right, live power node on the left. Hit RUN and watch 12 energy pulses cascade through the system. The title screen IS the city: dark, flickering Neo-Kyoto, dispatch message as in-world transmission.
+Phase 1: The player is on site at Block 7. The power node is visually flickering in front of them. A small command input (not the full editor) sits at the bottom of the screen. Type `rebalance()` and watch a conduit stabilize with a pulse of light. Phase 3: they plug the deck in properly — the editor window opens over the live location and the node stays visible behind it. Hit RUN and watch 12 energy pulses cascade through the system. The title screen IS the city: dark, flickering Neo-Kyoto, dispatch message as in-world transmission.
 
 ### Framework Connection
 

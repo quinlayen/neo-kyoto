@@ -50,6 +50,8 @@ Every contract now awards a performance rating:
 
 **Python/Combined contracts** — rated by function call efficiency:
 
+> ⚠ **These thresholds are known-defective — see `ECONOMY.md` Part 1 (audit, 2026-08-14).** Two confirmed problems: (1) randomised contracts (C8/C10/C11) grade partly on the dice roll, because thresholds are absolute while the optimal call count varies; (2) call count cannot distinguish an unrolled solution from a loop — they make identical calls — so the "replay with better tools for 3★" loop is structurally impossible on C1–C4, and C1's naive first attempt already scores 3★. Do not treat the table below as authoritative.
+
 | Contract | 3★ | 2★ | Min Calls |
 |----------|-----|-----|-----------|
 | C1 Power Node | ≤13 | ≤16 | 12 |
@@ -113,23 +115,32 @@ Each contract has 1 optional bonus — discoverable through exploration:
 
 ## Implications for Unity
 
-### Contract Board
+### Contract Board → Overmap
 
-The Unity contract board should display:
+The contract board is the **overmap** — a stylised district map of Neo-Kyoto where contracts are selected by clicking a district. It should display:
 - Contractor rank and title prominently
 - Total credits and star count
 - Per-contract star ratings (filled/empty stars)
 - Credit amounts earned per contract
 - Visual distinction between 1★/2★/3★ (bronze/silver/gold, or color intensity)
+- **District state** — a district where the player has 3★ on everything should read differently on the map from one still failing
+
+The overmap also gives the Act 2 branching structure a physical form: the tree in `GDD.md` §3 becomes a map lighting up with available work.
 
 ### Performance Display
 
-On completion, show a performance summary screen:
+**Ordering matters: the world reveal comes first, the scoreboard second.**
+
+On completion, the jack-out sequence pulls the camera back to reveal the location *now working*, with the ambient swelling to its fixed state. Only then does the summary appear. Satisfaction before score — if the numbers land first, the player reads the scoreboard and never looks at the city they just repaired.
+
+The summary itself shows:
 - Star rating with visual fanfare (1★ = modest, 3★ = celebration)
 - Call count vs. target (for scripting contracts)
 - Credits earned
 - Bonus objective status
 - Rank progress bar
+
+**Bonus objectives need their own feedback at the moment of discovery.** Currently a hidden file is found and nothing happens until this screen, minutes later — one delayed channel, which fails the two-channel minimum. Toast it the instant it is read.
 
 ### Visual Feedback Per Star Level
 
@@ -185,7 +196,7 @@ Three new contracts were added to the prototype:
 ### Design principles going forward
 1. **Every new feature needs a Motivation answer**: Why does the player *want* to use this? Not "because we're teaching it" but "because the game makes them need it"
 2. **Stars should feel fair but aspirational**: 1★ should always be achievable with current tools; 3★ should reward mastery or replaying with better tools
-3. **Credits need a spend sink eventually**: Right now they accumulate. In the full game, credits should unlock something — cosmetics, optional lore, contract branches, terminal themes
+3. **Credits sink: the deck.** ~~Right now they accumulate.~~ **Resolved (2026-08-14)** — the contractor carries a physical deck, and credits buy tools for it. See `ONSITE_PIVOT.md` §3. Guard rail: story-critical technologies (SQL, Git) are *granted by the narrative*, never purchased. The store sells conveniences and alternatives — terminal themes, a faster scanner, a diagnostic that reveals one hidden file per contract, extra window slots. If SQL costs credits, players grind old contracts for money and the Motivation win becomes a chore.
 4. **The world should reflect mastery**: A district where the player has 3★ on all contracts should look and feel different from one with 1★ completions
 5. **Fun first, always**: If a mechanic teaches something but isn't fun, redesign it. If a mechanic is fun but doesn't teach, that's fine — games have non-educational moments too
 

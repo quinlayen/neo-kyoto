@@ -1,7 +1,9 @@
 # ONCALL: Systems Contractor — Game Design Document
 
 **Status**: Draft
-**Last Updated**: 2026-08-13
+**Last Updated**: 2026-08-14
+
+> **Note (2026-08-14):** The game has pivoted to **on-site contracts** — the player travels to a district and works at the failing system rather than jacking in from a remote god view. Sections 5, 6, 7, 9 and 10 have been updated accordingly. The full rationale, view model, and the plug-in spec live in `ONSITE_PIVOT.md`; locations and asset requirements live in `ENVIRONMENT_BRIEF.md`.
 
 ---
 
@@ -18,7 +20,7 @@
 
 **Target Audience**: Aspiring programmers, CS students, and curious non-programmers who want to learn to code through gameplay rather than tutorials. Secondary audience: experienced developers who enjoy automation puzzles (Zachtronics fans, TFWR players).
 
-**Platform**: PC (Steam) primary, Web (WebGL) secondary
+**Platform**: PC native (Steam). WebGL is a best-effort convenience build for sharing with playtesters — never a design constraint. See `ONSITE_PIVOT.md`.
 
 **Inspirations**:
 - *The Farmer Was Replaced* — gradual concept introduction, mechanics create the need to learn
@@ -146,6 +148,8 @@ These 8 contracts are implemented and validated in the prototype:
 
 Many more contracts will be designed beyond these. The prototype validates the teaching mechanics and progression feel; the full game expands this foundation with more systems, more narrative, and branching paths.
 
+**Locations**: every contract above has been reframed as an **exterior** on-site location — the contractor works from the outside of systems. `ENVIRONMENT_BRIEF.md` holds the full mapping, including the consolidation that collapses these eleven contracts into **six reusable sets**.
+
 ### Feature Gates
 
 The interpreter enforces feature gates at the AST level. Players cannot use language features they haven't unlocked:
@@ -237,17 +241,25 @@ Every system in the game must have a live visual representation that the player 
 
 ### Art Direction
 
-**Starting style**: Low-poly 3D with flat/cel shading. Clean geometry, strong silhouettes, neon accent lighting. The city should feel dense but readable.
+**Fidelity**: Buy and build at the fidelity the finished game should have. The earlier "start low-poly, upgrade later" plan was largely a hedge protecting the WebGL build; with PC native as the target, an upgrade path means building the game twice. Locations are assembled from purchased modular kits — see `ENVIRONMENT_BRIEF.md`.
 
-**Upgrade path**: The art pipeline is designed for modular asset replacement. Materials, models, and effects can be upgraded to higher-fidelity assets as the project matures without changing gameplay or camera systems. The long-term goal is a richly detailed, immersive Neo-Kyoto that draws the player into the world.
+**What to preserve regardless of fidelity**: strong silhouettes and few readable systems per location. This was never a technical constraint — it's what makes a system's state legible at a glance, and it matters *more* at high fidelity, because detail competes with signal.
 
-### Camera
+### Camera & View Model
 
-**Primary view (God View)**: Top-down with slight isometric angle. The player sees a district of the city — buildings, infrastructure, moving elements. This is the idle/overview state. The camera can pan freely and zoom in/out.
+The player travels to each contract and works on site. There is no top-down god view of a live district. Full specification in `ONSITE_PIVOT.md`; summary:
 
-**Jack-In view**: When the player accepts a contract, a coding interface appears — but the world stays visible and active. The code editor overlays or docks to one side, while the live system remains the dominant visual element. The player writes code on one side and watches the world respond on the other. The world is never hidden behind a full-screen editor.
+**OVERMAP**: A stylised district map of Neo-Kyoto. Contracts are selected by clicking a district. This is the contract board, the travel layer, and where rank/credits/stars live. Districts are isolated scenes loaded on selection — Neo-Kyoto is **not** a large contiguous explorable city.
 
-**Code execution camera**: When the player hits RUN, the camera can optionally track the action — following a drone as it reroutes, panning across the grid as sectors power up, zooming into a signal junction as it calibrates. This is not mandatory (the player can keep the camera static) but the option to "watch your code work" should feel cinematic.
+**SITE view**: A fixed-camera view of the location with the failing system live in front of the player. Each location has 2–4 authored camera angles. Architected so a district can become first-person walkable later without anything else changing.
+
+**DECK view**: The player plugs a physical deck into an access point on the system. Floating, draggable, resizable windows appear over the location, which **keeps animating behind them**. The player chooses what to occlude. All text is screen-space UI — world-space monitors are set dressing only, never read from or typed into.
+
+**Camera authoring rule**: because windows occlude the world, every location's hero camera must compose the failing system inside a protected focal region that windows avoid. Starting value: the right 35% of frame. This is a design constraint on every set, not a per-location art decision made afterwards.
+
+**Code execution camera**: When the player hits RUN, the camera can track the action — following a drone as it reroutes, panning as sectors power up. Optional, never mandatory.
+
+**Jack-out is the payoff shot**: on completion, windows collapse into the deck and the camera pulls back to reveal the location *now working*, ambient swelling to the fixed-state soundscape. The star/credits summary comes **after** this reveal, never instead of it.
 
 ### Live System Visualization
 
@@ -306,7 +318,7 @@ The city communicates system state through color and motion:
 
 The player should feel like they are *in* Neo-Kyoto, not just playing a coding tutorial with a theme. The code editor is a tool they use; the city is where they live. When they fix a system, the neighborhood around it should feel different — quieter, brighter, more alive. When they walk into a new district (via the contract board), the broken state should be visually apparent before they even read the briefing.
 
-Over time, as the art upgrades from low-poly to higher fidelity, this immersion deepens. But even in low-poly: a dark city sector that floods with light when the player's for loop runs is a powerful moment. The visual payoff of watching your code transform the world is the core of Neo-Kyoto's appeal.
+Being on site is what makes this real. The player is not looking down at a district — they are standing in it, at the failing thing, with their deck plugged into it. A dark sector that floods with light when their for loop runs is a powerful moment from above; it is a far better one from the street, with the lights coming on around them. The visual payoff of watching your code transform the world is the core of Neo-Kyoto's appeal.
 
 ---
 
@@ -320,28 +332,30 @@ The player's hub. A terminal-styled interface showing available contracts:
 - Completed contracts show a star and can be replayed
 - The board exists within the game world (a screen in the contractor's workspace, not a separate menu)
 
-### Code Editor (Jack-In View)
+### Code Editor (Deck View)
 
-The coding interface shares the screen with the live world. The world is always visible — the editor is a tool docked to one side, not a full-screen replacement.
+> Full specification: **`DECK_SPEC.md`** (frame, window system, legibility) and **`DECK_APPS.md`** (terminal, editor, reference, objectives, toasts).
+
+The deck's windows float over the live location. They are draggable, resizable, minimisable and closable — the player arranges their own workspace, and the world keeps animating behind them.
 
 ```
-┌────────────────────────────────────┬─────────────────────┐
-│                                    │                     │
-│                                    │    CODE EDITOR      │
-│         LIVE WORLD VIEW            │    (player writes   │
-│         (system responding         │     here)           │
-│          to player's code)         │                     │
-│                                    ├─────────────────────┤
-│                                    │    OUTPUT / STATUS   │
-│                                    │    (print output,   │
-│                                    │     errors, system  │
-│                                    │     readouts)       │
-├────────────────────────────────────┼─────────────────────┤
-│                                    │  [RUN]  [BRIEF]     │
-└────────────────────────────────────┴─────────────────────┘
+┌──────────────────────────────────────────┐
+│  ░░ SUBSTATION 7 — live, sparking ░░░░░  │
+│    ┌───────────────────┐  ░░░░░░░░░░░░░  │
+│ ░░ │ main.py       ▁ ✕ │ ░░ ┌──────────┐ │
+│ ░░ │───────────────────│ ░░ │ NODE 7   │ │
+│ ░░ │ 1 rebalance()     │ ░░ │ load 82% │ │
+│ ░░ │ 2 rebalance()     │ ░░ │ ▓▓▓▓▓░░░ │ │
+│ ░░ │ 3 ▏               │ ░░ └──────────┘ │
+│ ░░ │        [▶ RUN]    │ ░░░░░░░░░░░░░░  │
+│ ░░ └───────────────────┘ ░░░░░░░░░░░░░░  │
+│  ░░░ conduits arc, buildings flicker ░░  │
+└──────────────────────────────────────────┘
 ```
 
-- The live world view takes the majority of screen space
+- Windows never stop the world; the location animates continuously behind them
+- Default spawn is left-of-centre, keeping the protected focal region clear
+- Window layout and code buffer are saved per location and restored on re-plug
 - Syntax highlighting for the restricted Python subset
 - Line numbers
 - Clear error display with line references
@@ -370,29 +384,23 @@ For terminal and combined contracts:
 └────────────────────────────────────────────────────┘
 ```
 
+The terminal is a deck window like any other — floating, draggable, resizable, closable.
+
 - Monospace font, dark background, green or cyan text
+- **Colour-coded output**: commands, paths, matches, errors and success states each read distinctly. Colour carries meaning, not decoration
+- **Real terminal scroll behaviour** — output appends and scrolls exactly as a hardware terminal does, including during long output
 - Scrollback buffer
 - Command history (up/down arrow)
+- Text size scalable by the player; legibility over live 3D is a requirement, not a preference
 - Tab completion (stretch goal)
 
-### Combined Interface
+### Combined Contracts
 
-For contracts like C8 that use both terminal and scripting:
+Combined contracts (C8, C10, C11) are not a separate layout. They are the same deck, with **both a terminal window and an editor window open at once** — the player opens, closes, moves and resizes each as they need. The location remains visible behind, as in every other contract.
 
-```
-┌──────────────────┬──────────────────┬──────────────┐
-│                  │                  │              │
-│   TERMINAL       │   CODE EDITOR    │  SYSTEM      │
-│                  │                  │  STATUS      │
-│                  │                  │              │
-│                  │                  │              │
-│                  │                  │              │
-├──────────────────┴──────────────────┼──────────────┤
-│  contractor@neo-kyoto:~$ _         │  [RUN]       │
-└────────────────────────────────────┴──────────────┘
-```
+This replaces an earlier three-panel wireframe that filled the screen with UI and removed the world entirely — which contradicted the design's central claim that the world is the primary feedback channel, in precisely the contracts whose payoff is a city-wide cascade of light.
 
-The player can switch focus between terminal and editor. Terminal output and editor are visible simultaneously.
+**Focus disambiguation**: with two text surfaces live, the player must always know which one receives their keystrokes. The focused window gets a lit border and a bright prompt; the unfocused one dims. Prompt colour distinguishes context (Python vs. shell) so the player never types a shell command into a script by accident — and when they do, the error messages in `DESIGN_SYSTEMS.md` §3 catch it.
 
 ### Briefings & Debriefs
 
@@ -523,7 +531,7 @@ The narrative unfolds across three acts, delivered entirely through in-game cont
 - The "failures" are intentional. The architect is testing whether humans can still understand and control the systems they built.
 - Late-game contracts require mastery across technologies. The player writes their own functions, queries databases, navigates complex systems, and combines everything they've learned.
 - **SQL inside Python** arrives here: the player writes scripts that query databases, loop through results, and act on findings. A single script might grep through logs, query a database for matching personnel, diff a git repo for related changes, and output a report. All the skills converge.
-- **Field work** begins: some contracts require physical presence. The player travels to corporate headquarters, remote data centers, or infrastructure sites. They navigate the physical space, find a terminal, jack in, and work the problem on-premises. These locations tell their own stories through environmental details.
+- **Interiors open up**: the player finally gets inside the places they have only ever worked outside of — corporate headquarters, sealed data centres, restricted infrastructure. They navigate the physical space, find a terminal, and work the problem from within. These locations tell their own stories through environmental details, and the threshold itself is the reward.
 - The final contracts are open-ended: the game provides access to raw systems and the player builds the solution from scratch, using functions they've written, tools they've built, and knowledge they've gathered.
 - The narrative converges on a choice about the city's future — resolved through the player's technical ability, not a dialogue option.
 
@@ -540,19 +548,23 @@ All story is delivered through channels the player is already using:
 
 No exposition dumps. No NPCs explaining the plot. The player pieces the story together the same way they fix systems — by reading, investigating, querying, and connecting dots.
 
-### Field Work: Physical Locations
+### Field Work: Getting Inside
 
-As the investigation deepens, some contracts require the player to go somewhere. Not every system can be accessed remotely — some require physical presence. The player travels to a location, enters the building, and jacks in on-premises.
+**Every contract is on site.** The player always travels to a place. What escalates across the acts is not *whether* they go, but *how far in they get*.
 
-This adds a spatial dimension to the game and serves both narrative and mechanical purposes:
+For most of the game the contractor works from the **outside** of systems. Freelancers don't get badges. You are dispatched to the access point — the street-level junction box, the utility vault under the pavement, the maintenance panel bolted to the building's flank, the cabinet at the base of the tower. You squat on the kerb in the rain, pop the housing, and plug in. That is the job, and it is truer to the fantasy than executive access ever was.
+
+**Act 3 changes that.** Late-game field work means crossing a threshold you have never been allowed to cross: you finally get *inside*. Corporate headquarters. The sealed data centre. The interior is a narrative reward, and it lands because eleven contracts of kerbside work established what the outside feels like.
+
+Interior locations serve both narrative and mechanical purposes:
 
 - **Corporate headquarters**: Access executive-level databases that aren't on the public network. The player physically enters the building, finds a terminal, and jacks in. The environment tells a story — empty offices, signs of hasty departure, systems left running.
 - **Remote data centers**: Isolated facilities outside the city where backup systems and archives are stored. The player navigates the physical space (security doors, server rooms) before accessing the systems inside.
-- **Infrastructure sites**: Substations, relay towers, tunnel junctions. The player is on-site, seeing the physical hardware their code controls. Jacking in here means watching the machinery respond right in front of them — not from a god-view, but from ground level.
+- **Infrastructure sites**: Substations, relay towers, tunnel junctions. The player sees the physical hardware their code controls and watches the machinery respond right in front of them, at ground level. This is the default mode of the entire game, established from C1 — see `ONSITE_PIVOT.md`.
 
 Field work contracts break the pattern of the contract board. Instead of picking a job from a list, the player goes to a place. The location itself becomes part of the puzzle — finding the right terminal, getting past physical access controls (badge readers that need terminal commands, locked doors that need the right file permissions), and piecing together what happened here by reading what was left behind.
 
-This is a later-game feature. Early contracts are all remote (jack in from the contractor terminal). Field work arrives when the investigation demands it — when remote access isn't enough and the player needs to be physically present to find what they're looking for.
+Interiors are a later-game art spend. Early contracts are all exterior — see `ENVIRONMENT_BRIEF.md` for the location plan and the six-set consolidation that keeps this affordable.
 
 ---
 
@@ -599,8 +611,8 @@ Minimal and atmospheric. The player is concentrating on code — music should no
 ### Engine & Pipeline
 
 - **Unity 2022 LTS** (or latest LTS at development start)
-- **Universal Render Pipeline (URP)**: Required for WebGL compatibility. Supports the visual style (post-processing, bloom for neon, light cookies for atmospheric lighting) while maintaining web performance
-- **Target frame rate**: 60fps on mid-range hardware, 30fps WebGL minimum
+- **Universal Render Pipeline (URP)**: chosen because **most cyberpunk asset kits ship URP**, and mixing pipelines across multiple kit purchases is the expensive mistake. HDRP is technically viable on PC native and would look better, but only if every kit supports it. Pick one pipeline and filter all purchases by it. URP handles the visual style well — post-processing, bloom for neon, light cookies for atmosphere
+- **Target frame rate**: 60fps on mid-range hardware
 
 ### Code Editor System
 
@@ -626,7 +638,7 @@ The current `interpreter.py` uses Python's AST module to parse and execute playe
 - Feature gates translate directly: the parser checks which constructs are allowed before execution
 - Call limits and timeouts port cleanly to C# coroutines or frame-budgeted execution
 
-**Why not embedded Python**: IronPython/CPython add complexity, bundle size (critical for WebGL), and expose full Python (defeating the purpose of the restricted language).
+**Why not embedded Python**: IronPython/CPython add complexity and expose full Python, defeating the purpose of the restricted language. The point of the custom interpreter is total control over which features exist and when they unlock — that requirement is unchanged by the platform decision.
 
 ### Virtual Filesystem
 
@@ -652,17 +664,21 @@ Port `terminal.py` to C# with a TextMeshPro-based console:
   - Player scripts (last saved version per contract)
   - Player-defined functions (persistent across contracts once written)
   - Narrative flags (clues found, story beats triggered)
-- Auto-save on contract completion
+  - **Per-location deck window layout and code buffer** — restored on re-plug
+  - **Persisted system state** — a contract left half-finished stays half-finished; four repaired drones stay repaired
+  - Deck tools owned and credits balance
+- Auto-save on contract completion, on jack-out, and on quit from DECK
 - Single save slot for simplicity (multiple saves are a stretch goal)
-- WebGL: use `PlayerPrefs` or IndexedDB via JavaScript interop
 
-### WebGL Considerations
+### Scene Architecture
 
-- **Bundle size**: Keep under 30MB compressed. No embedded Python runtime. Minimal asset footprint with low-poly art.
-- **Input**: Full keyboard support required (code editor). Mobile browser is not a target.
-- **Performance**: URP with reduced post-processing. Simplified particle effects. Instanced rendering for repeated geometry (city buildings, grid sectors).
-- **Persistence**: IndexedDB for save data. No filesystem access.
-- **Audio**: WebGL audio context requires user interaction to start — handle gracefully on first click.
+Districts are **isolated scenes loaded on selection** from the overmap. They never connect, never stream, and need share no scale with one another. This is the main technical dividend of the overmap: one district can be built to a high bar and the next one cheaply, with no seams and no way for the player to tell.
+
+Loading is covered diegetically by the TRAVELING state, not by a progress bar.
+
+### WebGL
+
+Not a platform target. A WebGL build may be produced occasionally to hand a playtester a link, on a best-effort basis. **No design, art, or architecture decision is made to accommodate it.** If a high-fidelity kit makes the web build unshippable, that is an acceptable outcome.
 
 ---
 
@@ -708,26 +724,35 @@ The first playable Unity build covers contracts C1 through C5: the complete Pyth
 - [ ] Cat-ing the crash report triggers completion
 
 **Cross-cutting**:
-- [ ] Contract board shows all 5 contracts with correct lock/unlock/complete states
-- [ ] God-view camera with pan/zoom works
-- [ ] Jack-in transition between world view and coding interface
+- [ ] Overmap shows all 5 contracts with correct lock/unlock/complete states, plus rank/credits/stars
+- [ ] District selection loads the correct scene; TRAVELING covers the load diegetically
+- [ ] SITE view: fixed camera, failing system readable before any text appears
+- [ ] Access point is findable — new player locates it within 30s, 8/10
+- [ ] Plug-in sequence plays, is skippable at any frame, and abbreviates on return visits
+- [ ] Deck windows float over the live location, draggable and resizable, world never stops
+- [ ] Window layout and code buffer persist per location and restore on re-plug
+- [ ] Jack-out pulls back to reveal the fixed location **before** the star summary appears
 - [ ] Feature gates enforce progression (can't use while True until C1 is done)
 - [ ] Save/load persists progress between sessions
-- [ ] Runs in both standalone PC build and WebGL
+- [ ] Runs as a standalone PC build
+
+**Environment scope**: three sets cover all five demo contracts — **A** (street substation, C1), **D** (service access, C5), **B** (drone depot, C2/C3). C4 needs Set C. See `ENVIRONMENT_BRIEF.md`.
 
 ### Polish Targets (demo)
 
-- Smooth camera transitions on jack-in/jack-out
-- At least one district visually rendered with 2-3 systems visible
-- Ambient audio for one district
+- Plug-in and jack-out sequences with weight — connector audio, deck wake, ambient duck
+- Jack-out pull-back reveal reads clearly: an observer can say what got fixed, 8/10
+- Rain on at least one location
+- Ambient audio with distinct broken and fixed states for one district
 - Code execution feedback sounds
+- Mid-contract toast when a bonus objective is discovered — currently the bonus has no feedback until the summary screen, which fails the two-channel minimum
 
 ### Stretch Goals (demo)
 
 - Tab completion in terminal
 - Animated briefing text (typewriter effect)
-- Picture-in-picture world view during coding
-- Multiple city districts visible (even if only one is interactive)
+- Deck window snapping / auto-arrange
+- A second district visible on the overmap even if not yet playable
 
 ---
 

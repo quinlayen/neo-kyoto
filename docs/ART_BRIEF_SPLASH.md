@@ -142,9 +142,11 @@ widespread failure. This is the splash screen background. The player sees a
 broken city and implicitly understands: "this is where I'll be working."
 
 **Perspective:**
-- Bird's-eye / god-view, slight isometric angle (not pure top-down)
+- Bird's-eye / elevated isometric angle (not pure top-down)
 - High enough to see multiple city blocks / districts
 - Dense urban layout — this is a megacity, not suburbs
+
+> **Note (2026-08-14):** this asset predates the on-site pivot, and the shipped splash is already street-level (`cb39e31`), which is the correct read. An elevated panorama still has a home — it is what the **overmap** should look like. Gameplay itself is never viewed from here.
 
 **Art style:**
 - Stylised, not photorealistic. Low-poly or painterly is fine.

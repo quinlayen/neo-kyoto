@@ -169,4 +169,4 @@ Add `run_terminal_contract(cdef, game_state)` — different interaction loop:
 - `wc` for counting (combine with grep)
 - `find` for searching directory trees
 - Combined Python + terminal contracts where the player uses terminal to investigate, then writes a Python script to fix
-- The visual game will render the terminal as a "jacked in" interface overlaying the god-view
+- The visual game renders the terminal as a **floating deck window over the live on-site location** — draggable, resizable, with colour-coded output and real terminal scroll behaviour. See `ONSITE_PIVOT.md`

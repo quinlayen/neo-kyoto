@@ -1,8 +1,15 @@
-# Art Direction: The Jack-In Fantasy
+# Art Direction: The On-Site Fantasy
 
-**Date**: 2026-08-13
-**Status**: Active brief — supersedes ad-hoc visual decisions
+**Date**: 2026-08-13 (status note added 2026-08-14)
+**Status**: Partially superseded — read `ONSITE_PIVOT.md` and `ENVIRONMENT_BRIEF.md` first
 **Companion to**: `docs/DESIGN_DIRECTION.md`
+
+> **Note (2026-08-14):** The fantasy is no longer "jacking in" from a remote god view. The player **travels to the site** and works at the failing system with a physical deck plugged into it. Two things in this brief have changed:
+>
+> 1. **Fidelity is no longer low-poly-first.** With PC native as the platform, locations are built from purchased high-fidelity modular kits. The low-poly starting style was largely a WebGL hedge.
+> 2. **Locations are exterior-first.** The contractor works from the outside of systems — kerbside junction boxes, access vaults, base-of-tower cabinets. Interiors are an Act 3 reward.
+>
+> The post-processing diagnosis below is **unaffected and still the highest-leverage gap.** Volumes, bloom, and tonemapping matter more with a detailed kit, not less.
 
 ---
 
