@@ -85,6 +85,19 @@ unity/*/.vsconfig
 crashlytics-build.properties
 sysinfo.txt
 
+# ── Purchased third-party assets ───────────────
+# Not versioned. These are re-downloadable from the Asset Store, and a single
+# modular city kit is ~2.7 GB of textures and meshes -- committing that writes
+# it into git history permanently and makes every clone enormous.
+#
+# A fresh clone therefore needs the kits re-imported before scenes using them
+# will resolve. Unity references by GUID, so re-importing restores the links.
+#
+# Add new purchases here by folder name.
+unity/*/Assets/Cyberpunk_Megapolis/
+unity/*/Assets/ArtEquilibrium/
+unity/*/Assets/ThirdParty/
+
 # Playtest captures
 unity/*/Assets/Screenshots/
 *.slnx
