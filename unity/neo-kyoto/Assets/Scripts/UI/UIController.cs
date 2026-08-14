@@ -52,8 +52,12 @@ namespace NeoKyoto.UI
         private const float StatusMinHeight = 96f;
         private const float BoardWidth = 1180f;
 
-        /// <summary>Splash logo width at the 1920 reference — a little over half the frame.</summary>
-        private const float LogoWidth = 1040f;
+        /// <summary>
+        /// Splash logo width at the 1920 reference. The mark carries its own subtitle,
+        /// so it is sized to leave clear air above the tagline rather than to fill the
+        /// frame — the two stacked wordmarks read as one block if they crowd.
+        /// </summary>
+        private const float LogoWidth = 900f;
 
         private void Awake()
         {
@@ -137,7 +141,7 @@ namespace NeoKyoto.UI
                 logo.raycastTarget = false;
                 // Sized from the sprite's own aspect, so preserveAspect would only
                 // fight the fill wipe SplashLogo drives.
-                Place(logo.rectTransform, 0.5f, 0.5f, new Vector2(0, 210),
+                Place(logo.rectTransform, 0.5f, 0.5f, new Vector2(0, 235),
                       new Vector2(LogoWidth, LogoWidth * logoSprite.rect.height / logoSprite.rect.width));
                 splashLogo = logo.gameObject.AddComponent<SplashLogo>();
             }
