@@ -62,14 +62,26 @@ namespace NeoKyoto.Contracts
 
     ─── INCOMING TRANSMISSION ───
 
-    Contractor,
+        FROM:  VOSS // CONTRACTOR DISPATCH
+        TO:    CONTRACTOR #4471
+        RE:    #2478 — Sector 12 drone fleet
 
-    Good work on Block 7. Word travels fast —
-    Sector 12 needs your help now.
+    Block 7 held overnight. Nobody sent thanks;
+    they never do. I noticed, for what that's
+    worth.
 
-    The delivery drones in this sector are flying
-    wrong routes. The routing table got corrupted
-    and all 8 drones need manual correction.
+    Sector 12 next. Their routing table corrupted
+    sometime yesterday and all eight delivery
+    drones are flying the wrong lines. Medical
+    runs among them, so this one is actually
+    urgent, whatever the filing says.
+
+    Each drone has to be corrected individually.
+    Eight of them.
+
+    You have loops now. I'd use one.
+
+    — V
 " + PageBreak + @"
     ─── VARIABLES ───
 
@@ -128,10 +140,19 @@ namespace NeoKyoto.Contracts
     ║   Sector 12 Drone Grid — ALL CORRECTED      ║
     ╚══════════════════════════════════════════════╝
 
-    All drones are back on course. Deliveries are
-    flowing again. Sector 12 management sends their
-    thanks.
+    ─── INCOMING TRANSMISSION ───
 
+        FROM:  VOSS // CONTRACTOR DISPATCH
+
+    Eight for eight. The medical runs went out
+    forty minutes ago.
+
+    You wrote that loop once and let the machine do
+    it eight times. Get comfortable with that — it
+    scales to eighty, and eventually it'll have to.
+
+    — V
+" + PageBreak + @"
     ─── WHAT YOU JUST DID ───
 
     You used a loop to automate a repetitive task.

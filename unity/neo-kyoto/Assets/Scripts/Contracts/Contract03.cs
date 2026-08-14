@@ -65,22 +65,27 @@ namespace NeoKyoto.Contracts
 
     ─── INCOMING TRANSMISSION ───
 
-    Contractor,
+        FROM:  VOSS // CONTRACTOR DISPATCH
+        TO:    CONTRACTOR #4471
+        RE:    #2479 — Sector 14 drone fleet
 
-    Your work in Sector 12 got noticed. Sector 14
-    has a bigger problem — their drone fleet is
-    down, and it is not as simple as last time.
+    Sector 12 is running clean. Somebody upstairs
+    noticed, which is why you've got Sector 14
+    now. Congratulations, I suppose.
 
-    Some drones are MISROUTED — flying wrong paths,
-    same as Sector 12. But others are GROUNDED —
-    completely offline, hardware fault. A reroute
-    will not help a grounded drone. It needs a
-    different kind of fix.
+    This fleet's worse. Some drones are MISROUTED
+    like last time — wrong lines, still flying.
+    Others are GROUNDED. Dark on the pad, hardware
+    fault, not going anywhere.
 
-    Your old approach — blindly fixing every drone
-    the same way — will not work here. You need to
-    check what is wrong first, then choose the
-    right response.
+    Rerouting a grounded drone does nothing. I've
+    watched contractors burn an afternoon on that
+    exact mistake.
+
+    Look before you touch. Find out what's wrong
+    with each one, then pick the right fix.
+
+    — V
 " + PageBreak + @"
     ─── YOUR COMMANDS ───
 
@@ -119,9 +124,19 @@ namespace NeoKyoto.Contracts
     ║   Sector 14 — ALL DRONES OPERATIONAL        ║
     ╚══════════════════════════════════════════════╝
 
-    All drones are back in the air. Sector 14
-    sends payment.
+    ─── INCOMING TRANSMISSION ───
 
+        FROM:  VOSS // CONTRACTOR DISPATCH
+
+    Whole fleet's up. Nobody burned an afternoon.
+
+    Your program looked at each drone and decided
+    what to do about it. That's a different thing
+    from following instructions — that's judgement,
+    written down.
+
+    — V
+" + PageBreak + @"
     ─── WHAT YOU JUST DID ───
 
     You wrote a program that adapts. Instead of

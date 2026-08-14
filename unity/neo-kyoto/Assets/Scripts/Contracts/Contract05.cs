@@ -188,21 +188,30 @@ namespace NeoKyoto.Contracts
 
     ─── INCOMING TRANSMISSION ───
 
-    Contractor,
+        FROM:  VOSS // CONTRACTOR DISPATCH
+        TO:    CONTRACTOR #4471
+        RE:    #2481 — Data Center, grid service
 
-    Something different this time. The power grid
-    service crashed at 03:47 and we need to know
-    why before we can fix it.
+    Different job tonight. Nothing to repair yet —
+    we don't know what broke.
 
-    The crash report is somewhere in the system's
-    file tree, but we do not know exactly where.
-    You need to jack into the data center terminal
-    and find it.
+    Grid service went down at 03:47. It wrote a
+    crash report on its way out, which is more
+    courtesy than most systems manage, but nobody
+    can tell me where it landed.
 
-    This is not a scripting job. You will be typing
-    commands directly into a terminal — navigating
-    directories, listing files, and reading what
-    you find.
+    No script for this one. You're going into the
+    machine itself and looking around by hand:
+    walking directories, listing what's in them,
+    reading what you find.
+
+    Slower than writing code. Sometimes that's the
+    job.
+
+    03:47, by the way. Note the time. I've started
+    keeping a list.
+
+    — V
 " + PageBreak + @"
     ─── TERMINAL COMMANDS ───
 
@@ -242,10 +251,27 @@ namespace NeoKyoto.Contracts
     ║   Data Center — CRASH REPORT FOUND          ║
     ╚══════════════════════════════════════════════╝
 
-    You found the crash report. Error NK-4021 —
-    an overload cascade across three sectors. Now
-    the repair team knows what to fix.
+    ─── INCOMING TRANSMISSION ───
 
+        FROM:  VOSS // CONTRACTOR DISPATCH
+
+    NK-4021. Overload cascade, three sectors.
+    Repair team has what they need.
+
+    You went into a machine you'd never seen and
+    found one file. No script, no commands we gave
+    you — you just looked until you found it.
+
+    That's the skill, incidentally. Not the typing.
+
+    One thing. Cascades don't start in three
+    sectors at once, they start in one and spread.
+    That report doesn't say which one.
+
+    I'm probably reading too much into it.
+
+    — V
+" + PageBreak + @"
     ─── WHAT YOU JUST DID ───
 
     You navigated a file system using a terminal.

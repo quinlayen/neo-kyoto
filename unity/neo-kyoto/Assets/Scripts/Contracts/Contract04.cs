@@ -78,16 +78,36 @@ namespace NeoKyoto.Contracts
 
     ─── INCOMING TRANSMISSION ───
 
-    Contractor,
+        FROM:  VOSS // CONTRACTOR DISPATCH
+        TO:    CONTRACTOR #4471
+        RE:    #2480 — Transit Hub signals
 
-    The Transit Hub's signal controllers are down.
-    There are 6 signals, numbered 1 through 6.
-    Each one is either STUCK or SCRAMBLED — you
-    know how to handle both types from last time.
+    Transit Hub. Six signal controllers down,
+    numbered one through six, and the whole
+    interchange is backed up behind them.
 
-    Here is what is different: the signals are
-    numbered, and each command needs a signal
-    number to know which one you mean:
+    People are standing on those platforms right
+    now. Try to be quick.
+
+    Each signal is STUCK or SCRAMBLED — you've met
+    both. What's new is that they're numbered, and
+    you have to say which one you mean.
+
+    One more thing, and it's the part people get
+    wrong: the hub won't accept the work until
+    every signal is clear. You have to file a
+    report at the end, and your program can only
+    reach that line if your loop actually finishes.
+
+    Make sure it finishes.
+
+    — V
+" + PageBreak + @"
+    ─── ARGUMENTS ───
+
+    The signals are numbered, and each command
+    needs a signal number to know which one you
+    mean:
 
         check_signal(1)
         reset_signal(3)
@@ -135,9 +155,22 @@ namespace NeoKyoto.Contracts
     ║   Transit Hub — ALL SIGNALS FIXED           ║
     ╚══════════════════════════════════════════════╝
 
-    All signals are operational and the report is
-    filed. Transit Hub sends payment.
+    ─── INCOMING TRANSMISSION ───
 
+        FROM:  VOSS // CONTRACTOR DISPATCH
+
+    Six clear, report filed, platforms emptying
+    out. I could see it from the desk.
+
+    Your loop ran, then stopped, then your program
+    carried on to the next thing. That last part
+    matters more than it sounds like it does.
+
+    Terminal access is on your deck now. You've
+    earned it, and you're going to need it.
+
+    — V
+" + PageBreak + @"
     ─── WHAT YOU JUST DID ───
 
     You wrote a program that processes numbered
