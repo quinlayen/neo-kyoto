@@ -57,7 +57,13 @@ namespace NeoKyoto.UI
         /// so it is sized to leave clear air above the tagline rather than to fill the
         /// frame — the two stacked wordmarks read as one block if they crowd.
         /// </summary>
-        private const float LogoWidth = 900f;
+        private const float LogoWidth = 700f;
+
+        /// <summary>
+        /// Sits the mark up in the dark sky band of the panorama rather than over the
+        /// lit street, where the neon signage competes with it.
+        /// </summary>
+        private const float LogoY = 355f;
 
         private void Awake()
         {
@@ -136,14 +142,13 @@ namespace NeoKyoto.UI
             var logoSprite = UITheme.Art("ONCALL_Logo");
             if (logoSprite != null)
             {
-                var logo = UITheme.Box("Logo", _titlePanel.transform, Color.white);
-                logo.sprite = logoSprite;
-                logo.raycastTarget = false;
-                // Sized from the sprite's own aspect, so preserveAspect would only
-                // fight the fill wipe SplashLogo drives.
-                Place(logo.rectTransform, 0.5f, 0.5f, new Vector2(0, 235),
+                // A bare container: SplashLogo slices the sprite and adds one Image per
+                // glyph, so drawing the whole mark here too would double it up.
+                var logo = UITheme.Node("Logo", _titlePanel.transform);
+                Place(logo.GetComponent<RectTransform>(), 0.5f, 0.5f, new Vector2(0, LogoY),
                       new Vector2(LogoWidth, LogoWidth * logoSprite.rect.height / logoSprite.rect.width));
-                splashLogo = logo.gameObject.AddComponent<SplashLogo>();
+                splashLogo = logo.AddComponent<SplashLogo>();
+                splashLogo.Build(logoSprite);
             }
             else
             {
