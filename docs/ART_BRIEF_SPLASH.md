@@ -295,13 +295,15 @@ If using Grok, Midjourney, DALL-E, or similar tools:
 
 ### Logo prompt (starting point)
 
-> Minimalist typographic game logo on pure black background. The text
+> Minimalist typographic game logo on a transparent background. The text
 > "ONCALL://" in a clean monospace terminal font, glowing cyan-teal color,
 > with very subtle CRT phosphor bloom and barely visible horizontal
 > scan-lines. The "://" is part of the logo, like a URL connection string.
 > Below it, "SYSTEMS CONTRACTOR" in the same font, smaller and dimmer. No
 > icon, no emblem, no decoration. Engineering aesthetic, not hacker aesthetic.
-> 4K resolution, transparent background PNG.
+> 4K resolution. IMPORTANT: pure transparent background (alpha channel),
+> no background color, no gradient, no glow halo extending into the
+> background — the logo must composite cleanly over any image.
 
 **Iterate on:** glow intensity (less is more), letter spacing (wider), scan
 line visibility (barely there), font weight (medium, not thin or bold), how
