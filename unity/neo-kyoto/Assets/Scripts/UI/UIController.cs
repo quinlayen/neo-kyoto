@@ -127,9 +127,11 @@ namespace NeoKyoto.UI
                 var logo = UITheme.Box("Logo", _titlePanel.transform, Color.white);
                 logo.sprite = logoSprite;
                 logo.raycastTarget = false;
-                logo.preserveAspect = true;
+                // Sized from the sprite's own aspect, so preserveAspect would only
+                // fight the fill wipe SplashLogo drives.
                 Place(logo.rectTransform, 0.5f, 0.5f, new Vector2(0, 210),
                       new Vector2(LogoWidth, LogoWidth * logoSprite.rect.height / logoSprite.rect.width));
+                logo.gameObject.AddComponent<SplashLogo>();
             }
             else
             {
