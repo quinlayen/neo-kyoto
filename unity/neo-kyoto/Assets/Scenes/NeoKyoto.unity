@@ -151,6 +151,20 @@ MonoBehaviour:
   unlockAllForTesting: 0
   resetSaveOnPlay: 0
   startAtContract: 0
+  audioMix:
+    master: 1
+    music: 0.35
+    effects: 0.5
+    rain: 0.18
+    hum: 0.1
+    muted: 0
+    click: 1
+    back: 1
+    run: 1
+    complete: 1
+    error: 1
+    tick: 1
+    crackle: 2.2
 --- !u!4 &1443013671
 Transform:
   m_ObjectHideFlags: 0

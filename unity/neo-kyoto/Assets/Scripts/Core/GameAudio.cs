@@ -7,6 +7,51 @@ namespace NeoKyoto.Core
     public enum Sfx { Click, Back, Run, Complete, Error, Tick, Crackle }
 
     /// <summary>
+    /// The whole mix, in one serialisable block so it can live on Bootstrap and be
+    /// edited in the inspector. Bus levels are absolute; per-effect values are
+    /// multipliers around 1, so an effect can be nudged without disturbing the rest.
+    ///
+    /// GameAudio re-reads this every frame, so dragging a slider during play is
+    /// audible immediately. Play-mode edits still revert on stop, as they always do —
+    /// find a value live, then set it in edit mode to keep it.
+    /// </summary>
+    [System.Serializable]
+    public class AudioMix
+    {
+        [Header("Buses")]
+        [Range(0f, 1f)] public float master = 1f;
+        [Range(0f, 1f)] public float music = 0.35f;
+        [Range(0f, 1f)] public float effects = 0.5f;
+        [Range(0f, 1f)] public float rain = 0.18f;
+        [Range(0f, 1f)] public float hum = 0.10f;
+        public bool muted;
+
+        [Header("Per effect (1 = default)")]
+        [Range(0f, 4f)] public float click = 1f;
+        [Range(0f, 4f)] public float back = 1f;
+        [Range(0f, 4f)] public float run = 1f;
+        [Range(0f, 4f)] public float complete = 1f;
+        [Range(0f, 4f)] public float error = 1f;
+        [Range(0f, 4f)] public float tick = 1f;
+        [Range(0f, 4f)] public float crackle = 2.2f;
+
+        public float GainFor(Sfx sfx)
+        {
+            switch (sfx)
+            {
+                case Sfx.Click: return click;
+                case Sfx.Back: return back;
+                case Sfx.Run: return run;
+                case Sfx.Complete: return complete;
+                case Sfx.Error: return error;
+                case Sfx.Tick: return tick;
+                case Sfx.Crackle: return crackle;
+                default: return 1f;
+            }
+        }
+    }
+
+    /// <summary>
     /// Music and interface sound. One music source that crossfades, one pooled set of
     /// one-shot sources so overlapping effects do not cut each other off.
     ///
@@ -23,10 +68,10 @@ namespace NeoKyoto.Core
     {
         public static GameAudio Instance { get; private set; }
 
-        [Range(0f, 1f)] public float musicVolume = 0.35f;
-        [Range(0f, 1f)] public float sfxVolume = 0.5f;
-        [Range(0f, 1f)] public float ambienceVolume = 0.6f;
-        public bool muted;
+        /// <summary>Set by Bootstrap so the sliders live on a scene object.</summary>
+        public AudioMix mix = new AudioMix();
+
+        private bool _ambienceOn;
 
         private AudioSource _music;
         private AudioSource _rain, _hum;
@@ -75,60 +120,65 @@ namespace NeoKyoto.Core
 
         // ─── Music ───
 
+        /// <summary>Continuous levels are re-applied every frame so inspector edits are live.</summary>
+        private void Update()
+        {
+            float m = mix.muted ? 0f : mix.master;
+            _music.volume = mix.music * m;
+            if (_ambienceOn)
+            {
+                _rain.volume = mix.rain * m;
+                _hum.volume = mix.hum * m;
+            }
+        }
+
         /// <summary>Starts a track from Resources/Audio, ignoring a repeat request.</summary>
-        public void PlayMusic(string resourceName, float volumeScale = 1f)
+        public void PlayMusic(string resourceName)
         {
             var clip = Resources.Load<AudioClip>("Audio/" + resourceName);
             if (clip == null) return;
             if (_music.clip == clip && _music.isPlaying) return;
 
             _music.clip = clip;
-            _music.volume = muted ? 0f : musicVolume * volumeScale;
             _music.Play();
         }
 
         public void StopMusic() { _music.Stop(); }
 
-        public void SetMuted(bool value)
-        {
-            muted = value;
-            _music.volume = muted ? 0f : musicVolume;
-        }
+        public void SetMuted(bool value) { mix.muted = value; }
 
         // ─── Ambience ───
 
         /// <summary>Rain and the electrical hum of a city running on tired infrastructure.</summary>
-        public void PlayAmbience(float rainScale = 1f, float humScale = 1f)
+        public void PlayAmbience()
         {
-            SetLoop(_rain, muted ? 0f : 0.18f * ambienceVolume * rainScale);
-            SetLoop(_hum, muted ? 0f : 0.10f * ambienceVolume * humScale);
+            _ambienceOn = true;
+            if (!_rain.isPlaying) _rain.Play();
+            if (!_hum.isPlaying) _hum.Play();
         }
 
         public void StopAmbience()
         {
+            _ambienceOn = false;
             if (_rain != null) _rain.Stop();
             if (_hum != null) _hum.Stop();
-        }
-
-        private static void SetLoop(AudioSource src, float volume)
-        {
-            if (src == null) return;
-            src.volume = volume;
-            if (!src.isPlaying && volume > 0f) src.Play();
         }
 
         // ─── Effects ───
 
         public void Play(Sfx sfx, float volumeScale = 1f, float pitch = 1f)
         {
-            if (muted) return;
+            if (mix.muted) return;
             AudioClip clip;
             if (!_clips.TryGetValue(sfx, out clip) || clip == null) return;
+
+            float gain = mix.master * mix.effects * mix.GainFor(sfx) * volumeScale;
+            if (gain <= 0f) return;
 
             var src = _oneShots[_nextShot];
             _nextShot = (_nextShot + 1) % VoiceCount;
             src.pitch = pitch;
-            src.PlayOneShot(clip, Mathf.Clamp01(sfxVolume * volumeScale));
+            src.PlayOneShot(clip, Mathf.Clamp(gain, 0f, 4f));
         }
 
         // ─── Synthesis ───

@@ -20,6 +20,10 @@ namespace NeoKyoto.Core
         [Tooltip("Jump straight into this contract, 1-based. 0 for the normal flow.")]
         public int startAtContract;
 
+        [Tooltip("Volume sliders. Editable during play — find a level live, then set it " +
+                 "in edit mode to keep it.")]
+        public AudioMix audioMix = new AudioMix();
+
         private void Awake()
         {
             // Created inactive on purpose: AddComponent runs Awake immediately, so a
@@ -46,9 +50,13 @@ namespace NeoKyoto.Core
             // Without a listener in the scene nothing is audible at all.
             camGo.AddComponent<AudioListener>();
 
+            // Inactive first, so Awake does not run before the mix is handed over —
+            // the same ordering trap that silently disabled unlockAllForTesting.
             var audioGo = new GameObject("Audio");
+            audioGo.SetActive(false);
             audioGo.transform.SetParent(transform, false);
-            audioGo.AddComponent<GameAudio>();
+            audioGo.AddComponent<GameAudio>().mix = audioMix;
+            audioGo.SetActive(true);
 
             if (FindFirstObjectByType<EventSystem>() == null)
             {
