@@ -65,6 +65,9 @@ namespace NeoKyoto.UI
         /// </summary>
         private const float LogoY = 355f;
 
+        /// <summary>Clip name under Resources/Audio. Swap here to change the track.</summary>
+        private const string SplashTrack = "ADarkTime";
+
         private void Awake()
         {
             _gm = GameManager.Instance;
@@ -678,6 +681,10 @@ namespace NeoKyoto.UI
             _workspacePanel.SetActive(s == GameScreen.Workspace);
             _debriefPanel.SetActive(s == GameScreen.Debrief);
 
+            // Starts on the splash and carries through; the track is atmospheric enough
+            // to underscore the whole session rather than cutting at the board.
+            if (GameAudio.Instance != null) GameAudio.Instance.PlayMusic(SplashTrack);
+
             if (s == GameScreen.Board) RebuildBoard();
             else DisarmReset();
 
@@ -689,6 +696,11 @@ namespace NeoKyoto.UI
 
             if (s == GameScreen.Debrief && _gm.ActiveContract != null)
             {
+                // The payoff moment. Scaled by rating, so three stars sounds like more
+                // than one — the world-as-feedback principle applied to audio.
+                if (GameAudio.Instance != null)
+                    GameAudio.Instance.Play(Sfx.Complete, 0.6f + 0.2f * Mathf.Max(1, _gm.LastStars));
+
                 string text = _gm.CurrentDebriefText;
                 if (string.IsNullOrEmpty(text)) text = _gm.ActiveContract.GetCompletionMessage();
                 _debriefPages = Contract.Paginate(text);
@@ -841,7 +853,11 @@ namespace NeoKyoto.UI
         private void ToggleRun()
         {
             if (_gm.IsRunning) _gm.StopScript();
-            else _gm.RunScript();
+            else
+            {
+                if (GameAudio.Instance != null) GameAudio.Instance.Play(Sfx.Run);
+                _gm.RunScript();
+            }
         }
 
         private void ResetScript()

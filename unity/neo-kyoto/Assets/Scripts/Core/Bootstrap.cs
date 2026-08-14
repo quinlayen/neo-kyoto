@@ -30,6 +30,12 @@ namespace NeoKyoto.Core
             cam.nearClipPlane = 0.1f;
             cam.farClipPlane = 400f;
             camGo.tag = "MainCamera";
+            // Without a listener in the scene nothing is audible at all.
+            camGo.AddComponent<AudioListener>();
+
+            var audioGo = new GameObject("Audio");
+            audioGo.transform.SetParent(transform, false);
+            audioGo.AddComponent<GameAudio>();
 
             if (FindFirstObjectByType<EventSystem>() == null)
             {

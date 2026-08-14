@@ -296,6 +296,7 @@ namespace NeoKyoto.Core
                 catch (Exception e)
                 {
                     endMessage = _runner.DescribeException(e);
+                    if (GameAudio.Instance != null) GameAudio.Instance.Play(Sfx.Error);
                     break;
                 }
                 if (!moved) break;
@@ -303,6 +304,11 @@ namespace NeoKyoto.Core
                 var ev = it.Current;
                 if (ev.Line > 0) CurrentLine = ev.Line;
                 if (ev.Kind == ExecEventKind.Print) AppendConsole(PyValue.Str(ev.Text));
+
+                // A run was previously text only. One tick per command gives it a second
+                // feedback channel and makes the pacing of a loop audible.
+                if (ev.Kind == ExecEventKind.Call && GameAudio.Instance != null)
+                    GameAudio.Instance.Play(Sfx.Tick, 0.45f, UnityEngine.Random.Range(0.96f, 1.05f));
                 if (_callsToGoal == 0 && ActiveContract.IsGoalMet()) _callsToGoal = _runner.CallCount;
                 RaiseStatus();
 

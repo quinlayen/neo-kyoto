@@ -1,3 +1,4 @@
+using NeoKyoto.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -157,6 +158,12 @@ namespace NeoKyoto.UI
             Stretch(t.rectTransform, 8, 0, 8, 0);
             t.raycastTarget = false;
 
+            // Every button in the game is built here, so this is the one place that
+            // needs to know a press should be audible.
+            btn.onClick.AddListener(() =>
+            {
+                if (GameAudio.Instance != null) GameAudio.Instance.Play(Sfx.Click);
+            });
             if (onClick != null) btn.onClick.AddListener(onClick);
             return btn;
         }
