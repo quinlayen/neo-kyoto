@@ -24,11 +24,13 @@ namespace NeoKyoto.UI
             public float Start, Duration, RiseFrom;
         }
 
-        // docs/ART_BRIEF_SPLASH.md — Animation Sequence.
-        private const float CityAt = 0.5f, CityFor = 2.0f;
-        private const float LogoAt = 2.5f;
-        private const float TaglineAt = 4.5f, TaglineFor = 1.0f;
-        private const float ButtonAt = 5.5f, ButtonFor = 0.5f;
+        // Beats follow docs/ART_BRIEF_SPLASH.md, slowed: the city takes its time
+        // arriving, and the mark waits a clear beat after it has settled rather than
+        // striking on while the background is still moving.
+        private const float CityAt = 0.5f, CityFor = 3.0f;
+        private const float LogoAt = 3.9f;
+        private const float TaglineAt = 6.6f, TaglineFor = 1.3f;
+        private const float ButtonAt = 8.0f, ButtonFor = 0.6f;
 
         /// <summary>
         /// How far the city rises as it fades up, in reference pixels. The backdrop

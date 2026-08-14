@@ -25,7 +25,7 @@ namespace NeoKyoto.UI
     public class SplashLogo : MonoBehaviour
     {
         [Tooltip("Seconds for the whole mark to light up, glyph by glyph.")]
-        public float revealSeconds = 2f;
+        public float revealSeconds = 2.6f;
 
         [Tooltip("Failing-power behaviour. Turn off for photosensitivity.")]
         public bool flicker = true;
@@ -238,7 +238,11 @@ namespace NeoKyoto.UI
                 if (_instability <= 0.02f || now < g.NextEventAt) continue;
 
                 if (g.Doomed && !g.Dead && g.BurstLeft == 0 && _elapsed >= _failAt)
+                {
                     g.BurstLeft = Random.Range(5, 8);
+                    if (GameAudio.Instance != null)
+                        GameAudio.Instance.Play(Sfx.Crackle, 0.55f, Random.Range(0.9f, 1.1f));
+                }
 
                 if (g.BurstLeft > 0)
                 {
@@ -257,6 +261,8 @@ namespace NeoKyoto.UI
                     g.EventEndsAt = now + Random.Range(0.04f, 0.09f);
                     g.EventLevel = Random.Range(0.20f, 0.50f);
                     g.NextEventAt = g.EventEndsAt + Random.Range(4f, 11f);
+                    if (GameAudio.Instance != null)
+                        GameAudio.Instance.Play(Sfx.Crackle, 0.22f, Random.Range(1.05f, 1.25f));
                     continue;
                 }
 

@@ -165,7 +165,9 @@ namespace NeoKyoto.UI
                 "\"The city doesn't sleep. Neither do its systems.\n" +
                 " When they break, you get the call.\"", 22f, UITheme.Text,
                 TextAlignmentOptions.Center);
-            Place(tag.rectTransform, 0.5f, 0.5f, new Vector2(0, -20), new Vector2(1200, 120));
+            // Tucked under the mark rather than floating mid-frame, where it sat over
+            // the busiest part of the street and had to fight the signage to be read.
+            Place(tag.rectTransform, 0.5f, 0.5f, new Vector2(0, 150), new Vector2(1200, 120));
             var tagGroup = tag.gameObject.AddComponent<CanvasGroup>();
 
             // Button and its hint share a group: the call to action arrives as one beat.
@@ -683,7 +685,13 @@ namespace NeoKyoto.UI
 
             // Starts on the splash and carries through; the track is atmospheric enough
             // to underscore the whole session rather than cutting at the board.
-            if (GameAudio.Instance != null) GameAudio.Instance.PlayMusic(SplashTrack);
+            if (GameAudio.Instance != null)
+            {
+                GameAudio.Instance.PlayMusic(SplashTrack);
+                // Rain and grid hum sit under everything — it is the same city whether
+                // the player is on the splash or inside a contract.
+                GameAudio.Instance.PlayAmbience();
+            }
 
             if (s == GameScreen.Board) RebuildBoard();
             else DisarmReset();

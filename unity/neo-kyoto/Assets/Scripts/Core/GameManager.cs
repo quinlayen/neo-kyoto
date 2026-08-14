@@ -20,6 +20,14 @@ namespace NeoKyoto.Core
         [Tooltip("Unlock every contract and language feature — for testing.")]
         public bool unlockAllForTesting;
 
+        [Tooltip("Wipe the save before loading. Saved scripts otherwise persist across " +
+                 "editor sessions, which is right for players and tedious while iterating.")]
+        public bool resetSaveOnPlay;
+
+        [Tooltip("Jump straight into this contract on play, 1-based. 0 for the normal " +
+                 "title flow. Implies unlocking, so the contract is reachable.")]
+        public int startAtContract;
+
         [Tooltip("Seconds between observable script events, so code runs visibly in the world.")]
         public float stepDelay = 0.12f;
 
@@ -57,9 +65,29 @@ namespace NeoKyoto.Core
         {
             Instance = this;
             State = new GameState();
+            if (resetSaveOnPlay) SaveSystem.Clear();
             LoadProgress();
-            if (unlockAllForTesting) State.UnlockAll(ContractRegistry.AllIds());
+            if (unlockAllForTesting || startAtContract > 0)
+                State.UnlockAll(ContractRegistry.AllIds());
             CurrentScreen = GameScreen.Title;
+        }
+
+        private void Start()
+        {
+            if (startAtContract > 0) StartCoroutine(JumpToContract(startAtContract));
+        }
+
+        /// <summary>
+        /// Development shortcut past the title and board. Waits a frame so every
+        /// listener has finished subscribing in its own Start before events fire.
+        /// </summary>
+        private IEnumerator JumpToContract(int oneBased)
+        {
+            yield return null;
+
+            int index = Mathf.Clamp(oneBased - 1, 0, ContractRegistry.All.Count - 1);
+            OpenContract(ContractRegistry.All[index]);
+            BeginWork();
         }
 
         // ─── Persistence ───

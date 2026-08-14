@@ -4,7 +4,7 @@ using UnityEngine;
 namespace NeoKyoto.Core
 {
     /// <summary>Short interface sounds, synthesised rather than sourced.</summary>
-    public enum Sfx { Click, Back, Run, Complete, Error, Tick }
+    public enum Sfx { Click, Back, Run, Complete, Error, Tick, Crackle }
 
     /// <summary>
     /// Music and interface sound. One music source that crossfades, one pooled set of
@@ -25,9 +25,11 @@ namespace NeoKyoto.Core
 
         [Range(0f, 1f)] public float musicVolume = 0.35f;
         [Range(0f, 1f)] public float sfxVolume = 0.5f;
+        [Range(0f, 1f)] public float ambienceVolume = 0.6f;
         public bool muted;
 
         private AudioSource _music;
+        private AudioSource _rain, _hum;
         private AudioSource[] _oneShots;
         private int _nextShot;
         private readonly Dictionary<Sfx, AudioClip> _clips = new Dictionary<Sfx, AudioClip>();
@@ -43,6 +45,9 @@ namespace NeoKyoto.Core
             _music.playOnAwake = false;
             _music.spatialBlend = 0f;
 
+            _rain = AddLoop(Rain());
+            _hum = AddLoop(Hum());
+
             _oneShots = new AudioSource[VoiceCount];
             for (int i = 0; i < VoiceCount; i++)
             {
@@ -53,6 +58,17 @@ namespace NeoKyoto.Core
             }
 
             BuildSfx();
+        }
+
+        private AudioSource AddLoop(AudioClip clip)
+        {
+            var src = gameObject.AddComponent<AudioSource>();
+            src.clip = clip;
+            src.loop = true;
+            src.playOnAwake = false;
+            src.spatialBlend = 0f;
+            src.volume = 0f;
+            return src;
         }
 
         private void OnDestroy() { if (Instance == this) Instance = null; }
@@ -79,6 +95,28 @@ namespace NeoKyoto.Core
             _music.volume = muted ? 0f : musicVolume;
         }
 
+        // ─── Ambience ───
+
+        /// <summary>Rain and the electrical hum of a city running on tired infrastructure.</summary>
+        public void PlayAmbience(float rainScale = 1f, float humScale = 1f)
+        {
+            SetLoop(_rain, muted ? 0f : 0.18f * ambienceVolume * rainScale);
+            SetLoop(_hum, muted ? 0f : 0.10f * ambienceVolume * humScale);
+        }
+
+        public void StopAmbience()
+        {
+            if (_rain != null) _rain.Stop();
+            if (_hum != null) _hum.Stop();
+        }
+
+        private static void SetLoop(AudioSource src, float volume)
+        {
+            if (src == null) return;
+            src.volume = volume;
+            if (!src.isPlaying && volume > 0f) src.Play();
+        }
+
         // ─── Effects ───
 
         public void Play(Sfx sfx, float volumeScale = 1f, float pitch = 1f)
@@ -103,6 +141,109 @@ namespace NeoKyoto.Core
             _clips[Sfx.Error] = Tone("sfxError", 0.220f, 300f, 190f, 0.010f, Wave.Saw, 0.26f);
             _clips[Sfx.Tick] = Tone("sfxTick", 0.035f, 1400f, 1400f, 0.002f, Wave.Sine, 0.18f);
             _clips[Sfx.Complete] = Arpeggio("sfxComplete", new[] { 523.25f, 659.25f, 783.99f, 1046.5f }, 0.085f);
+            _clips[Sfx.Crackle] = Crackle();
+        }
+
+        private const int Rate = 44100;
+
+        /// <summary>
+        /// Rain: broadband hiss, band-limited so it sits behind everything, with a slow
+        /// wander so it does not read as a flat noise floor.
+        /// </summary>
+        private static AudioClip Rain()
+        {
+            const float seconds = 6f;
+            int fade = Rate / 4;
+            int count = (int)(seconds * Rate);
+            var data = new float[count + fade];
+
+            var rnd = new System.Random(7);
+            float lo = 0f, hi = 0f;
+            for (int i = 0; i < data.Length; i++)
+            {
+                float white = (float)(rnd.NextDouble() * 2.0 - 1.0);
+                lo += (white - lo) * 0.35f;      // one-pole low pass, takes the edge off
+                hi += (lo - hi) * 0.010f;        // slow follower, subtracted for high pass
+                float band = lo - hi;
+
+                // Gentle swell so the loop does not sound mechanical.
+                float wander = 0.82f + 0.18f * Mathf.Sin(i / (float)Rate * 0.7f * Mathf.PI * 2f);
+                data[i] = band * wander * 0.5f;
+            }
+
+            return Looped("ambRain", data, count, fade);
+        }
+
+        /// <summary>
+        /// Mains hum: 50 Hz and its harmonics. The loop length is an exact multiple of
+        /// every period, so it repeats without a discontinuity.
+        /// </summary>
+        private static AudioClip Hum()
+        {
+            const int count = Rate * 2;          // 100 whole cycles of 50 Hz
+            var data = new float[count];
+            float[] harmonics = { 50f, 100f, 150f, 250f };
+            float[] gains = { 1f, 0.45f, 0.22f, 0.08f };
+
+            for (int i = 0; i < count; i++)
+            {
+                float t = (float)i / Rate;
+                float s = 0f;
+                for (int hIdx = 0; hIdx < harmonics.Length; hIdx++)
+                    s += Mathf.Sin(t * harmonics[hIdx] * Mathf.PI * 2f) * gains[hIdx];
+
+                // One full tremolo cycle across the loop, so the ends still meet.
+                float trem = 0.9f + 0.1f * Mathf.Sin(t / 2f * Mathf.PI * 2f);
+                data[i] = s * trem * 0.16f;
+            }
+
+            var clip = AudioClip.Create("ambHum", count, 1, Rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        /// <summary>A tube arcing: a few noise spits with hard decay.</summary>
+        private static AudioClip Crackle()
+        {
+            int count = (int)(0.13f * Rate);
+            var data = new float[count];
+            var rnd = new System.Random(19);
+            float lo = 0f;
+
+            for (int i = 0; i < count; i++)
+            {
+                float t = (float)i / count;
+                float white = (float)(rnd.NextDouble() * 2.0 - 1.0);
+                lo += (white - lo) * 0.6f;                       // keep it bright, not hissy
+
+                // Three spits inside the window rather than one flat burst.
+                float spit = Mathf.Max(0f, Mathf.Sin(t * Mathf.PI * 7f));
+                float env = Mathf.Exp(-7f * t) * spit;
+                data[i] = lo * env * 0.55f;
+            }
+
+            var clip = AudioClip.Create("sfxCrackle", count, 1, Rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        /// <summary>
+        /// Folds an extra tail back over the head so a noise loop has no seam. Without
+        /// this the wrap point is an audible click every time round.
+        /// </summary>
+        private static AudioClip Looped(string name, float[] data, int count, int fade)
+        {
+            for (int i = 0; i < fade; i++)
+            {
+                float t = (float)i / fade;
+                data[i] = data[i] * t + data[count + i] * (1f - t);
+            }
+
+            var body = new float[count];
+            System.Array.Copy(data, body, count);
+            var clip = AudioClip.Create(name, count, 1, Rate, false);
+            clip.SetData(body, 0);
+            return clip;
         }
 
         private enum Wave { Sine, Square, Saw }

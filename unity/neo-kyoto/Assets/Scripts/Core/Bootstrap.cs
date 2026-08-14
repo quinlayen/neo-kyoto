@@ -14,12 +14,25 @@ namespace NeoKyoto.Core
     {
         public bool unlockAllForTesting;
 
+        [Tooltip("Wipe saved progress and scripts on play. Development only.")]
+        public bool resetSaveOnPlay;
+
+        [Tooltip("Jump straight into this contract, 1-based. 0 for the normal flow.")]
+        public int startAtContract;
+
         private void Awake()
         {
+            // Created inactive on purpose: AddComponent runs Awake immediately, so a
+            // live object would read these flags before they were assigned. That is why
+            // unlockAllForTesting had never taken effect.
             var gmGo = new GameObject("GameManager");
+            gmGo.SetActive(false);
             gmGo.transform.SetParent(transform, false);
             var gm = gmGo.AddComponent<GameManager>();
             gm.unlockAllForTesting = unlockAllForTesting;
+            gm.resetSaveOnPlay = resetSaveOnPlay;
+            gm.startAtContract = startAtContract;
+            gmGo.SetActive(true);
 
             var camGo = new GameObject("WorldCamera");
             camGo.transform.SetParent(transform, false);

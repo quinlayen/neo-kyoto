@@ -149,6 +149,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NeoKyoto.Core.Bootstrap
   unlockAllForTesting: 0
+  resetSaveOnPlay: 0
+  startAtContract: 0
 --- !u!4 &1443013671
 Transform:
   m_ObjectHideFlags: 0
