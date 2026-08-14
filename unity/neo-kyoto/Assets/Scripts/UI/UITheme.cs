@@ -48,6 +48,35 @@ namespace NeoKyoto.UI
             }
         }
 
+        /// <summary>A sprite from Resources/Splash, or null if it is missing.</summary>
+        public static Sprite Art(string name)
+        {
+            return Resources.Load<Sprite>("Splash/" + name);
+        }
+
+        /// <summary>
+        /// A full-bleed image that covers its parent without distorting. Envelope
+        /// scaling crops the overflow instead of letterboxing, so the art fills any
+        /// aspect ratio the player's window happens to be.
+        /// </summary>
+        public static Image CoverImage(string name, Transform parent, Sprite sprite)
+        {
+            var go = Node(name, parent);
+            var img = go.AddComponent<Image>();
+            img.sprite = sprite;
+            img.raycastTarget = false;
+            img.preserveAspect = false;
+            Stretch(go.GetComponent<RectTransform>());
+
+            if (sprite != null)
+            {
+                var fitter = go.AddComponent<AspectRatioFitter>();
+                fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+                fitter.aspectRatio = sprite.rect.width / sprite.rect.height;
+            }
+            return img;
+        }
+
         /// <summary>Theme colour as a TMP rich-text hex, e.g. "#35D6FF".</summary>
         public static string Hex(Color c)
         {

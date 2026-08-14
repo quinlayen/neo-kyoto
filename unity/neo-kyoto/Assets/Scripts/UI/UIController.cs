@@ -52,6 +52,9 @@ namespace NeoKyoto.UI
         private const float StatusMinHeight = 96f;
         private const float BoardWidth = 1180f;
 
+        /// <summary>Splash logo width at the 1920 reference — a little over half the frame.</summary>
+        private const float LogoWidth = 1040f;
+
         private void Awake()
         {
             _gm = GameManager.Instance;
@@ -96,36 +99,60 @@ namespace NeoKyoto.UI
             BuildDebrief(canvasGo.transform);
         }
 
+        /// <summary>
+        /// The splash. Per ART_BRIEF_SPLASH.md this is the one moment the player sees
+        /// the city on their own screen, before the camera pulls back to the in-world
+        /// workstation — so it is art-led rather than panel-led.
+        /// </summary>
         private void BuildTitle(Transform parent)
         {
             _titlePanel = UITheme.Box("TitlePanel", parent, UITheme.PanelSolid).gameObject;
             UITheme.Stretch(_titlePanel.GetComponent<RectTransform>());
 
-            var title = UITheme.Label("Title", _titlePanel.transform,
-                "ONCALL://\nSYSTEMS CONTRACTOR", 64f, UITheme.Accent, TextAlignmentOptions.Center);
-            var rt = title.rectTransform;
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(1200, 220);
-            rt.anchoredPosition = new Vector2(0, 170);
+            var panorama = UITheme.Art("ONCALL_CityPanorama");
+            UITheme.CoverImage("Panorama", _titlePanel.transform, panorama);
+
+            // The panorama is dense and brightly lit, and the logo and copy sit dead
+            // centre where it is busiest. A flat scrim under the vignette pushes the
+            // city back so it frames the mark instead of competing with it.
+            var scrim = UITheme.Box("Scrim", _titlePanel.transform, new Color(0.02f, 0.03f, 0.05f, 0.45f));
+            UITheme.Stretch(scrim.rectTransform);
+            scrim.raycastTarget = false;
+
+            UITheme.CoverImage("Vignette", _titlePanel.transform, UITheme.Art("SplashVignette"));
+
+            var logoSprite = UITheme.Art("ONCALL_Logo");
+            if (logoSprite != null)
+            {
+                var logo = UITheme.Box("Logo", _titlePanel.transform, Color.white);
+                logo.sprite = logoSprite;
+                logo.raycastTarget = false;
+                logo.preserveAspect = true;
+                Place(logo.rectTransform, 0.5f, 0.5f, new Vector2(0, 210),
+                      new Vector2(LogoWidth, LogoWidth * logoSprite.rect.height / logoSprite.rect.width));
+            }
+            else
+            {
+                // The art is optional; the game still has to boot without it.
+                var title = UITheme.Label("Title", _titlePanel.transform,
+                    "ONCALL://\nSYSTEMS CONTRACTOR", 64f, UITheme.Accent, TextAlignmentOptions.Center);
+                Place(title.rectTransform, 0.5f, 0.5f, new Vector2(0, 170), new Vector2(1200, 220));
+            }
 
             var tag = UITheme.Label("Tagline", _titlePanel.transform,
                 "\"The city doesn't sleep. Neither do its systems.\n" +
-                " When they break, you get the call.\"", 20f, UITheme.TextDim,
+                " When they break, you get the call.\"", 22f, UITheme.Text,
                 TextAlignmentOptions.Center);
-            var trt = tag.rectTransform;
-            trt.anchorMin = new Vector2(0.5f, 0.5f);
-            trt.anchorMax = new Vector2(0.5f, 0.5f);
-            trt.sizeDelta = new Vector2(1200, 120);
-            trt.anchoredPosition = new Vector2(0, 20);
+            Place(tag.rectTransform, 0.5f, 0.5f, new Vector2(0, -20), new Vector2(1200, 120));
 
             var btn = UITheme.Button("Connect", _titlePanel.transform,
                 "CONNECT TO ONCALL TERMINAL", UITheme.Accent, () => _gm.StartGame());
-            var brt = btn.GetComponent<RectTransform>();
-            brt.anchorMin = new Vector2(0.5f, 0.5f);
-            brt.anchorMax = new Vector2(0.5f, 0.5f);
-            brt.sizeDelta = new Vector2(520, 54);
-            brt.anchoredPosition = new Vector2(0, -140);
+            Place(btn.GetComponent<RectTransform>(), 0.5f, 0.5f, new Vector2(0, -180), new Vector2(520, 54));
+
+            var hint = UITheme.Label("TitleHint", _titlePanel.transform,
+                "Progress saves automatically.", UITheme.MicroSize, UITheme.TextDim,
+                TextAlignmentOptions.Center);
+            Place(hint.rectTransform, 0.5f, 0.5f, new Vector2(0, -240), new Vector2(600, 24));
         }
 
         private void BuildBoard(Transform parent)
