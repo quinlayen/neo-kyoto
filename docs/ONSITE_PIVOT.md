@@ -82,6 +82,14 @@ This collapses HackHub's App Store pattern into the fantasy. Locked-but-visible 
 
 **Guard rail:** story-critical technologies (SQL, Git) are **granted by the narrative**, never purchased. The store sells conveniences and alternatives — terminal themes, a faster scanner, a diagnostic that reveals one hidden file per contract, extra window slots. If SQL costs credits, players grind old contracts for money and the Motivation win becomes a chore.
 
+### Whose screens are they? The player's
+
+**Confirmed 2026-08-14.** The floating windows are the **player's deck**, not the failing system's own display. They travel with the contractor, they are the same screens at every location, and they are what the store later sells tools for. A window is *your screen showing the box*, never *the box's screen*.
+
+This matters beyond flavour: it is what makes the deck a characterisation surface and a credits sink at all. A utility box's built-in display cannot be upgraded, customised, or carried to the next contract.
+
+> **Parked:** some locations may *also* have a terminal already present on site. Deliberately not designed yet — raise it when a contract actually calls for one. If it happens, the distinction above is the thing to preserve: a site terminal would be a diegetic object in the world, not a replacement for the deck's windows.
+
 ### Fit constraint
 
 `GDD.md:17`: *"You are not a hacker or a hero. You are the person who shows up when everything is broken and makes it work again."*
