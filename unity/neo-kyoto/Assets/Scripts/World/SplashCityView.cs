@@ -17,9 +17,10 @@ namespace NeoKyoto.World
         [Tooltip("Off falls back to the painted panorama.")]
         public bool enabled = true;
 
-        [Tooltip("Scene loaded additively behind the splash. Lives in a purchased kit, " +
-                 "so it is absent on a fresh clone until the kit is re-imported.")]
-        public string sceneName = "CP_Demo";
+        [Tooltip("Scene loaded additively behind the splash. Our own copy of the kit's " +
+                 "demo city, so we can dress it without touching the vendor scene. The " +
+                 "scene file is in git; the assets it references are not.")]
+        public string sceneName = "NeoKyotoCity";
 
         [Tooltip("Metres the camera travels across the whole splash, relative to its own " +
                  "facing: x right, y up, z forward. Small numbers. This is a drift, not a fly-through.")]
@@ -102,8 +103,7 @@ namespace NeoKyoto.World
 
             if (!Application.CanStreamedLevelBeLoaded(settings.sceneName))
             {
-                // Expected on a fresh clone: the kit has not been re-imported, or the
-                // scene was never added to Build Settings. Not an error.
+                // The scene was never added to Build Settings. Not an error.
                 Debug.Log("[SplashCityView] Scene '" + settings.sceneName +
                           "' unavailable — keeping the painted panorama.");
                 return;
@@ -130,6 +130,20 @@ namespace NeoKyoto.World
                 SceneManager.UnloadSceneAsync(_city);
                 yield break;
             }
+
+            // The city scene used to live inside the kit, so "can the scene be loaded?"
+            // doubled as "is the kit imported?". It doesn't any more — our copy is in git
+            // and loads perfectly on a fresh clone, arriving completely empty because
+            // every prefab reference points into gitignored assets. Check for geometry
+            // instead, or the graceful fallback silently stops being graceful.
+            if (CountRenderers(_city) < MinimumCityRenderers)
+            {
+                Debug.Log("[SplashCityView] '" + settings.sceneName + "' loaded but is empty — " +
+                          "the asset kit is not imported. Keeping the painted panorama.");
+                SceneManager.UnloadSceneAsync(_city);
+                yield break;
+            }
+
             _loaded = true;
 
             AdoptFraming();
@@ -149,6 +163,21 @@ namespace NeoKyoto.World
             if (_world != null) _world.SetWorldVisible(false);
 
             if (_ui != null) _ui.UseLiveCityBackdrop();
+        }
+
+        /// <summary>
+        /// Measured: the city produces ~3,950 renderers with the kit imported, and none
+        /// without it. The threshold sits in the middle of that gap — a presence check,
+        /// not a tuned value.
+        /// </summary>
+        private const int MinimumCityRenderers = 100;
+
+        private static int CountRenderers(Scene scene)
+        {
+            int n = 0;
+            foreach (var root in scene.GetRootGameObjects())
+                n += root.GetComponentsInChildren<Renderer>(true).Length;
+            return n;
         }
 
         /// <summary>

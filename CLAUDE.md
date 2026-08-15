@@ -44,6 +44,15 @@ variant and everything renders pink in URP. You must then run
 `Emission = 0`, which would kill the broken-amber → fixed-cyan state language. Details and the
 restore path: `.claude/memory/project-vendor-shader-patch.md`.
 
+**The city scene is ours now, and that broke a guard that used to be free.**
+`Assets/Scenes/NeoKyotoCity.unity` is our copy of the kit's `CP_Demo`, so we can dress it without
+touching the vendor scene. But the *scene file* is in git while the *assets it references* are not.
+`Application.CanStreamedLevelBeLoaded` used to double as "is the kit imported?" purely because the
+scene lived inside the kit — it doesn't any more. On a fresh clone the scene loads perfectly and
+comes up **completely empty**, every prefab reference missing. `SplashCityView` now counts renderers
+after loading and falls back to the painted panorama below a threshold. Anything else that loads the
+city must do the same, or the graceful fallback silently stops being graceful. Never edit `CP_Demo`.
+
 **Loading a location scene additively? Hide the game's own world first.** `WorldController`
 builds a placeholder `Ground` plane, 200 × 200 m, whose top face is at exactly **y = 0** — which
 is where a real city kit puts its pavement. Left visible underneath, the two are coplanar across

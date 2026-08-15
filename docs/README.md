@@ -62,8 +62,9 @@ Carried across the docs, in rough priority:
 1. **Is the kit's geometry genuinely modular?** Grid unit unmeasured, and it's unclear whether the demo is modular pieces or pre-assembled hero streets. Decides how cheaply 11 contracts redress into 6 sets — `ENVIRONMENT_BRIEF.md`
    <br>*(Resolved: kit purchased, imported, verified. Scale, LODs, collision and emission all pass; facade texel density is the one weak spot and the fixed cameras hide it.)*
 2. **Star metric may be wrong, not just mistuned** — `ECONOMY.md` Defect 2. Needs a playtest decision
-3. **Deck OS chrome is expensive to retrofit** — decide before Unity UI work begins. `DECK_SPEC.md` §14
-4. **Rail on the left or the right?** — `DECK_SPEC.md` §14
-5. **Late-game credit surplus has nowhere to go** — `ECONOMY.md`
-6. **Player character's name**, needed for Voss's Act 3 ID-to-name shift — `DISPATCHER.md`
-7. **Interior art spend** deferred to Act 3 — hold the line on the six-set consolidation
+3. **Is the overmap rendered on the deck, full-frame, with no windows?** Decide before the panorama is placed — it also settles `DECK_SPEC.md` §14's rail question. `OVERMAP.md` §Open
+4. **Deck OS chrome is expensive to retrofit** — decide before Unity UI work begins. `DECK_SPEC.md` §14
+5. **Rail on the left or the right?** — `DECK_SPEC.md` §14
+6. **Late-game credit surplus has nowhere to go** — `ECONOMY.md`
+7. **Player character's name**, needed for Voss's Act 3 ID-to-name shift — `DISPATCHER.md`
+8. **Interior art spend** deferred to Act 3 — hold the line on the six-set consolidation

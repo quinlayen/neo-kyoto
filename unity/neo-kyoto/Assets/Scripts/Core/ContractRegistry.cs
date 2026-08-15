@@ -13,12 +13,23 @@ namespace NeoKyoto.Core
         /// <summary>Index into GameState.UnlockSequence, or -1 when this contract unlocks nothing new.</summary>
         public int UnlockIndex;
 
+        /// <summary>
+        /// Contract ids that must be completed first, for ordering jobs *within* one
+        /// district. Null means available as soon as the district opens — which is every
+        /// contract today, since each district holds exactly one. Gating between places
+        /// is `District.Requires`, not this.
+        /// </summary>
+        public string[] Requires;
+
         public Func<Contract> Create;
     }
 
     /// <summary>
     /// Board order for the demo: Python fundamentals (C1-C4) then the first
     /// terminal job (C5).
+    ///
+    /// Which district each one sits in — and therefore what unlocks what — lives in
+    /// `DistrictRegistry`. The order here is presentation only.
     /// </summary>
     public static class ContractRegistry
     {

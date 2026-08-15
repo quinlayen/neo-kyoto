@@ -106,6 +106,12 @@ unity/*/Assets/Rolling_Balls-Sci-fi_Pack.meta
 unity/*/Assets/Cyber_Box/
 unity/*/Assets/Cyber_Box.meta
 
+# Baked lighting for the city scene. Unity regenerates it, it is ~8 MB of LFS per
+# bake, and it is useless on a fresh clone anyway — the kit it lights is ignored
+# above. Rebake locally once the kit is imported. Ignore the folder's .meta too.
+unity/*/Assets/Scenes/NeoKyotoCity/
+unity/*/Assets/Scenes/NeoKyotoCity.meta
+
 # Playtest captures
 unity/*/Assets/Screenshots/
 *.slnx

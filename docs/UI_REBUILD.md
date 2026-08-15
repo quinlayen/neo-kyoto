@@ -56,7 +56,7 @@ reference would stop a fresh clone compiling.
 
 | Screen | State | Notes |
 |---|---|---|
-| **Board** | ⚠ Still a docked right panel | **Not a reskin.** `OVERMAP.md` wants a district map with travel and district state where there is currently a list. Biggest remaining piece |
+| **Board** | ⚠ Still a docked right panel | **Not a reskin, and not one feature.** `OVERMAP.md` wants a district map with travel and district state where there is currently a list. Biggest remaining piece. **Blocked on a district model** — there is no district in the code, only `ContractDef.Location` as a display string and a strictly linear `IsAvailable`. See `OVERMAP.md` §What has to exist first |
 | **Debrief** | ⚠ Still a docked right panel | Sequencing constraint: `ONSITE_PIVOT.md` §4 says the world reveal comes **before** the star summary. Tangled with the jack-out beats, so do it with Stage 3 |
 | **Reference** | Not built | Backlog A4. Multi-instance, navigable — `DeckWindow` already supports a back button for it |
 | **Store** | Not built | Backlog B2. Rail launcher exists, greyed |
@@ -95,7 +95,10 @@ reference would stop a fresh clone compiling.
 2. **Objectives need a Contract-level API.** `Contract` exposes only `IsGoalMet()` and
    `GetStatusText()`; there is no per-contract objective list. The rail currently shows the one
    real objective rather than dummy rows. A real checklist (backlog A5) needs the model first.
-3. **Does the rail persist in SITE view**, before the plug-in? Still open from DECK_SPEC §14.
+3. **Does the rail persist in SITE view**, before the plug-in? Still open from DECK_SPEC §14 —
+   but `OVERMAP.md` §Open now proposes an answer that covers both: the rail is the *deck's* chrome
+   and persists wherever the deck is in the player's hands (overmap, site), while **windows** are
+   what appear on plug-in. Decide it there, once, rather than twice.
 4. **Default window set per contract type** — partly answered (editor/output/readout with explicit
    positions), but untested against combined contracts on a small display.
 
@@ -107,6 +110,12 @@ reference would stop a fresh clone compiling.
   200×200 m `Ground` whose top face is at exactly y=0, where a city kit puts its pavement.
   Coplanar, and it reads as flickering sidewalks. `WorldController.SetWorldVisible(false)`.
   Applies to every district scene. Also in `CLAUDE.md`.
+- **The city scene is ours now, and a free guard broke with it.** `Assets/Scenes/NeoKyotoCity.unity`
+  is our copy of `CP_Demo` (never edit the vendor scene). The scene file is in git; the assets it
+  references are not. `CanStreamedLevelBeLoaded` used to double as "is the kit imported?" only
+  because the scene lived inside the kit — now the scene loads fine on a fresh clone and comes up
+  **empty**. `SplashCityView` counts renderers and falls back below a threshold. Anything else that
+  loads the city must do the same. Also in `CLAUDE.md`.
 - **Anything that swaps a backdrop must swap it back.** The player returns to the title more
   than once — after a progress reset, or from the board. `UseLiveCityBackdrop` / `UsePaintedBackdrop`
   and `SplashCityView.Acquire` / `Release` are deliberately symmetric. A one-way swap left the

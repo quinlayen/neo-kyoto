@@ -178,7 +178,7 @@ MonoBehaviour:
     buttonFor: 0.6
   splashCity:
     enabled: 1
-    sceneName: CP_Demo
+    sceneName: NeoKyotoCity
     drift: {x: 0, y: 0.6, z: 2.5}
     turn: {x: -1.5, y: 3, z: 0}
     overrideFraming: 0

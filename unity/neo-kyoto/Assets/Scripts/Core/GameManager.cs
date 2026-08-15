@@ -59,6 +59,18 @@ namespace NeoKyoto.Core
         public event Action ConsoleChanged;
         public event Action StatusChanged;
 
+        /// <summary>
+        /// Fires the moment a repair changes how a district reads — amber to cool, or
+        /// cool to fully lit. The city view listens to this so the lights come up while
+        /// the player is watching, rather than on the next visit.
+        ///
+        /// District state is always *derived* from saved progress and never stored
+        /// separately, so persistence is free: reload and the city comes back exactly as
+        /// the player left it. <see cref="PublishDistrictStates"/> replays the whole set
+        /// on load; this event carries only what changed.
+        /// </summary>
+        public event Action<District, DistrictState> DistrictStateChanged;
+
         private const int MaxConsoleLines = 400;
 
         private void Awake()
@@ -201,10 +213,43 @@ namespace NeoKyoto.Core
             else GoTo(GameScreen.Board);
         }
 
+        /// <summary>
+        /// Availability now comes from the district model rather than board position.
+        /// With one contract per district, chained, this resolves identically to the
+        /// old `previous completed` rule — the point is that it can also express Act 2,
+        /// where several districts are open at once.
+        /// </summary>
         public bool IsAvailable(int index)
         {
-            if (index == 0) return true;
-            return State.IsContractCompleted(ContractRegistry.All[index - 1].Id);
+            if (index < 0 || index >= ContractRegistry.All.Count) return false;
+            return IsAvailable(ContractRegistry.All[index]);
+        }
+
+        public bool IsAvailable(ContractDef def)
+        {
+            return def != null && DistrictRegistry.IsAvailable(def, State);
+        }
+
+        public bool IsDistrictUnlocked(District district)
+        {
+            return district != null && DistrictRegistry.IsUnlocked(district, State);
+        }
+
+        public DistrictState StateOf(District district)
+        {
+            return DistrictRegistry.StateOf(district, State);
+        }
+
+        /// <summary>
+        /// Pushes every district's current state to listeners. Call it once the city view
+        /// is up, so the player arrives to a city that already shows their history rather
+        /// than one that animates into it.
+        /// </summary>
+        public void PublishDistrictStates()
+        {
+            if (DistrictStateChanged == null) return;
+            foreach (var d in DistrictRegistry.All)
+                DistrictStateChanged(d, DistrictRegistry.StateOf(d, State));
         }
 
         public void OpenContract(ContractDef def)
@@ -429,9 +474,25 @@ namespace NeoKyoto.Core
             _goalWasMet = true;
 
             ActiveContract.ConsumeCompletionAnnouncement();
+
+            // Read the district before the repair lands, so we can tell whether this run
+            // actually changed how the place reads — a replay that earns no new star
+            // should not re-fire the lights coming on.
+            var district = DistrictRegistry.DistrictOf(ActiveDef.Id);
+            var stateBefore = district != null
+                ? DistrictRegistry.StateOf(district, State)
+                : DistrictState.Locked;
+
             State.MarkCompleted(ActiveDef.Id, ActiveDef.UnlockIndex);
             AwardScore();
             MarkDirty();
+
+            if (district != null)
+            {
+                var stateAfter = DistrictRegistry.StateOf(district, State);
+                if (stateAfter != stateBefore && DistrictStateChanged != null)
+                    DistrictStateChanged(district, stateAfter);
+            }
 
             // Finished systems keep their commands callable but inert.
             if (ActiveContract.Kind != ContractKind.Terminal)
