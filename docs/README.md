@@ -24,6 +24,7 @@
 
 | Doc | Backlog | What it covers |
 |-----|---------|----------------|
+| **`UI_REBUILD.md`** | — | **Running state of the UI rebuild.** What's built, what isn't, what's next, open questions. Start here for UI work |
 | **`DECK_SPEC.md`** | A1 | Deck OS chrome, the three-band frame, window system, legibility over live 3D |
 | **`DECK_APPS.md`** | A2–A6, D1–D5 | Terminal, editor, reference, objectives, toasts. Colour taxonomy, teaching content |
 | **`TRAVELING.md`** | C1 | The journey to site. Diegetic loading, Voss's transmission en route |

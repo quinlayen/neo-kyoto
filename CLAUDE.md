@@ -4,8 +4,12 @@ Cyberpunk programming-puzzle game. The player is a freelance systems contractor 
 2189: they travel to a district, plug a deck into a failing system, write real Python or terminal
 commands, and watch the city respond.
 
-**Read `docs/README.md` first.** It indexes 17 design docs and carries the live open questions.
+**Read `docs/README.md` first.** It indexes the design docs and carries the live open questions.
 Design is live — where docs conflict, the newer one wins and says so at the top.
+
+**Doing UI work? Read `docs/UI_REBUILD.md` before anything else.** The UI is mid-rebuild onto the
+deck model — full-frame world, floating windows, no docked panels — and that file is the running
+state of it, including one question to confirm before the overmap gets built.
 
 ## Where things are
 

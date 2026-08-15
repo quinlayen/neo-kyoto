@@ -11,5 +11,6 @@
 - [Design-Only Workflow](project-design-only-workflow.md) — Working on design without Unity; expect the Unity MCP to fail there
 - [Gamification Status](project-gamification-status.md) — Stars/credits/rank ported on unity/gamification, awaiting review
 - [Branching Workflow](project-branching-workflow.md) — Two agents, who owns which paths, fetch before starting
+- [UI Rebuild Status](project-ui-rebuild-status.md) — **Start here for UI work.** Rebuilding completely onto the deck model; see docs/UI_REBUILD.md
 - [Asset Kit Status](project-asset-kit-status.md) — Cyberpunk Megapolis imported and verified; run the URP unitypackage as a separate step
 - [Vendor Shader Patch](project-vendor-shader-patch.md) — AE/Grunge emission patch; reverts on kit reimport, only copy is on D: outside git
