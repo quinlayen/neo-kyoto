@@ -132,6 +132,33 @@ travelling the whole way would just double up on it. And when a contract eventua
 separate scene, this is the gesture that covers the load — which is `TRAVELING.md`'s job 1
 arriving by a different route than that doc expected.
 
+## Work sites — the contract is worked in the city
+
+**Built for Block 7 / C1 on 2026-08-15.** The contract no longer drops onto the placeholder
+ground. The camera continues down from the dispatch lean to a kerbside shot, and the contract's
+own geometry stands on that pavement.
+
+A district carries `WorkSite` (where the geometry stands), `WorkFraming` (the kerbside shot) and
+`WorkSiteScale`. `HasWorkSite` is false until a street has been found for a district, and those
+contracts still run over the placeholder ground — which is also the only option on a clone with
+no asset kit.
+
+Four things this turned up, all of which will repeat for every district:
+
+1. **The map anchor is not a work site.** Block 7's anchor sits on top of a slums-block roof at
+   y = 35. Fine for a pin, useless for a job. Work sites have to be found separately, by
+   raycasting for ground below y = 1 **with nothing overhead for 40 m** — the first spot that
+   passed the ground test alone was a dead-end courtyard.
+2. **`SetWorldVisible` was hiding the contract.** It disabled every renderer under
+   `WorldController`, which now includes the site. Scoped to the environment only. Left alone it
+   would have hidden the exact thing the player came to fix.
+3. **The sites are building-sized.** C1's geometry is 21 × 7 × 19 m — correct for the placeholder
+   world, absurd on a pavement. `WorkSiteScale` 0.35 brings it to about 7 m of kerbside cabinet.
+4. **A centred subject is a subject behind a window.** Aiming the camera at the work site put it
+   dead centre, which is exactly where the deck's editor and output windows sit. `aimOffset`
+   pushes the aim past the subject so it sits low and left. This is DECK_SPEC §2's protected
+   focal region stopping being a principle and becoming a number.
+
 Three things worth keeping:
 
 - **Hit target 44 × 44, diamond 18 × 18.** WCAG 2.1 SC 2.5.5, and the doc's own note — grow the

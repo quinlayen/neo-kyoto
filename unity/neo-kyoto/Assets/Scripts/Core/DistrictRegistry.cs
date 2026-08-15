@@ -28,9 +28,12 @@ namespace NeoKyoto.Core
         [Tooltip("Metres from the aim point back to the camera.")]
         public float distance;
 
-        [Tooltip("Metres above the anchor the camera aims at. Raise it where neighbouring " +
-                 "towers would otherwise block the shot.")]
-        public float aimHeight;
+        [Tooltip("Where the camera aims, relative to the anchor. Y raises the aim past " +
+                 "neighbouring towers. X and Z push the subject off-centre — which the work " +
+                 "site needs, because the deck's windows own the middle of the frame and a " +
+                 "centred subject is a subject behind a window (DECK_SPEC §2's protected " +
+                 "focal region, in practice).")]
+        public Vector3 aimOffset;
 
         public float fieldOfView;
     }
@@ -52,6 +55,31 @@ namespace NeoKyoto.Core
 
         /// <summary>The overmap shot for this district, orbited around <see cref="Anchor"/>.</summary>
         public DistrictFraming MapFraming;
+
+        /// <summary>
+        /// Where the contract's own geometry stands, on a real street, and the kerbside shot
+        /// of it. This is the spot the player plugs the deck into.
+        ///
+        /// Separate from <see cref="Anchor"/> on purpose: the anchor is a map pin and can sit
+        /// over a rooftop, which several of them do. The work site has to be pavement you
+        /// could kneel on.
+        /// </summary>
+        public Vector3 WorkSite;
+        public DistrictFraming WorkFraming;
+
+        /// <summary>
+        /// Scale applied to the contract's geometry when it stands in the city. The sites
+        /// were built for the placeholder world, where the camera sits 18 m out and nothing
+        /// sets the scale; on a real pavement they are building-sized. 1 leaves them alone.
+        /// </summary>
+        public float WorkSiteScale = 1f;
+
+        /// <summary>
+        /// False until a district has had a street found for it. Those contracts still run —
+        /// they fall back to the placeholder ground, which is also the only option on a clone
+        /// with no asset kit.
+        /// </summary>
+        public bool HasWorkSite { get { return WorkFraming.distance > 0f; } }
 
         /// <summary>
         /// District ids that must be <b>completed</b> before this one opens.
@@ -94,7 +122,26 @@ namespace NeoKyoto.Core
                 Id = "block_7", Name = "Block 7",
                 Anchor = new Vector3(-75f, 0f, -75f),
                 MapFraming = new DistrictFraming {
-                    pitch = 32f, yaw = 35f, distance = 225f, aimHeight = 5f, fieldOfView = 50f },
+                    pitch = 32f, yaw = 35f, distance = 225f, aimOffset = new Vector3(0f, 5f, 0f), fieldOfView = 50f },
+
+                // A kerb on the open street east of the anchor — sidewalk at y=0, streetlight,
+                // vending machines, a warning barrier. Found by raycasting for ground below
+                // y=1 with nothing overhead for 40 m, because the anchor itself sits on top of
+                // a slums-block roof at y=35 and the first spot tried was a dead-end courtyard.
+                // The camera stands in the road looking back at the kerb.
+                // The aim is pushed past the kerb toward the road, so the junction box sits
+                // low and left of the deck's windows rather than behind them.
+                WorkSite = new Vector3(-39f, 0f, -65f),
+                WorkFraming = new DistrictFraming {
+                    pitch = 10f, yaw = 352f, distance = 14f,
+                    aimOffset = new Vector3(4f, 1.5f, 4f), fieldOfView = 50f },
+
+                // The site geometry is 21 x 7 x 19 m — built for the placeholder world seen
+                // from 18 m, which is a building on a pavement. Starting value 0.35: about
+                // 7 m of kerbside cabinet. Test: it reads as equipment a person could plug
+                // into, and stays clear of the window field.
+                WorkSiteScale = 0.35f,
+
                 ContractIds = new[] { "contract_01" },
             },
 
@@ -105,7 +152,7 @@ namespace NeoKyoto.Core
                 Id = "sector_12", Name = "Sector 12",
                 Anchor = new Vector3(75f, 0f, 75f),
                 MapFraming = new DistrictFraming {
-                    pitch = 48f, yaw = 215f, distance = 236f, aimHeight = 25f, fieldOfView = 50f },
+                    pitch = 48f, yaw = 215f, distance = 236f, aimOffset = new Vector3(0f, 25f, 0f), fieldOfView = 50f },
                 ContractIds = new[] { "contract_02" },
                 Requires = new[] { "block_7" },
                 LockedLine = "Sector 12's queue is spoken for until Block 7 signs off. Finish there first.",
@@ -120,7 +167,7 @@ namespace NeoKyoto.Core
                 Id = "sector_14", Name = "Sector 14",
                 Anchor = new Vector3(140f, 0f, 20f),
                 MapFraming = new DistrictFraming {
-                    pitch = 38f, yaw = 300f, distance = 200f, aimHeight = 15f, fieldOfView = 50f },
+                    pitch = 38f, yaw = 300f, distance = 200f, aimOffset = new Vector3(0f, 15f, 0f), fieldOfView = 50f },
                 ContractIds = new[] { "contract_03" },
                 Requires = new[] { "sector_12" },
                 LockedLine = "Nothing routed to Sector 14 yet. Clear Sector 12 and I'll see what's open.",
@@ -133,7 +180,7 @@ namespace NeoKyoto.Core
                 Id = "transit_hub", Name = "Transit Hub",
                 Anchor = new Vector3(75f, 0f, -75f),
                 MapFraming = new DistrictFraming {
-                    pitch = 34f, yaw = 135f, distance = 225f, aimHeight = 5f, fieldOfView = 50f },
+                    pitch = 34f, yaw = 135f, distance = 225f, aimOffset = new Vector3(0f, 5f, 0f), fieldOfView = 50f },
                 ContractIds = new[] { "contract_04" },
                 Requires = new[] { "sector_14" },
                 LockedLine = "Transit won't take an unvetted contractor. Sector 14 is your vetting.",
@@ -146,7 +193,7 @@ namespace NeoKyoto.Core
                 Id = "data_center", Name = "Data Center",
                 Anchor = new Vector3(-75f, 0f, 75f),
                 MapFraming = new DistrictFraming {
-                    pitch = 30f, yaw = 310f, distance = 279f, aimHeight = 30f, fieldOfView = 50f },
+                    pitch = 30f, yaw = 310f, distance = 279f, aimOffset = new Vector3(0f, 30f, 0f), fieldOfView = 50f },
                 ContractIds = new[] { "contract_05" },
                 Requires = new[] { "transit_hub" },
                 LockedLine = "Data Center's private. They take a referral off the Transit Hub job, not before.",
@@ -287,9 +334,15 @@ namespace NeoKyoto.Core
         /// </summary>
         public static void CameraFor(District d, out Vector3 position, out Quaternion rotation)
         {
-            var f = d.MapFraming;
+            CameraFor(d.Anchor, d.MapFraming, out position, out rotation);
+        }
+
+        /// <summary>Any framing around any point — the map shot and the kerbside shot share it.</summary>
+        public static void CameraFor(Vector3 anchor, DistrictFraming f,
+                                     out Vector3 position, out Quaternion rotation)
+        {
             rotation = Quaternion.Euler(f.pitch, f.yaw, 0f);
-            var aim = d.Anchor + Vector3.up * f.aimHeight;
+            var aim = anchor + f.aimOffset;
             position = aim - rotation * Vector3.forward * f.distance;
         }
 

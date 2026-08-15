@@ -114,6 +114,10 @@ namespace NeoKyoto.Core
             var city = cityGo.AddComponent<CityView>();
             city.Configure(splashCity.sceneName, splashCity.enabled, cam, ui, gm, world);
 
+            // So a contract whose district has a real street is worked there rather than
+            // over the placeholder ground.
+            world.city = city;
+
             var splashGo = new GameObject("SplashCity");
             splashGo.transform.SetParent(transform, false);
             var splashView = splashGo.AddComponent<SplashCityView>();
