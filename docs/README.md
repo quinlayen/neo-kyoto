@@ -16,7 +16,7 @@
 
 | Doc | What it covers |
 |-----|----------------|
-| **`ENVIRONMENT_BRIEF.md`** | Exterior-first location plan, 11 contracts → 6 reusable sets, kit requirements, Cyberpunk Megapolis assessment |
+| **`ENVIRONMENT_BRIEF.md`** | Exterior-first location plan, 11 contracts → 6 reusable sets, kit requirements, Cyberpunk Megapolis assessment. **Kit now purchased, imported and verified — see its Post-Purchase Verification section, which supersedes the pre-purchase reasoning above it** |
 | **`ART_DIRECTION.md`** | Post-processing, lighting, visual fidelity. Partially superseded — read the 2026-08-14 note at the top |
 | **`ART_BRIEF_SPLASH.md`** | Splash art. Its "city panorama" asset is now the overmap |
 
@@ -36,6 +36,7 @@
 
 | Doc | What it covers |
 |-----|----------------|
+| **`HANDOFF.md`** | Moving machine or Claude account. What's not in git and must be restored by hand |
 | **`LINUX_TERMINAL_PLAN.md`** | Terminal command scope and implementation plan |
 | **`PROJECT_SCOPE.md`** | ⚠ Historical. Describes the pre-Unity Python prototype |
 
@@ -57,7 +58,8 @@
 
 Carried across the docs, in rough priority:
 
-1. **Asset kit not yet purchased.** Cyberpunk Megapolis assessed and recommended with caveats — `ENVIRONMENT_BRIEF.md`
+1. **Is the kit's geometry genuinely modular?** Grid unit unmeasured, and it's unclear whether the demo is modular pieces or pre-assembled hero streets. Decides how cheaply 11 contracts redress into 6 sets — `ENVIRONMENT_BRIEF.md`
+   <br>*(Resolved: kit purchased, imported, verified. Scale, LODs, collision and emission all pass; facade texel density is the one weak spot and the fixed cameras hide it.)*
 2. **Star metric may be wrong, not just mistuned** — `ECONOMY.md` Defect 2. Needs a playtest decision
 3. **Deck OS chrome is expensive to retrofit** — decide before Unity UI work begins. `DECK_SPEC.md` §14
 4. **Rail on the left or the right?** — `DECK_SPEC.md` §14

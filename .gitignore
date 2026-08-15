@@ -93,10 +93,18 @@ sysinfo.txt
 # A fresh clone therefore needs the kits re-imported before scenes using them
 # will resolve. Unity references by GUID, so re-importing restores the links.
 #
-# Add new purchases here by folder name.
+# Add new purchases here by folder name. Ignore the folder's own .meta too, or
+# git status stays permanently dirty with a meta pointing at an absent folder.
 unity/*/Assets/Cyberpunk_Megapolis/
+unity/*/Assets/Cyberpunk_Megapolis.meta
 unity/*/Assets/ArtEquilibrium/
+unity/*/Assets/ArtEquilibrium.meta
 unity/*/Assets/ThirdParty/
+unity/*/Assets/ThirdParty.meta
+unity/*/Assets/Rolling_Balls-Sci-fi_Pack/
+unity/*/Assets/Rolling_Balls-Sci-fi_Pack.meta
+unity/*/Assets/Cyber_Box/
+unity/*/Assets/Cyber_Box.meta
 
 # Playtest captures
 unity/*/Assets/Screenshots/

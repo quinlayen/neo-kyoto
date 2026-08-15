@@ -1,7 +1,7 @@
 # Environment Brief: Locations & Asset Kit Requirements
 
 **Date**: 2026-08-14
-**Status**: Current thinking — written to inform the modular kit purchase
+**Status**: Kit **purchased, imported and verified**. Sections below written *before* purchase are kept for the reasoning trail — where they conflict with **Post-Purchase Verification**, that section wins
 **Companion**: `ONSITE_PIVOT.md` (view model, the deck, the plug-in moment)
 
 Design here is live. Where this conflicts with the GDD, this document reflects the newer thinking. Both change as the game finds its shape.
@@ -93,6 +93,8 @@ Three things land well. **Metro and train** are a direct hit for Set C. **Elevat
 
 Two gaps against our plan. The prop list has cables, barriers, signs and vending machines but **no junction boxes, access panels, or utility cabinets** — the connection point remains unsourced, and it is the single most important prop in the game. And "simple interior spaces" is a partial answer for Act 3 at best.
 
+> **✅ First gap closed.** The listing undersold itself: `CP_Electric_Charging_01/02` is a 1.65 m kerbside unit with an emissive display panel. See **Post-Purchase Verification**.
+
 ### ⚠ Confirmed: generated with AI
 
 Fab's metadata states plainly: **`Generated with AI: Yes`**. The Unity listing carries the same disclosure; Fab is where it's legible.
@@ -154,6 +156,8 @@ That turns the main city shader fully emissive on every surface, rather than res
 
 **Revised risk:** downgraded from significant to minor. Tint covers the bulk case unmodified, and the emission gap has a known, cheap remedy.
 
+> **✅ Resolved on import.** The caveat was right — the shipped shader *did* differ. See **Post-Purchase Verification**: the patch is 13 lines against `CP_Grunge.shader` (Amplify 1.9.9.4, nine CBUFFERs), not 14 against the vendor zip's file (1.9.8.1, ten). It has been applied and **passed its acceptance test**. Do not use the vendor zip's shader — it is an older build.
+
 ### ⚠ Maintenance signal
 
 README §6, "Pink Material / Shader Fix", documents that the publisher's shaders break on Unity API changes and the remedy is **downloading replacement shaders from Google Drive** — not a package update. Two manual repair procedures are given, including deleting the broken shader and reassigning it across all affected materials. A known, recurring, unpatched breakage with an out-of-band fix. Not fatal at $45, but indicative of the support level.
@@ -161,6 +165,8 @@ README §6, "Pink Material / Shader Fix", documents that the publisher's shaders
 ### Still unverified
 
 Poly counts, texture resolutions, modular grid unit, real-world scale, collision meshes, unique mesh count. Absent from both listings and from the README. (Comparative shopping against alternative kits was not possible — web search is unavailable in this environment; a 300-listing Fab sweep found no competitive Unity alternative.)
+
+> **✅ Now measured.** Everything in this list except modular grid unit was resolved by direct measurement after import. See **Post-Purchase Verification**.
 
 ### Publisher videos
 
@@ -199,6 +205,85 @@ Four questions, all decisive. A publisher with one Fab rating will usually answe
 ### Verdict
 
 **Low risk for phase 1, unproven for phase 2.** At $44.99 this is cheap enough to buy purely to validate the on-site feel across three diorama sets — that alone is worth the money and the fixed cameras will hide most of what could be wrong with it. What it has *not* demonstrated is that it survives a first-person camera later. Buy it with that split in mind, and treat a future walkable phase as possibly needing a different foundation.
+
+> **Superseded.** The phase-2 doubt was largely wrong. Props and signage measure at walkable grade; only building facades don't. See below.
+
+---
+
+## Post-Purchase Verification (2026-08-14)
+
+Kit purchased, imported into Unity 6000.5.8f1 / URP 17.5.0, and measured directly in `CP_Demo`. Everything here is measured, not claimed.
+
+### Import: the base import silently installs the wrong pipeline
+
+**This is the single most important operational note in this document.** Importing the kit from the Asset Store installs the **Built-In** variant — `CP_Grunge.shader` arrives as `#pragma surface surf Standard` with zero `CBUFFER_START`, and materials sit on Unity's Standard shader. In a URP project that renders **pink**.
+
+The fix is not the publisher's Google Drive shader set. It is `Cyberpunk_Megapolis_URP.unitypackage`, shipped *inside* the imported kit folder, which must be run as a **separate second step**. Missing it is what makes the kit look broken on arrival, and it is easy to miss.
+
+This also reframes the maintenance signal above: the Google Drive shader route was never needed here.
+
+### Emission: patched and passing
+
+The pre-purchase source analysis was correct in substance and wrong in detail. The shipped URP shader is `CP_Grunge.shader` (Amplify **1.9.9.4**, **nine** CBUFFER blocks) — not the vendor zip's `URP_Grunge_Unity_6.0.shader` (1.9.8.1, ten). Both declare `Shader "AE/Grunge"` and must never coexist; Unity resolves by shader name, not filename.
+
+Patch is **13 lines**: 1 property (`[HideInInspector]`→`[HDR]`, default black), 9 CBUFFER declarations, 3 emission sites.
+
+Acceptance test — sphere lit only by emission, no lights, black ambient:
+
+| Condition | Sampled pixel | Luminance |
+|---|---|---|
+| Emission black | r0.000 g0.000 b0.000 | 0.000 |
+| Emission cyan | r0.246 g1.258 b1.268 | **1.043** |
+| `_Tint` red, emission off | r0.246 g0.000 b0.000 | — |
+
+**Emission works and writes HDR** (>1.0, so bloom responds). **`_Tint` confirmed runtime-drivable by measurement**, not just from source. The broken-amber → fixed-cyan language is viable through either channel.
+
+⚠ **The patch lives in a gitignored vendor file. Reimporting the kit silently reverts it and emission dies.** Pristine and patched copies are staged at `D:\assets-staging\ae-shaders-unity6\`.
+
+### Texel density: strong where it matters, weak where it doesn't
+
+| Surface class | px/m | Verdict |
+|---|---|---|
+| Kerbside props (charging units, vending) | **1240–1265** | Walkable grade |
+| Small signage (metro, shop, road) | **800–2470** | Walkable grade |
+| Ground (sidewalk, asphalt) | **256** | Good |
+| Large signboards (skyscraper) | 122–340 | Fine — distance-viewed |
+| **Building facades (concrete)** | **68–120** | **Soft. Background only** |
+
+242 textures, 236 at 2048² and 5 at 4096² (metro train) — unusually uniform authoring.
+
+The listing's "game-ready texel density for both close-up and background use" is **half true**: true for props and signage, false for facades. This maps almost perfectly onto the on-site pivot, which puts the player at a kerbside cabinet with buildings as backdrop. The weak class never lands where the eye rests.
+
+**Implication for walkable-later:** the phase-2 doubt narrows to one problem. A first-person camera is fine among props and signage; it degrades against building walls. That is a facade-retexture problem, not a re-buy.
+
+### Scale: sound
+
+| Reference | Measured | Expected |
+|---|---|---|
+| Train doors | **2.17 m × 0.90 m** | 2.0–2.1 m — textbook |
+| Metro station doors | 2.93 m | Oversized, but correct for transit |
+
+The most-feared AI-kit failure mode did not materialise. Hard-checklist scale requirement **passes**.
+
+### The connection point is no longer unsourced
+
+The pre-purchase read flagged the absence of junction boxes as the kit's worst gap — *"the single most important prop in the game"*. The kit ships **`CP_Electric_Charging_01/02`**: a **1.65 m kerbside unit with a working emissive display panel**, at ~1240 px/m, legible at 1.15 m viewing distance (Japanese UI text, voltage readouts and hazard decals all read cleanly).
+
+That is very nearly the Set A junction box already. The separate Fab props purchase drops from necessary to optional — evaluate this prop before spending, and keep the free utility-box pack as a fallback for silhouette variety.
+
+### Scene scale and LODs
+
+`CP_Demo`: 4,840 GameObjects, 7.1M verts, 4.5M tris, 3,963 renderers, **2,754 LODGroups**, 69 lights, 2,191 colliders. LODs and collision are present and extensive — both "strongly want" items satisfied.
+
+### Known vendor defect (harmless)
+
+`CP_High_Renderer` and `CP_High_ScreenRenderer` both reference a renderer feature script `GlobalVolumeFeature` (guid `a0ec52cecc795714f93f274c2e71e87b`) that ships nowhere. Console errors on import; zero compile errors. Neither the project pipeline nor `CP_Demo` references those assets, so it is cosmetic. For the kit's post-processing look, apply `CP_HighQualityVolumeProfile` via a normal Global Volume GameObject.
+
+### Revised verdict
+
+**Keep the kit. It clears phase 1 outright and most of phase 2.** Scale is correct, LODs and collision are there, emission works after a known 13-line patch, and the hero connection-point prop turned out to be included. The one real limitation is facade texel density, which the fixed-camera diorama design never exposes and a future walkable phase could address by retexturing facades alone.
+
+Two things still unmeasured: **modular grid unit**, and whether the demo scene's geometry is genuinely modular versus pre-assembled hero streets. Both matter for redressing six sets, neither blocks the demo build order.
 
 ---
 
@@ -249,20 +334,22 @@ The Unity Asset Store cannot be surveyed programmatically here — its search AP
 
 Because we chose *diorama now, walkable later*, the kit must be walkable-grade from day one. A diorama-grade kit means re-buying later.
 
+Status against Megapolis as imported. Unticked items are unmeasured, not failed.
+
 ### Must have
 
-- [ ] **Real-world scale.** Doorways ~2.0–2.1m, pavements ≥1.5m, storey height ~3m. Stylised kits with 3m doors read fine in a fixed shot and feel wrong the instant you're in first person.
+- [x] **Real-world scale.** Doorways ~2.0–2.1m, pavements ≥1.5m, storey height ~3m. Stylised kits with 3m doors read fine in a fixed shot and feel wrong the instant you're in first person. — *measured 2.17 m × 0.90 m*
 - [ ] **Closed, thick-walled geometry.** No single-sided planes, no hollow facade shells.
-- [ ] **Consistent modular grid.** Pieces snap on one unit (1m / 2m / 4m). Mixed-grid kits cost days.
-- [ ] **Emissive channels drivable at runtime.** Colour is our primary state signal — broken = warm/orange, fixed = cool/cyan. Baked-only emissives kill the entire visual language.
+- [ ] **Consistent modular grid.** Pieces snap on one unit (1m / 2m / 4m). Mixed-grid kits cost days. — *still unmeasured*
+- [x] **Emissive channels drivable at runtime.** Colour is our primary state signal — broken = warm/orange, fixed = cool/cyan. Baked-only emissives kill the entire visual language. — *after the 13-line patch; also `_Tint` unmodified*
 
 ### Strongly want
 
-- [ ] **Collision meshes**, or geometry clean enough to auto-generate.
-- [ ] **Street-level service props**: junction boxes, wall cabinets, cable runs, conduit, grilles, access panels. **The single most important prop in the game is a connection point** — a port the player's cable physically goes into. Cityscape kits rarely include these; budget a separate industrial/props pack.
+- [x] **Collision meshes**, or geometry clean enough to auto-generate. — *2,191 colliders in `CP_Demo`*
+- [x] **Street-level service props**: junction boxes, wall cabinets, cable runs, conduit, grilles, access panels. **The single most important prop in the game is a connection point** — a port the player's cable physically goes into. Cityscape kits rarely include these; budget a separate industrial/props pack. — *`CP_Electric_Charging_01/02`; separate pack now optional*
 - [ ] **Undercity or lower-level modules** for Set F.
 - [ ] **Wet/rain-capable surfaces.** Half these locations want rain, and it's the cheapest atmosphere multiplier available.
-- [ ] **LODs** — still worth it for framerate, no longer existential.
+- [x] **LODs** — still worth it for framerate, no longer existential. — *2,754 LODGroups*
 
 ### Deal-breakers
 
