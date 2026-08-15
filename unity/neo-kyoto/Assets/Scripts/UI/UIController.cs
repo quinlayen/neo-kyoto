@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NeoKyoto.Contracts;
 using NeoKyoto.Core;
+using NeoKyoto.UI.Deck;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,6 +21,13 @@ namespace NeoKyoto.UI
         /// <summary>Splash choreography. Set by Bootstrap before this object activates.</summary>
         public SplashTiming splashTiming = new SplashTiming();
 
+        /// <summary>Deck frame geometry. Set by Bootstrap before this object activates.</summary>
+        public DeckLayoutSettings deckLayout = new DeckLayoutSettings();
+
+        // The workspace screen is the deck: a shell plus its windows, over the live world.
+        private DeckShell _deck;
+        private DeckWindow _editorWindow, _terminalWindow, _readoutWindow;
+
         private GameManager _gm;
 
         private GameObject _titlePanel, _boardPanel, _briefingPanel, _workspacePanel, _debriefPanel;
@@ -30,7 +38,7 @@ namespace NeoKyoto.UI
         private SplashSequence _splashSequence;
 
         private TextMeshProUGUI _debriefHeader;
-        private TextMeshProUGUI _wsHeader, _wsStatus, _consoleText, _briefingText, _debriefText, _hintText;
+        private TextMeshProUGUI _wsStatus, _consoleText, _briefingText, _debriefText, _hintText;
         private TMP_InputField _codeInput, _terminalInput;
         private ScrollRect _consoleScroll, _briefingScroll, _debriefScroll;
         private GameObject _editorSection, _terminalRow, _runRow;
@@ -432,67 +440,97 @@ namespace NeoKyoto.UI
             StartCoroutine(LayoutPage(_briefingScroll, _briefingText));
         }
 
+        /// <summary>
+        /// The workspace is the deck. A full-screen node holds the shell so RefreshScreen
+        /// can still show and hide the whole screen with one SetActive, but there is no
+        /// docked panel any more — the world is full-frame and the windows float over it.
+        /// See docs/DECK_SPEC.md §2.
+        /// </summary>
         private void BuildWorkspace(Transform parent)
         {
-            _workspacePanel = MakeRightPanel("WorkspacePanel", parent, out var content);
+            _workspacePanel = UITheme.Node("WorkspacePanel", parent);
+            UITheme.Stretch(_workspacePanel.GetComponent<RectTransform>());
 
-            _wsHeader = UITheme.Label("Header", content, "", UITheme.SectionSize, UITheme.Accent,
-                TextAlignmentOptions.TopLeft, true);
-            AddLayout(_wsHeader.gameObject, 34f, 0f);
+            _deck = _workspacePanel.AddComponent<DeckShell>();
+            _deck.settings = deckLayout;
+            _deck.Build(_workspacePanel.transform);
 
-            var statusFrame = UITheme.Framed("StatusFrame", content, UITheme.Border);
-            _statusLayout = AddLayout(statusFrame.parent.gameObject, StatusMinHeight, 0f);
-            _wsStatus = UITheme.Label("Status", statusFrame, "", UITheme.BodySize, UITheme.Text);
-            UITheme.Stretch(_wsStatus.rectTransform, 10, 6, 10, 6);
+            // Navigation moves into the rail: with no docked panel there is nowhere else
+            // for it to live, and the rail is the one thing that is never occluded.
+            _deck.AddTool("briefing", true, () => _gm.GoTo(GameScreen.Briefing));
+            _debriefButton = _deck.AddTool("debrief", true, () => _gm.GoTo(GameScreen.Debrief));
+            _deck.AddTool("board", true, () => _gm.BackToBoard());
+            _deck.AddTool("reference", false, null);   // locked but visible, on purpose
+            _deck.AddTool("store", false, null);
 
-            // ── Script editor (Python contracts) ──
-            _editorSection = UITheme.Node("EditorSection", content);
-            AddLayout(_editorSection, 0f, 1.25f);
-            var editorLayout = _editorSection.AddComponent<VerticalLayoutGroup>();
-            editorLayout.spacing = 6f;
-            editorLayout.childControlHeight = true;
-            editorLayout.childControlWidth = true;
-            editorLayout.childForceExpandHeight = false;
-            editorLayout.childForceExpandWidth = true;
+            BuildEditorWindow();
+            BuildTerminalWindow();
+            BuildReadoutWindow();
+        }
 
-            var editorLabel = UITheme.Label("EditorLabel", _editorSection.transform,
-                "SCRIPT", UITheme.SmallSize, UITheme.TextDim);
-            AddLayout(editorLabel.gameObject, 22f, 0f);
+        /// <summary>A padded vertical stack filling a window's content area.</summary>
+        private static Transform WindowColumn(DeckWindow window)
+        {
+            var col = UITheme.Node("Column", window.Content).GetComponent<RectTransform>();
+            UITheme.Stretch(col, 8f, 8f, 8f, 8f);
+            var v = col.gameObject.AddComponent<VerticalLayoutGroup>();
+            v.spacing = 6f;
+            v.childControlHeight = true;
+            v.childControlWidth = true;
+            v.childForceExpandHeight = false;
+            v.childForceExpandWidth = true;
+            return col;
+        }
 
-            _codeInput = MakeInputField("CodeInput", _editorSection.transform, true, UITheme.CodeSize);
+        private void BuildEditorWindow()
+        {
+            // Explicit default layout rather than a cascade: DECK_SPEC.md §14 asks what is
+            // open when the boot surface clears, and three windows landing on top of each
+            // other answers it badly. Editor top-left, output beneath it, readout beside.
+            // The player can rearrange; this is only where they start.
+            _editorWindow = _deck.Open("editor", "main.py", new Vector2(620f, 420f),
+                                       false, new Vector2(16f, -16f));
+            var col = WindowColumn(_editorWindow);
+            _editorSection = col.gameObject;
+
+            _codeInput = MakeInputField("CodeInput", col, true, UITheme.CodeSize);
             AddLayout(_codeInput.gameObject, 0f, 1f);
             _codeInput.onValueChanged.AddListener(code => _gm.SetScript(code));
             _codeInput.gameObject.AddComponent<CodeEditorBehaviour>();
             _runLine = RunLineHighlight.Attach(_codeInput, UITheme.RunLine);
 
-            _runRow = MakeRow(content, 42f).gameObject;
+            _runRow = MakeRow(col, 42f).gameObject;
             // One button: starts a run, and stops it while one is in progress.
             _runButton = UITheme.Button("Run", _runRow.transform, "▶ RUN", UITheme.Good, ToggleRun);
             _runButtonLabel = _runButton.GetComponentInChildren<TextMeshProUGUI>();
             UITheme.Button("Reset", _runRow.transform, "RESET SCRIPT", UITheme.Warn, ResetScript);
-            UITheme.Button("Brief", _runRow.transform, "BRIEFING", UITheme.TextDim,
-                () => _gm.GoTo(GameScreen.Briefing));
 
-            // Call meter. The star rating is otherwise only revealed at the debrief,
-            // by which point the script is closed and the player can no longer act on
-            // it. Putting the count here is what turns "I finished it" into "I could
-            // do that in fewer".
-            _runMeter = UITheme.Label("RunMeter", content, "", UITheme.SmallSize, UITheme.TextDim);
+            // Call meter. The star rating is otherwise only revealed at the debrief, by
+            // which point the script is closed and the player can no longer act on it.
+            // Putting the count here is what turns "I finished it" into "I could do that
+            // in fewer".
+            _runMeter = UITheme.Label("RunMeter", col, "", UITheme.SmallSize, UITheme.TextDim);
             AddLayout(_runMeter.gameObject, 20f, 0f);
+        }
 
-            // ── Console (both kinds of contract) ──
-            var consoleLabel = UITheme.Label("ConsoleLabel", content, "OUTPUT",
-                UITheme.SmallSize, UITheme.TextDim);
-            AddLayout(consoleLabel.gameObject, 22f, 0f);
+        /// <summary>
+        /// Output for every contract, plus the input row for the ones that take commands.
+        /// Python contracts still need somewhere for print() to land, so this window is
+        /// always open — only the input row and the title change.
+        /// </summary>
+        private void BuildTerminalWindow()
+        {
+            _terminalWindow = _deck.Open("terminal", "output", new Vector2(620f, 330f),
+                                         false, new Vector2(16f, -456f));
+            var col = WindowColumn(_terminalWindow);
 
-            var consoleFrame = UITheme.Framed("ConsoleFrame", content, UITheme.Border);
+            var consoleFrame = UITheme.Framed("ConsoleFrame", col, UITheme.Border);
             AddLayout(consoleFrame.parent.gameObject, 0f, 1f);
             _consoleText = UITheme.ScrollText("ConsoleScroll", consoleFrame, out _consoleScroll);
             UITheme.Stretch(_consoleScroll.GetComponent<RectTransform>(), 4, 4, 4, 4);
             _consoleText.fontSize = UITheme.SmallSize;
 
-            // ── Terminal input (terminal contracts) ──
-            _terminalRow = UITheme.Node("TerminalRow", content);
+            _terminalRow = UITheme.Node("TerminalRow", col);
             AddLayout(_terminalRow, 40f, 0f);
             var termLayout = _terminalRow.AddComponent<HorizontalLayoutGroup>();
             termLayout.spacing = 6f;
@@ -509,15 +547,29 @@ namespace NeoKyoto.UI
             var sendLayout = sendBtn.gameObject.AddComponent<LayoutElement>();
             sendLayout.preferredWidth = 110f;
             sendLayout.flexibleWidth = 0f;
+        }
 
-            _hintText = UITheme.Label("Hint", content, "", UITheme.MicroSize, UITheme.TextDim,
+        /// <summary>Live system state — the numeric companion to the world. Always open.</summary>
+        private void BuildReadoutWindow()
+        {
+            // Sized to fit the window field beside the editor: 656 + 420 = 1076, inside the
+            // ~1094 the 35/57/8 split leaves. Wider slides under the rail and clips.
+            _readoutWindow = _deck.Open("readout", "system", new Vector2(420f, 340f),
+                                        false, new Vector2(656f, -16f));
+            var col = WindowColumn(_readoutWindow);
+
+            var statusFrame = UITheme.Framed("StatusFrame", col, UITheme.Border);
+            _statusLayout = AddLayout(statusFrame.parent.gameObject, StatusMinHeight, 1f);
+            // Mono-small, not body size: status lines are column-aligned so they must not
+            // wrap, and the longest a contract prints has to fit the readout's width.
+            _wsStatus = UITheme.Label("Status", statusFrame, "", UITheme.SmallSize, UITheme.Text);
+            UITheme.Stretch(_wsStatus.rectTransform, 10, 6, 10, 6);
+
+            // The hint lives here rather than in the editor, because terminal contracts
+            // close the editor and would otherwise lose it. No fixed height: it wraps to
+            // two lines for terminal contracts and a forced 22px clips the second one.
+            _hintText = UITheme.Label("Hint", col, "", UITheme.MicroSize, UITheme.TextDim,
                 TextAlignmentOptions.TopLeft, true);
-            AddLayout(_hintText.gameObject, 22f, 0f);
-
-            var bottomRow = MakeRow(content, 40f);
-            _debriefButton = UITheme.Button("Debrief", bottomRow, "DEBRIEF", UITheme.Accent,
-                () => _gm.GoTo(GameScreen.Debrief));
-            UITheme.Button("Board", bottomRow, "CONTRACT BOARD", UITheme.TextDim, () => _gm.BackToBoard());
         }
 
         private void BuildDebrief(Transform parent)
@@ -763,24 +815,34 @@ namespace NeoKyoto.UI
         private void SetupWorkspace()
         {
             var contract = _gm.ActiveContract;
-            bool isTerminal = contract.Kind == ContractKind.Terminal;
+            bool takesCode = contract.Kind != ContractKind.Terminal;
+            bool takesCommands = contract.Kind == ContractKind.Terminal
+                              || contract.Kind == ContractKind.Combined;
 
-            _wsHeader.text = contract.Title.ToUpperInvariant() + " — " + contract.Location.ToUpperInvariant();
+            // The rail names what you are plugged into — DECK_SPEC §2, Link zone. This
+            // replaces the docked panel's header, which no longer has anywhere to sit.
+            if (_deck != null)
+                _deck.SetLink(contract.Title.ToUpperInvariant() + "\n"
+                              + contract.Location.ToUpperInvariant(), true);
 
-            _editorSection.SetActive(!isTerminal);
-            _runRow.SetActive(!isTerminal);
-            _terminalRow.SetActive(isTerminal);
+            // Combined contracts get an editor and a terminal at once. The docked panel
+            // structurally could not do that — it only ever asked "is this terminal?" and
+            // gave combined contracts the editor alone. Windows are what fix it.
+            if (_editorWindow != null) _editorWindow.gameObject.SetActive(takesCode);
+            if (_terminalWindow != null)
+                _terminalWindow.SetTitle(takesCommands ? "terminal" : "output");
+            _terminalRow.SetActive(takesCommands);
 
-            if (!isTerminal)
-            {
-                _codeInput.SetTextWithoutNotify(_gm.GetScript());
+            if (takesCode) _codeInput.SetTextWithoutNotify(_gm.GetScript());
+
+            if (takesCode && takesCommands)
+                _hintText.text = "Editor and terminal both live · Alt+1/2 to switch";
+            else if (takesCode)
                 _hintText.text = "Tab indents · commands: " + string.Join(", ", CommandNames(contract));
-            }
             else
-            {
                 _hintText.text = "Type commands directly · 'reset' restores the filesystem";
-                StartCoroutine(FocusTerminal());
-            }
+
+            if (takesCommands) StartCoroutine(FocusTerminal());
 
             RefreshStatus();
             RefreshConsole();
@@ -793,8 +855,26 @@ namespace NeoKyoto.UI
             return keys.ToArray();
         }
 
+        /// <summary>
+        /// Feeds the rail's live zones. Contracts expose only IsGoalMet/GetStatusText — there
+        /// is no per-contract objective list in the model yet — so the checklist is the one
+        /// real objective the contract has. A proper multi-item checklist is backlog A5 and
+        /// needs a Contract-level API first; this is deliberately not faked with dummy rows.
+        /// </summary>
+        private void RefreshRail()
+        {
+            if (_deck == null) return;
+
+            _deck.SetStatus(_gm.State.Credits.ToString("N0") + " cr · " + _gm.State.Rank);
+
+            _deck.ClearObjectives();
+            var c = _gm.ActiveContract;
+            if (c != null) _deck.AddObjective(c.Title, c.Completed);
+        }
+
         private void RefreshStatus()
         {
+            RefreshRail();
             if (_gm.ActiveContract == null) return;
 
             string text = _gm.ActiveContract.GetStatusText();

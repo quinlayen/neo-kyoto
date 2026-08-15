@@ -129,7 +129,8 @@ namespace NeoKyoto.UI.Deck
         /// Opens a window, or re-focuses and un-minimises the existing one with this id.
         /// Re-opening never discards state — DECK_SPEC §10.
         /// </summary>
-        public DeckWindow Open(string id, string title, Vector2 size, bool navigable = false)
+        public DeckWindow Open(string id, string title, Vector2 size, bool navigable = false,
+                               Vector2? position = null)
         {
             var existing = Find(id);
             if (existing != null)
@@ -142,7 +143,8 @@ namespace NeoKyoto.UI.Deck
 
             var go = UITheme.Node("Window_" + id, _field);
             var win = go.AddComponent<DeckWindow>();
-            win.Build(this, settings, id, title, size, NextSpawn(size), navigable);
+            win.Build(this, settings, id, title, size,
+                      position.HasValue ? position.Value : NextSpawn(size), navigable);
 
             win.FocusRequested += Focus;
             win.Closed += OnWindowClosed;

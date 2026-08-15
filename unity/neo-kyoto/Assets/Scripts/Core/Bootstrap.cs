@@ -96,6 +96,7 @@ namespace NeoKyoto.Core
             uiGo.transform.SetParent(transform, false);
             var ui = uiGo.AddComponent<UIController>();
             ui.splashTiming = splashTiming;
+            ui.deckLayout = deckLayout;
             uiGo.SetActive(true);
 
             // After the UI, because it needs the splash sequence the UIController builds
