@@ -36,10 +36,21 @@ namespace NeoKyoto.World
         public float overviewAimHeight = 30f;
         [Range(20f, 110f)] public float overviewFieldOfView = 55f;
 
-        [Header("Flight")]
-        [Tooltip("Starting value 1.4s. Test: reads as travelling to a place, not as a " +
-                 "menu transition. Too slow and it becomes a wait on the twentieth visit — " +
-                 "Response outranks everything, so cut this before cutting anything else.")]
+        [Header("Dispatch")]
+        [Tooltip("The camera does NOT move while the player is browsing. All five districts " +
+                 "fit one screen, so there is nothing to travel to — and a flight on every " +
+                 "glance is a tax paid on the twentieth visit as much as the first. Movement " +
+                 "is spent only on committing to a job.\n\n" +
+                 "Starting value 0.8s. Test: reads as leaning in, not as a wait. If a player " +
+                 "ever reports it as a delay, cut it — Response outranks everything else.")]
+        public float dispatchZoomSeconds = 0.8f;
+
+        [Tooltip("How far toward the district's own shot the dispatch zoom travels, 0-1. " +
+                 "Starting value 0.6: a lean, not an arrival. The contract takes the camera " +
+                 "from here, so going the whole way would double up on its framing.")]
+        [Range(0.1f, 1f)] public float dispatchZoomFraction = 0.6f;
+
+        [Tooltip("Only used by the debug/return path, not by browsing.")]
         public float flightSeconds = 1.4f;
 
         [Header("Atmosphere")]
@@ -156,9 +167,42 @@ namespace NeoKyoto.World
         }
 
         /// <summary>
-        /// Flies down to a district. Same orbit maths the framings were authored with
-        /// (<see cref="DistrictRegistry.CameraFor"/>), so a shot found by flying around
-        /// the scene view transfers exactly.
+        /// Leans the camera toward a district and then hands off — the transition into a
+        /// contract, and the only camera movement the overmap makes.
+        ///
+        /// Selecting a district does *not* move the camera; the whole map is on screen, so
+        /// there is nowhere to travel to, and a flight on every glance is a cost paid on
+        /// the twentieth visit as much as the first. Movement is reserved for the moment
+        /// the player commits, which is the moment it means something.
+        ///
+        /// Runs the callback immediately when there is no city — a clone without the asset
+        /// kit still has to be able to start a contract.
+        /// </summary>
+        public void DispatchTo(District district, Action onDispatched)
+        {
+            if (_city == null || !_city.IsUp || district == null)
+            {
+                if (onDispatched != null) onDispatched();
+                return;
+            }
+
+            Vector3 target; Quaternion targetRotation;
+            DistrictRegistry.CameraFor(district, out target, out targetRotation);
+
+            var cam = _city.Camera;
+            float f = Mathf.Clamp01(settings.dispatchZoomFraction);
+
+            _city.FlyTo(
+                Vector3.Lerp(cam.transform.position, target, f),
+                Quaternion.Slerp(cam.transform.rotation, targetRotation, f),
+                Mathf.Lerp(cam.fieldOfView, district.MapFraming.fieldOfView, f),
+                settings.dispatchZoomSeconds,
+                onDispatched);
+        }
+
+        /// <summary>
+        /// The full move down to a district's own shot. Not used while browsing — kept for
+        /// the debug path and for authoring framings, where seeing the real shot is the point.
         /// </summary>
         public void FlyToDistrict(District district, Action onArrived = null)
         {

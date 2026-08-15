@@ -108,7 +108,29 @@ name, and either `n JOBS` or star pips. Everything else waits for a hover or a c
 | | |
 |---|---|
 | **Hover** | Popup: contracts, ratings, payouts, or Voss's gate line if locked |
-| **Click** | Pins the popup *and* flies the camera down to the district. `◀ BACK TO THE CITY` returns to the overview |
+| **Click** | Pins the popup. **Moves nothing** |
+| **Dispatch** | A short lean toward the district, then the contract opens |
+
+## The camera is still while you browse
+
+**Confirmed 2026-08-15 by the designer, and it supersedes the fly-to-district behaviour
+built the day before.**
+
+All the districts fit one screen, so there is nowhere to travel to — and a camera move on
+every glance is a cost paid on the twentieth visit as much as the first. `Response` is the
+component the overmap was weakest on, and this is the fix: the camera moves **once**, on
+dispatch, where the movement means something.
+
+| | |
+|---|---|
+| **Browsing** | No camera movement at all |
+| **If the map outgrows one screen** | **Panning only** — clamped to the district bounds. Not built; nothing needs it yet, and building it untested would be worse than not having it |
+| **Dispatch** | A partial lean toward the district — starting value 0.8s, 0.6 of the way to its own shot — and then the contract takes the camera |
+
+The lean is deliberately partial. The contract's own framing takes over immediately after, so
+travelling the whole way would just double up on it. And when a contract eventually needs a
+separate scene, this is the gesture that covers the load — which is `TRAVELING.md`'s job 1
+arriving by a different route than that doc expected.
 
 Three things worth keeping:
 

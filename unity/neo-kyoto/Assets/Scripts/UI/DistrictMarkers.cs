@@ -278,13 +278,16 @@ namespace NeoKyoto.UI
 
         // ─── Popup ───
 
+        /// <summary>
+        /// Selecting a district pins its popup and moves nothing. The whole map is on one
+        /// screen, so there is nowhere to fly to — and a camera move on every glance is a
+        /// cost the player pays on the twentieth visit as much as the first. The camera
+        /// moves once, on dispatch, where it means something.
+        /// </summary>
         private void OnMarkerClicked(District district)
         {
             _pinned = district;
             ShowPopup(district);
-
-            var overmap = FindFirstObjectByType<OvermapView>();
-            if (overmap != null) overmap.FlyToDistrict(district);
         }
 
         private void ShowPopup(District district)
@@ -326,9 +329,10 @@ namespace NeoKyoto.UI
                         : (available ? "AVAILABLE" : "LOCKED");
 
                     var captured = def;
+                    var capturedDistrict = district;
                     var btn = UITheme.Button("Open_" + def.Id, _popupBody, "",
                         completed ? UITheme.Good : UITheme.Accent,
-                        available ? (UnityEngine.Events.UnityAction)(() => _gm.OpenContract(captured)) : null);
+                        available ? (UnityEngine.Events.UnityAction)(() => Dispatch(capturedDistrict, captured)) : null);
                     btn.interactable = available;
                     btn.gameObject.AddComponent<LayoutElement>().preferredHeight = 44f;
                     _popupContentHeight += 44f + RowSpacing;
@@ -352,13 +356,15 @@ namespace NeoKyoto.UI
                 }
             }
 
+            // Dismiss, not "back" — the camera never left, so there is nothing to return
+            // from. A pinned popup still needs a way out.
             if (_pinned != null)
             {
-                var back = UITheme.Button("BackToCity", _popupBody, "◀  BACK TO THE CITY",
-                    UITheme.TextDim, () => { _pinned = null; HidePopup(); ReturnToOverview(); });
-                back.gameObject.AddComponent<LayoutElement>().preferredHeight = 32f;
-                back.GetComponentInChildren<TextMeshProUGUI>().fontSize = UITheme.MicroSize;
-                _popupContentHeight += 32f + RowSpacing;
+                var close = UITheme.Button("Dismiss", _popupBody, "CLOSE",
+                    UITheme.TextDim, () => { _pinned = null; HidePopup(); });
+                close.gameObject.AddComponent<LayoutElement>().preferredHeight = 30f;
+                close.GetComponentInChildren<TextMeshProUGUI>().fontSize = UITheme.MicroSize;
+                _popupContentHeight += 30f + RowSpacing;
             }
 
             _popup.sizeDelta = new Vector2(PopupWidth,
@@ -411,10 +417,29 @@ namespace NeoKyoto.UI
             if (_popup != null) _popup.gameObject.SetActive(false);
         }
 
-        private void ReturnToOverview()
+        /// <summary>
+        /// Taking the job. The one place the overmap camera moves: a short lean toward the
+        /// district, and then the contract opens. Guarded so a double-click cannot fire two
+        /// dispatches and open the contract twice.
+        /// </summary>
+        private void Dispatch(District district, ContractDef def)
         {
+            if (_dispatching) return;
+            _dispatching = true;
+
+            _pinned = null;
+            HidePopup();
+
             var overmap = FindFirstObjectByType<OvermapView>();
-            if (overmap != null) overmap.ShowOverview(false);
+            if (overmap == null) { _dispatching = false; _gm.OpenContract(def); return; }
+
+            overmap.DispatchTo(district, () =>
+            {
+                _dispatching = false;
+                _gm.OpenContract(def);
+            });
         }
+
+        private bool _dispatching;
     }
 }
