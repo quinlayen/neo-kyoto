@@ -229,7 +229,20 @@ namespace NeoKyoto.UI
         {
             if (_titleBackground != null) _titleBackground.color = Color.clear;
             if (_splashPanorama != null) _splashPanorama.enabled = false;
-            if (_splashSequence != null) _splashSequence.ClearBackdropRise();
+            if (_splashSequence != null) _splashSequence.SetBackdropRise(0f);
+        }
+
+        /// <summary>
+        /// Puts the painted backdrop back. Must exist, because the player returns to the
+        /// title — after a progress reset, or from the board — and if the live city has
+        /// been unloaded while this stayed transparent they look straight through the
+        /// splash at whatever 3D happens to be framed behind it.
+        /// </summary>
+        public void UsePaintedBackdrop()
+        {
+            if (_titleBackground != null) _titleBackground.color = UITheme.PanelSolid;
+            if (_splashPanorama != null) _splashPanorama.enabled = true;
+            if (_splashSequence != null) _splashSequence.SetBackdropRise(splashTiming.cityRise);
         }
 
         private void BuildBoard(Transform parent)

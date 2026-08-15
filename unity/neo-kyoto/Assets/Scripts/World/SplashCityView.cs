@@ -60,6 +60,7 @@ namespace NeoKyoto.World
 
         private Scene _city;
         private bool _loaded;
+        private bool _loading;
         private Scene _previousActive;
 
         private Vector3 _startPos;
@@ -87,7 +88,17 @@ namespace NeoKyoto.World
             // they leave it — not when the beats happen to finish.
             if (_gm != null) _gm.ScreenChanged += OnScreenChanged;
 
-            if (!settings.enabled || _camera == null) return;
+            Acquire();
+        }
+
+        /// <summary>
+        /// Brings the city up, if it is not already. Safe to call repeatedly: the player
+        /// comes back to the title more than once — after a progress reset, or from the
+        /// board — and each return needs the backdrop again.
+        /// </summary>
+        private void Acquire()
+        {
+            if (_loaded || _loading || !settings.enabled || _camera == null) return;
 
             if (!Application.CanStreamedLevelBeLoaded(settings.sceneName))
             {
@@ -98,17 +109,27 @@ namespace NeoKyoto.World
                 return;
             }
 
+            _loading = true;
             StartCoroutine(LoadRoutine());
         }
 
         private IEnumerator LoadRoutine()
         {
             var op = SceneManager.LoadSceneAsync(settings.sceneName, LoadSceneMode.Additive);
-            if (op == null) yield break;
+            if (op == null) { _loading = false; yield break; }
             yield return op;
+            _loading = false;
 
             _city = SceneManager.GetSceneByName(settings.sceneName);
             if (!_city.IsValid() || !_city.isLoaded) yield break;
+
+            // The player may have left the title while the scene was still streaming in.
+            // Loading a city behind the workspace would be worse than not loading one.
+            if (_gm != null && _gm.CurrentScreen != GameScreen.Title)
+            {
+                SceneManager.UnloadSceneAsync(_city);
+                yield break;
+            }
             _loaded = true;
 
             AdoptFraming();
@@ -216,7 +237,8 @@ namespace NeoKyoto.World
         private void OnScreenChanged()
         {
             if (_gm == null) return;
-            if (_gm.CurrentScreen != GameScreen.Title && settings.unloadWhenDone) Release();
+            if (_gm.CurrentScreen == GameScreen.Title) Acquire();
+            else if (settings.unloadWhenDone) Release();
         }
 
         private void OnDestroy()
@@ -238,6 +260,10 @@ namespace NeoKyoto.World
             }
 
             if (_world != null) _world.SetWorldVisible(true);
+
+            // Hand the painted backdrop back at the same time as the world, or the title
+            // screen is left transparent over whatever 3D is framed behind it.
+            if (_ui != null) _ui.UsePaintedBackdrop();
 
             if (_previousActive.IsValid() && _previousActive.isLoaded)
                 SceneManager.SetActiveScene(_previousActive);

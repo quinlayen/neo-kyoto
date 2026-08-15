@@ -100,6 +100,11 @@ reference would stop a fresh clone compiling.
   200×200 m `Ground` whose top face is at exactly y=0, where a city kit puts its pavement.
   Coplanar, and it reads as flickering sidewalks. `WorldController.SetWorldVisible(false)`.
   Applies to every district scene. Also in `CLAUDE.md`.
+- **Anything that swaps a backdrop must swap it back.** The player returns to the title more
+  than once — after a progress reset, or from the board. `UseLiveCityBackdrop` / `UsePaintedBackdrop`
+  and `SplashCityView.Acquire` / `Release` are deliberately symmetric. A one-way swap left the
+  title transparent over whatever 3D was framed behind it, which read as "it flashes the contract
+  site then restarts".
 - **Window widths must fit the field.** At 35/57/8 the field is ~1094 px at 1080p. A window at
   x=656 may be at most ~420 wide or it slides under the rail and clips.
 - **Unity does not pick up new script files written outside the editor** until

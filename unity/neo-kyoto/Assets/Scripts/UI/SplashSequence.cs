@@ -95,10 +95,11 @@ namespace NeoKyoto.UI
         /// actively wrong, because the panorama is hidden but the scrim and vignette that
         /// share its group are not, so a hard-edged dark slab slides over the world.
         /// </summary>
-        public void ClearBackdropRise()
+        public void SetBackdropRise(float riseFrom)
         {
             if (_beats == null || _beats.Length == 0) return;
-            _beats[0].RiseFrom = 0f;
+            _beats[0].RiseFrom = riseFrom;
+            if (riseFrom > 0f) return;
             var rt = _beats[0].Group != null ? _beats[0].Group.transform as RectTransform : null;
             if (rt != null) rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, 0f);
         }
