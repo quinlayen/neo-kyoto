@@ -26,17 +26,22 @@ Megapolis city as the splash backdrop.
 list), the Debrief (its world-reveal-before-scoreboard ordering ties it to the plug-in work), the
 Reference and Store windows, the plug-in sequence, toasts, layout persistence, text scale.
 
-### ⚠ Confirm before building the overmap
+### The UI model is settled — do not reopen it
 
-Both reference games in `reference/` are **full opaque desktops with wallpaper**. `DECK_SPEC.md`
-§2 deliberately rejects that model — *"ours sits in front of one"* — and everything built so far
-follows the spec, treating the references as source material for the rail and window chrome only.
-If the intent is actually closer to a full desktop, that is a spec change and it invalidates the
-35/57/8 band split before the overmap is built on top of it.
+Confirmed by the designer 2026-08-14: **the location sits behind as a diorama, the screens the
+player jacks into float over it, and they are movable specifically so the player can shift them
+aside and watch the scene.** That is the rail-and-windows model, it is what DECK_SPEC §2
+specifies, and it is what is built.
 
-**Why:** the band split is the load-bearing decision. Getting it wrong is the expensive retrofit
-`docs/README.md` open question #3 warns about.
+**The Farmer Was Replaced is the closest of the three references** — the farm stays visible
+behind the code UI. The two in `reference/` (HackHub, Hacker's Journey) are opaque desktops that
+hide the world, which is precisely the pattern §2 rejects. Take rail and window chrome from them;
+take the world-behind-UI relationship from TFWR.
 
-**How to apply:** ask, then start with the overmap; it gates travel and district state.
+**Why:** the band split rests on this, and it is the expensive retrofit `docs/README.md` open
+question #3 warns about. It is decided now.
+
+**How to apply:** start with the overmap; it gates travel and district state. Fixed-camera
+dioramas now, walkable locations later — the deck frame assumes nothing about the camera.
 
 Related: [[project-asset-kit-status]] [[project-vendor-shader-patch]] [[project-unity-setup]]

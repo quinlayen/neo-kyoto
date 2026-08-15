@@ -78,13 +78,20 @@ reference would stop a fresh clone compiling.
 
 ## Open questions
 
-1. **Rail-and-windows, or a full desktop?** Both reference games (`reference/HackHub*.png`,
-   `reference/HackersJourney*.png`) are full opaque desktops with wallpaper. DECK_SPEC §2
-   deliberately rejects that — *"that works because in those games the interface is the world.
-   Ours isn't; ours sits in front of one."* Everything built so far follows the spec and treats
-   the references as source material for the **rail and window chrome only**. If the intent is
-   actually closer to a full desktop, that is a spec change and it invalidates the 35/57/8 split.
-   **Confirm before building the overmap.**
+1. ~~Rail-and-windows, or a full desktop?~~ **Resolved 2026-08-14 — rail-and-windows, confirmed
+   by the designer.** The intent is: the location sits behind as a diorama, the screens the player
+   jacks into float over it, and they are **movable specifically so the player can shift them
+   aside and watch the scene**. That is what is built, and it is what DECK_SPEC §2 specifies.
+
+   **The Farmer Was Replaced is the closest reference of the three** — the farm stays visible
+   behind the code UI. `reference/HackHub*.png` and `reference/HackersJourney*.png` are the
+   outliers: both are opaque desktops that hide the world entirely, which is exactly why §2
+   rejects that pattern. Take rail and window chrome from them; take the *world-behind-UI*
+   relationship from TFWR.
+
+   Trajectory, consistent with `ENVIRONMENT_BRIEF.md`: fixed-camera dioramas now, first-person
+   walkable at locations later. Nothing in the deck frame assumes a fixed camera, so this does
+   not need revisiting when that happens.
 2. **Objectives need a Contract-level API.** `Contract` exposes only `IsGoalMet()` and
    `GetStatusText()`; there is no per-contract objective list. The rail currently shows the one
    real objective rather than dummy rows. A real checklist (backlog A5) needs the model first.

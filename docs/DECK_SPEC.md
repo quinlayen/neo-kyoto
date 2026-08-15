@@ -57,7 +57,11 @@ The rail sits on the far right because it must be on the *same side as the UI* �
 
 The two hacker-sim references (HackHub, Hacker's Journey) both use a full opaque desktop — taskbar, wallpaper, icon rail. That works because in those games the interface *is* the world. Ours isn't; ours sits in front of one.
 
+**The Farmer Was Replaced is the closer reference**, and the one to reach for when this is ambiguous: the farm stays visible behind the code UI, and watching it respond is the point. Same relationship here — the location is a diorama behind, the screens float over it, and they move **so the player can shift them aside and watch the scene**. Take rail and window chrome from the two hacker sims; take the world-behind-UI relationship from TFWR.
+
 The rail is the synthesis: Hacker's Journey's icon rail without its wallpaper. It gives the deck somewhere to live — tools, objectives, status — at a cost of 8% of the frame instead of 100%.
+
+**Confirmed by the designer, 2026-08-14.** This is settled, not a working assumption.
 
 ### Rail contents (top to bottom)
 
