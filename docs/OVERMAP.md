@@ -88,6 +88,30 @@ The four shot framings answer the Clarity/Fit risk: **four distinct places out o
 with no redress.** The silhouettes alone carry it — 64 m against 264 m registers before anything
 else does. Sector 14 is the open one.
 
+## How it is wired
+
+| Component | Owns |
+|---|---|
+| `CityView` | The city scene. **Reference-counted**, because both the title and the overmap want it — a single owner unloads it on the way from one to the other and reloads it half a second later. Also borrows and restores the camera, swaps the active scene for lighting, and hides the placeholder world |
+| `SplashCityView` | Just the title drift now. A holder, not an owner |
+| `OvermapView` | Overview framing, `FlyToDistrict`, and the atmosphere override |
+
+Three integration bugs came out of building it, all of the same shape — **two things owning one
+resource** — and all three are worth remembering rather than rediscovering:
+
+1. **Release-then-acquire tore the city down mid-handoff.** Both holders answer the same
+   `ScreenChanged` and the order is not ours to pick. On title → overmap the splash let go before
+   the overmap took hold, holders hit zero, and the city unloaded and immediately reloaded — which
+   races on the same scene and never recovers. `CityView` now defers teardown by one frame and
+   re-checks.
+2. **`WorldController` was framing the same camera.** Its `FrameOverview()` puts the camera 34 m
+   from the origin looking at the placeholder ground, and it won whichever handler ran last, so the
+   overmap ended up framed at `(-17, 17, -26)` looking at nothing. It now stands down while the view
+   is lent out, and re-frames when it gets it back — which it must do itself, because the deferred
+   teardown means the screen change is long gone by then.
+3. **The camera's far plane clipped the city away.** It is set for street work at 400 m; the
+   overview camera sits 520 m out.
+
 **What this costs.** `GDD.md` §9's "districts are isolated scenes loaded on selection" no longer
 holds for these districts — travel is a camera move. That deletes `TRAVELING`'s job 1 (cover the
 load) outright, leaving job 2, Voss's transmission, to carry the sequence alone. `TRAVELING.md` §1

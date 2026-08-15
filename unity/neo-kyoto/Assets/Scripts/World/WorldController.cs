@@ -183,8 +183,20 @@ namespace NeoKyoto.World
         /// </summary>
         public void SetWorldVisible(bool visible)
         {
+            bool wasLentOut = _viewLentOut;
+            _viewLentOut = !visible;
+
             foreach (var r in GetComponentsInChildren<Renderer>(true)) r.enabled = visible;
+
+            // Taking the view back means re-taking the camera. CityView releases a frame
+            // before it actually tears down, so by the time this runs the screen change
+            // that prompted it has already been and gone — if this doesn't re-frame the
+            // shot, nothing will, and the contract site arrives unframed.
+            if (wasLentOut && visible) OnScreenChanged();
         }
+
+        /// <summary>True while CityView owns the camera — the splash, and the overmap.</summary>
+        private bool _viewLentOut;
 
         private void ApplyViewport(bool docked)
         {
@@ -208,6 +220,12 @@ namespace NeoKyoto.World
 
         private void Frame(Vector3 focus, float distance, float yaw)
         {
+            // Stand down while the view is lent out. CityView frames the same camera for
+            // the splash and the overmap, and both handlers run off the same ScreenChanged
+            // — without this the placeholder world's shot silently wins whichever runs last,
+            // and the overmap ends up framed 34 m off the origin looking at nothing.
+            if (_viewLentOut) return;
+
             var dir = Quaternion.Euler(24f, yaw, 0f) * Vector3.back;
             worldCamera.transform.position = focus + dir * distance;
             worldCamera.transform.rotation = Quaternion.LookRotation(focus - worldCamera.transform.position);

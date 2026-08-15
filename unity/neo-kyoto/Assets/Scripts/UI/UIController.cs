@@ -35,6 +35,9 @@ namespace NeoKyoto.UI
         private GameObject _titlePanel, _boardPanel, _briefingPanel, _workspacePanel, _debriefPanel;
         private Transform _boardList;
 
+        // The board's own backdrop. Drops to a scrim when the live city is behind it.
+        private Image _boardBackdrop;
+
         // Splash backdrop, swapped for the live city when the kit scene is available.
         private Image _titleBackground, _splashPanorama;
         private SplashSequence _splashSequence;
@@ -233,6 +236,30 @@ namespace NeoKyoto.UI
         }
 
         /// <summary>
+        /// Drops the board's own backdrop to a scrim so the live city shows through it.
+        /// Not to `Color.clear`: the §4 legibility floor is enforced inside `DeckWindow`
+        /// and a full-frame board inherits none of it, so the district headers would be
+        /// bare text over a lit city.
+        ///
+        /// **Starting value** — alpha 0.55. Test: district headers and the rank line stay
+        /// readable over the brightest quadrant. If they don't, raise the alpha before
+        /// touching the text colours; if the city disappears behind it, lower it and give
+        /// the text its own per-label scrim instead.
+        /// </summary>
+        public void UseLiveCityBoard()
+        {
+            if (_boardBackdrop != null) _boardBackdrop.color = BoardScrim;
+        }
+
+        /// <summary>Puts the board's solid backdrop back for when there is no city behind it.</summary>
+        public void UseOpaqueBoard()
+        {
+            if (_boardBackdrop != null) _boardBackdrop.color = UITheme.Backdrop;
+        }
+
+        private static readonly Color BoardScrim = new Color(0.031f, 0.039f, 0.059f, 0.55f);
+
+        /// <summary>
         /// Puts the painted backdrop back. Must exist, because the player returns to the
         /// title — after a progress reset, or from the board — and if the live city has
         /// been unloaded while this stayed transparent they look straight through the
@@ -247,7 +274,8 @@ namespace NeoKyoto.UI
 
         private void BuildBoard(Transform parent)
         {
-            _boardPanel = UITheme.Box("BoardPanel", parent, UITheme.Backdrop).gameObject;
+            _boardBackdrop = UITheme.Box("BoardPanel", parent, UITheme.Backdrop);
+            _boardPanel = _boardBackdrop.gameObject;
             UITheme.Stretch(_boardPanel.GetComponent<RectTransform>());
 
             var header = UITheme.Label("Header", _boardPanel.transform,

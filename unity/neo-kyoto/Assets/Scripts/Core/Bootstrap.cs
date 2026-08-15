@@ -33,6 +33,11 @@ namespace NeoKyoto.Core
                  "Falls back to the painting if the kit scene is not available.")]
         public SplashCitySettings splashCity = new SplashCitySettings();
 
+        [Tooltip("The overmap: the live city seen from above with the board over it. " +
+                 "Camera framing, flight timing and the fog push-back for altitude. " +
+                 "Every number is a starting value — read the tooltips before changing them.")]
+        public OvermapSettings overmap = new OvermapSettings();
+
         [Tooltip("Deck frame geometry and legibility. Every value is a starting value from " +
                  "docs/DECK_SPEC.md §12 with a documented test — read it before changing them.")]
         public DeckLayoutSettings deckLayout = new DeckLayoutSettings();
@@ -99,14 +104,27 @@ namespace NeoKyoto.Core
             ui.deckLayout = deckLayout;
             uiGo.SetActive(true);
 
-            // After the UI, because it needs the splash sequence the UIController builds
-            // in Awake — and it only swaps out the painted backdrop once the city scene
-            // has actually loaded.
-            var cityGo = new GameObject("SplashCity");
+            // After the UI, because these need the splash sequence the UIController builds
+            // in Awake — and the backdrop only swaps once the city scene has actually loaded.
+            //
+            // One city, two holders. CityView owns the scene and is reference-counted, so
+            // moving between the title and the overmap never unloads and reloads it.
+            var cityGo = new GameObject("City");
             cityGo.transform.SetParent(transform, false);
-            var cityView = cityGo.AddComponent<SplashCityView>();
-            cityView.settings = splashCity;
-            cityView.Begin(cam, ui, ui.SplashSequence, gm, world);
+            var city = cityGo.AddComponent<CityView>();
+            city.Configure(splashCity.sceneName, splashCity.enabled, cam, ui, gm, world);
+
+            var splashGo = new GameObject("SplashCity");
+            splashGo.transform.SetParent(transform, false);
+            var splashView = splashGo.AddComponent<SplashCityView>();
+            splashView.settings = splashCity;
+            splashView.Begin(city, ui.SplashSequence, gm);
+
+            var overmapGo = new GameObject("Overmap");
+            overmapGo.transform.SetParent(transform, false);
+            var overmapView = overmapGo.AddComponent<OvermapView>();
+            overmapView.settings = overmap;
+            overmapView.Begin(city, gm, ui);
 
             if (deckPreview) BuildDeckPreview(ui);
         }
