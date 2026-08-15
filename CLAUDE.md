@@ -40,6 +40,13 @@ variant and everything renders pink in URP. You must then run
 `Emission = 0`, which would kill the broken-amber → fixed-cyan state language. Details and the
 restore path: `.claude/memory/project-vendor-shader-patch.md`.
 
+**Loading a location scene additively? Hide the game's own world first.** `WorldController`
+builds a placeholder `Ground` plane, 200 × 200 m, whose top face is at exactly **y = 0** — which
+is where a real city kit puts its pavement. Left visible underneath, the two are coplanar across
+the whole street and it reads as flickering sidewalks. Call `WorldController.SetWorldVisible(false)`
+once the location is definitely loaded, and restore it on the way out. This applies to every
+district scene, not just the splash.
+
 **`UI/TextMarkup.cs`**: eight or more leading spaces renders as a preformatted block, and
 consecutive prose lines get joined with a space. Aligned content needs 8-space indentation.
 Documented in `docs/DISPATCHER.md`.

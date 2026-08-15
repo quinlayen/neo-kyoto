@@ -171,6 +171,21 @@ namespace NeoKyoto.World
                  "not a camera rect. See docs/DECK_SPEC.md §2.")]
         public bool fullFrameWorld = true;
 
+        /// <summary>
+        /// Hides the game's own world without tearing it down, so something else can own
+        /// the view for a while.
+        ///
+        /// The placeholder Ground is a 200x200m plane whose top face sits at exactly y=0 —
+        /// which is also where a real city kit puts its pavement. Left visible under a
+        /// loaded location the two are coplanar across the whole street, and it reads as
+        /// flickering sidewalks. Renderers only: colliders, state and the build itself all
+        /// stay, so restoring is a single call and costs no rebuild.
+        /// </summary>
+        public void SetWorldVisible(bool visible)
+        {
+            foreach (var r in GetComponentsInChildren<Renderer>(true)) r.enabled = visible;
+        }
+
         private void ApplyViewport(bool docked)
         {
             if (worldCamera == null) return;

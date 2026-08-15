@@ -105,7 +105,7 @@ namespace NeoKyoto.Core
             cityGo.transform.SetParent(transform, false);
             var cityView = cityGo.AddComponent<SplashCityView>();
             cityView.settings = splashCity;
-            cityView.Begin(cam, ui, ui.SplashSequence, gm);
+            cityView.Begin(cam, ui, ui.SplashSequence, gm, world);
 
             if (deckPreview) BuildDeckPreview(ui);
         }

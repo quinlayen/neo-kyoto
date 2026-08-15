@@ -56,6 +56,7 @@ namespace NeoKyoto.World
         private UIController _ui;
         private SplashSequence _sequence;
         private GameManager _gm;
+        private WorldController _world;
 
         private Scene _city;
         private bool _loaded;
@@ -72,12 +73,14 @@ namespace NeoKyoto.World
         private Quaternion _camRotWas;
         private float _fovWas;
 
-        public void Begin(Camera worldCamera, UIController ui, SplashSequence sequence, GameManager gm)
+        public void Begin(Camera worldCamera, UIController ui, SplashSequence sequence,
+                          GameManager gm, WorldController world)
         {
             _camera = worldCamera;
             _ui = ui;
             _sequence = sequence;
             _gm = gm;
+            _world = world;
 
             // The city is the title screen's backdrop, not the splash animation's. It
             // stays up for as long as the player is looking at the title, and goes when
@@ -119,6 +122,10 @@ namespace NeoKyoto.World
 
             _clearFlagsWas = _camera.clearFlags;
             _camera.clearFlags = CameraClearFlags.Skybox;
+
+            // Only once the real city is definitely up. Hiding the placeholder world on a
+            // load that then failed would leave the player looking at nothing.
+            if (_world != null) _world.SetWorldVisible(false);
 
             if (_ui != null) _ui.UseLiveCityBackdrop();
         }
@@ -229,6 +236,8 @@ namespace NeoKyoto.World
                 _camera.transform.SetPositionAndRotation(_camPosWas, _camRotWas);
                 _camera.fieldOfView = _fovWas;
             }
+
+            if (_world != null) _world.SetWorldVisible(true);
 
             if (_previousActive.IsValid() && _previousActive.isLoaded)
                 SceneManager.SetActiveScene(_previousActive);
