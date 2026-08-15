@@ -186,6 +186,17 @@ MonoBehaviour:
     euler: {x: 0, y: 0, z: 0}
     fieldOfView: 80
     unloadWhenDone: 1
+  deckLayout:
+    protectedRegion: 0.35
+    rail: 0.08
+    titleBarHeight: 28
+    minWindowSize: {x: 320, y: 200}
+    snapThreshold: 12
+    unfoldStagger: 0.08
+    opacityFloor: 0.92
+    scrimDarken: 0.4
+    scrimSpread: 24
+  deckPreview: 0
 --- !u!4 &1443013671
 Transform:
   m_ObjectHideFlags: 0

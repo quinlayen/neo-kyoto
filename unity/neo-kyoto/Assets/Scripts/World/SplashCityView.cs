@@ -1,4 +1,5 @@
 using System.Collections;
+using NeoKyoto.Core;
 using NeoKyoto.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -35,8 +36,8 @@ namespace NeoKyoto.World
         public Vector3 euler;
         [Range(20f, 110f)] public float fieldOfView = 80f;
 
-        [Tooltip("Unload the city once the splash is done. Off keeps it resident — useful " +
-                 "later if the hub reuses the same view.")]
+        [Tooltip("Unload the city when the player leaves the title screen. Off keeps it " +
+                 "resident — useful later if the hub reuses the same view.")]
         public bool unloadWhenDone = true;
     }
 
@@ -54,6 +55,7 @@ namespace NeoKyoto.World
         private Camera _camera;
         private UIController _ui;
         private SplashSequence _sequence;
+        private GameManager _gm;
 
         private Scene _city;
         private bool _loaded;
@@ -70,11 +72,17 @@ namespace NeoKyoto.World
         private Quaternion _camRotWas;
         private float _fovWas;
 
-        public void Begin(Camera worldCamera, UIController ui, SplashSequence sequence)
+        public void Begin(Camera worldCamera, UIController ui, SplashSequence sequence, GameManager gm)
         {
             _camera = worldCamera;
             _ui = ui;
             _sequence = sequence;
+            _gm = gm;
+
+            // The city is the title screen's backdrop, not the splash animation's. It
+            // stays up for as long as the player is looking at the title, and goes when
+            // they leave it — not when the beats happen to finish.
+            if (_gm != null) _gm.ScreenChanged += OnScreenChanged;
 
             if (!settings.enabled || _camera == null) return;
 
@@ -193,7 +201,20 @@ namespace NeoKyoto.World
             _camera.transform.position = _startPos + _startRot * settings.drift * eased;
             _camera.transform.rotation = _startRot * Quaternion.Euler(settings.turn * eased);
 
-            if (_sequence.Finished && settings.unloadWhenDone) Release();
+            // No release here. The move settles at the end of its travel and the city
+            // stays live behind the title — its traffic, trains and fog keep running, so
+            // a held camera still reads as a place rather than a screenshot.
+        }
+
+        private void OnScreenChanged()
+        {
+            if (_gm == null) return;
+            if (_gm.CurrentScreen != GameScreen.Title && settings.unloadWhenDone) Release();
+        }
+
+        private void OnDestroy()
+        {
+            if (_gm != null) _gm.ScreenChanged -= OnScreenChanged;
         }
 
         /// <summary>Hands the camera back to the game and drops the city.</summary>

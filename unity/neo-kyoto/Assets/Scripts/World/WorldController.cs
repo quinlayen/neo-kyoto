@@ -165,10 +165,16 @@ namespace NeoKyoto.World
             for (int i = _siteRoot.childCount - 1; i >= 0; i--) Destroy(_siteRoot.GetChild(i).gameObject);
         }
 
+        [Tooltip("Deck model: the world fills the frame and the deck's windows float over it, " +
+                 "rather than the world being letterboxed into a band. The protected focal " +
+                 "region becomes a composition rule for where the failing system is framed, " +
+                 "not a camera rect. See docs/DECK_SPEC.md §2.")]
+        public bool fullFrameWorld = true;
+
         private void ApplyViewport(bool docked)
         {
             if (worldCamera == null) return;
-            worldCamera.rect = docked
+            worldCamera.rect = docked && !fullFrameWorld
                 ? new Rect(0f, 0f, worldViewportWidth, 1f)
                 : new Rect(0f, 0f, 1f, 1f);
         }

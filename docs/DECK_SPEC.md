@@ -264,7 +264,8 @@ Option B throughout — starting values with test plans. No sourced benchmarks; 
 ## 14. Open
 
 - ~~Rail on the left or the right?~~ **Resolved 2026-08-14** — rail right, world left, following the existing build (`worldViewportWidth = 0.58f`).
-- **Does the world band stay at 58%, or shrink toward 35%?** The build gives the world more room than this spec assumes. 58% is likely better once the asset kit lands and there is something worth looking at; revisit after import.
+- ~~Does the world band stay at 58%, or shrink toward 35%?~~ **Resolved 2026-08-14, after the kit import.** Built at the spec's **35 / 57 / 8**. The deciding argument was the window field: at 58% world it drops to ~653px, barely two minimum-size (320px) windows, which starves exactly the combined contracts that need a terminal and an editor side by side. Tunable live on `Bootstrap.deckLayout`.
+- ~~Is the world letterboxed into a band, or full-frame behind the windows?~~ **Resolved 2026-08-14 — full-frame.** `WorldController.fullFrameWorld` now ignores `worldViewportWidth`, the camera fills the screen, and the protected focal region is a **composition rule for where the failing system is framed, not a camera rect**. This is what §3 and §11 already implied: windows sit "over the location, which keeps animating behind them", and dragging a window into the protected region is explicitly allowed — neither reads sensibly against a letterboxed world.
 - **Does the rail persist in SITE view**, before the plug-in, or appear only in DECK view?
 - **Default window set per contract type** — what's open when the boot surface clears.
 - **A "reset layout" affordance** — cheap, and prevents the abuse case above from becoming a support issue.

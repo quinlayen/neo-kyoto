@@ -112,6 +112,7 @@ namespace NeoKyoto.UI
             scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight = 0.5f;
             canvasGo.AddComponent<GraphicRaycaster>();
+            CanvasRoot = canvasGo.transform;
 
             BuildTitle(canvasGo.transform);
             BuildBoard(canvasGo.transform);
@@ -201,6 +202,10 @@ namespace NeoKyoto.UI
         /// <summary>The splash choreography, so the live city can ride the same clock.</summary>
         public SplashSequence SplashSequence { get { return _splashSequence; } }
 
+        /// <summary>The screen-space canvas every panel is built under. The deck shell
+        /// mounts here too, on top of the panels.</summary>
+        public Transform CanvasRoot { get; private set; }
+
         /// <summary>
         /// Clears the way for the real city to show through: the solid panel behind the
         /// splash and the painted panorama both go transparent. The scrim and vignette
@@ -214,6 +219,7 @@ namespace NeoKyoto.UI
         {
             if (_titleBackground != null) _titleBackground.color = Color.clear;
             if (_splashPanorama != null) _splashPanorama.enabled = false;
+            if (_splashSequence != null) _splashSequence.ClearBackdropRise();
         }
 
         private void BuildBoard(Transform parent)

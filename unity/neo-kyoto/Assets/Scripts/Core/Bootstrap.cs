@@ -1,4 +1,5 @@
 using NeoKyoto.UI;
+using NeoKyoto.UI.Deck;
 using NeoKyoto.World;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -31,6 +32,15 @@ namespace NeoKyoto.Core
         [Tooltip("Puts the real city behind the splash instead of the painted panorama. " +
                  "Falls back to the painting if the kit scene is not available.")]
         public SplashCitySettings splashCity = new SplashCitySettings();
+
+        [Tooltip("Deck frame geometry and legibility. Every value is a starting value from " +
+                 "docs/DECK_SPEC.md §12 with a documented test — read it before changing them.")]
+        public DeckLayoutSettings deckLayout = new DeckLayoutSettings();
+
+        [Tooltip("Development only. Builds the deck frame with sample windows on top of " +
+                 "whatever is on screen, so the frame can be judged over the live city " +
+                 "before any real surface is ported into it.")]
+        public bool deckPreview;
 
         private void Awake()
         {
@@ -95,7 +105,55 @@ namespace NeoKyoto.Core
             cityGo.transform.SetParent(transform, false);
             var cityView = cityGo.AddComponent<SplashCityView>();
             cityView.settings = splashCity;
-            cityView.Begin(cam, ui, ui.SplashSequence);
+            cityView.Begin(cam, ui, ui.SplashSequence, gm);
+
+            if (deckPreview) BuildDeckPreview(ui);
+        }
+
+        /// <summary>
+        /// Stage-1 scaffold for the deck frame. The real surfaces still live in the docked
+        /// work panel; this exists so the frame itself — band split, rail, window chrome and
+        /// above all legibility over neon — can be judged before anything is ported into it.
+        /// </summary>
+        private void BuildDeckPreview(UIController ui)
+        {
+            if (ui.CanvasRoot == null) return;
+
+            var shellGo = new GameObject("Deck");
+            shellGo.transform.SetParent(transform, false);
+            var shell = shellGo.AddComponent<DeckShell>();
+            shell.settings = deckLayout;
+            shell.Build(ui.CanvasRoot);
+
+            shell.SetLink("BLOCK 7 · substation\nlink established", true);
+            shell.SetStatus("1,240 cr · Contractor");
+
+            shell.AddTool("editor", true, null);
+            shell.AddTool("terminal", true, null);
+            shell.AddTool("reference", true, null);
+            shell.AddTool("store", false, null);      // locked but visible, on purpose
+
+            shell.AddObjective("Restore power to Block 7", false);
+            shell.AddObjective("Read the fault log", true);
+
+            var editor = shell.Open("editor", "main.py", new Vector2(520f, 340f));
+            SampleText(editor, UITheme.CodeSize, UITheme.Text,
+                       "1  for node in grid.nodes:\n" +
+                       "2      if node.offline:\n" +
+                       "3          node.restart()\n" +
+                       "4  \n" +
+                       "5  print(grid.status())");
+
+            var readout = shell.Open("readout", "grid status", new Vector2(360f, 220f));
+            SampleText(readout, UITheme.SmallSize, UITheme.TextDim,
+                       "nodes     12\nonline     8\nfaulted    4\nload     73%");
+        }
+
+        private static void SampleText(DeckWindow window, float size, Color colour, string text)
+        {
+            var label = UITheme.Label("Sample", window.Content, text, size, colour);
+            UITheme.Stretch(label.rectTransform, 10f, 8f, 10f, 8f);
+            label.raycastTarget = false;
         }
     }
 }
