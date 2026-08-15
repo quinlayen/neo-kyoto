@@ -245,16 +245,53 @@ namespace NeoKyoto.UI.Deck
         }
 
         /// <summary>
-        /// Locked tools are shown greyed rather than hidden — showing a named tool you
-        /// cannot afford yet creates wanting; hiding it doesn't. ONSITE_PIVOT.md §3.
+        /// A launcher: glyph over caption, the shape DECK_SPEC §2 asks for and the shape both
+        /// reference games use. Glyphs are drawn from the mono font rather than sprites —
+        /// no art dependency, and a terminal that reads ">_" is the reference's own idiom.
+        ///
+        /// Locked tools are greyed rather than hidden: showing a named tool you cannot
+        /// afford yet creates wanting, hiding it doesn't. ONSITE_PIVOT.md §3.
         /// </summary>
-        public Button AddTool(string label, bool unlocked, UnityEngine.Events.UnityAction onClick)
+        public Button AddTool(string label, string glyph, bool unlocked,
+                              UnityEngine.Events.UnityAction onClick)
         {
             var colour = unlocked ? UITheme.Accent : UITheme.TextDim;
-            var btn = UITheme.Button("Tool_" + label, _railTools, label, colour,
-                                     unlocked ? onClick : null);
-            AddHeight(btn.gameObject, 28f);
+
+            var img = UITheme.Box("Tool_" + label, _railTools, UITheme.Field);
+            var btn = img.gameObject.AddComponent<Button>();
+            AddHeight(img.gameObject, 50f);
+
+            var border = UITheme.Box("Border", img.transform,
+                                     new Color(colour.r, colour.g, colour.b, unlocked ? 0.35f : 0.15f));
+            UITheme.Stretch(border.rectTransform);
+            border.raycastTarget = false;
+            var inner = UITheme.Box("Inner", border.transform, UITheme.Field);
+            UITheme.Stretch(inner.rectTransform, 1.5f, 1.5f, 1.5f, 1.5f);
+            inner.raycastTarget = false;
+
+            var g = UITheme.Label("Glyph", inner.transform, glyph, UITheme.SectionSize, colour,
+                                  TextAlignmentOptions.Center);
+            g.rectTransform.anchorMin = new Vector2(0f, 0.34f);
+            g.rectTransform.anchorMax = new Vector2(1f, 1f);
+            g.rectTransform.offsetMin = Vector2.zero;
+            g.rectTransform.offsetMax = Vector2.zero;
+            g.raycastTarget = false;
+
+            var cap = UITheme.Label("Caption", inner.transform, label, UITheme.MicroSize,
+                                    unlocked ? UITheme.TextDim : UITheme.Border,
+                                    TextAlignmentOptions.Center);
+            cap.rectTransform.anchorMin = new Vector2(0f, 0f);
+            cap.rectTransform.anchorMax = new Vector2(1f, 0.34f);
+            cap.rectTransform.offsetMin = Vector2.zero;
+            cap.rectTransform.offsetMax = Vector2.zero;
+            cap.raycastTarget = false;
+
             btn.interactable = unlocked;
+            btn.onClick.AddListener(() =>
+            {
+                if (Core.GameAudio.Instance != null) Core.GameAudio.Instance.Play(Core.Sfx.Click);
+                if (onClick != null) onClick();
+            });
             return btn;
         }
 

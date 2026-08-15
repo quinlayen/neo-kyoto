@@ -129,10 +129,10 @@ namespace NeoKyoto.Core
             shell.SetLink("BLOCK 7 · substation\nlink established", true);
             shell.SetStatus("1,240 cr · Contractor");
 
-            shell.AddTool("editor", true, null);
-            shell.AddTool("terminal", true, null);
-            shell.AddTool("reference", true, null);
-            shell.AddTool("store", false, null);      // locked but visible, on purpose
+            shell.AddTool("editor", "{}", true, null);
+            shell.AddTool("terminal", ">_", true, null);
+            shell.AddTool("reference", "?", true, null);
+            shell.AddTool("store", "$", false, null);   // locked but visible, on purpose
 
             shell.AddObjective("Restore power to Block 7", false);
             shell.AddObjective("Read the fault log", true);

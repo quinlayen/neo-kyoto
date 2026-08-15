@@ -26,7 +26,9 @@ namespace NeoKyoto.UI
 
         // The workspace screen is the deck: a shell plus its windows, over the live world.
         private DeckShell _deck;
-        private DeckWindow _editorWindow, _terminalWindow, _readoutWindow;
+        private DeckWindow _editorWindow, _terminalWindow, _readoutWindow, _briefingWindow;
+        private TextMeshProUGUI _briefingWindowText;
+        private ScrollRect _briefingWindowScroll;
 
         private GameManager _gm;
 
@@ -457,15 +459,18 @@ namespace NeoKyoto.UI
 
             // Navigation moves into the rail: with no docked panel there is nowhere else
             // for it to live, and the rail is the one thing that is never occluded.
-            _deck.AddTool("briefing", true, () => _gm.GoTo(GameScreen.Briefing));
-            _debriefButton = _deck.AddTool("debrief", true, () => _gm.GoTo(GameScreen.Debrief));
-            _deck.AddTool("board", true, () => _gm.BackToBoard());
-            _deck.AddTool("reference", false, null);   // locked but visible, on purpose
-            _deck.AddTool("store", false, null);
+            // Briefing opens in place rather than leaving the deck. DECK_SPEC §6: it is a
+            // window, and "briefings should never be one-shot".
+            _deck.AddTool("briefing", "!", true, OpenBriefingWindow);
+            _debriefButton = _deck.AddTool("debrief", "*", true, () => _gm.GoTo(GameScreen.Debrief));
+            _deck.AddTool("board", "#", true, () => _gm.BackToBoard());
+            _deck.AddTool("reference", "?", false, null);   // locked but visible, on purpose
+            _deck.AddTool("store", "$", false, null);
 
             BuildEditorWindow();
             BuildTerminalWindow();
             BuildReadoutWindow();
+            BuildBriefingWindow();
         }
 
         /// <summary>A padded vertical stack filling a window's content area.</summary>
@@ -547,6 +552,42 @@ namespace NeoKyoto.UI
             var sendLayout = sendBtn.gameObject.AddComponent<LayoutElement>();
             sendLayout.preferredWidth = 110f;
             sendLayout.flexibleWidth = 0f;
+        }
+
+        /// <summary>
+        /// The dispatcher's message, re-openable from the rail at any point during work —
+        /// DECK_SPEC §6, "briefings should never be one-shot". Starts closed, because the
+        /// player has just read it on the way in.
+        ///
+        /// Full text rather than the paged first-read: this window is for going back to
+        /// check something, where scanning the whole transmission beats stepping through
+        /// it again. The paced, paged version stays on the pre-work screen.
+        /// </summary>
+        private void BuildBriefingWindow()
+        {
+            _briefingWindow = _deck.Open("briefing", "transmission", new Vector2(560f, 430f),
+                                         false, new Vector2(120f, -90f));
+            var col = WindowColumn(_briefingWindow);
+
+            var frame = UITheme.Framed("BriefFrame", col, UITheme.Border);
+            AddLayout(frame.parent.gameObject, 0f, 1f);
+            _briefingWindowText = UITheme.ScrollText("BriefWindowScroll", frame,
+                                                     out _briefingWindowScroll, true);
+            _briefingWindowText.richText = true;
+            _briefingWindowText.lineSpacing = 6f;
+            _briefingWindowText.paragraphSpacing = 10f;
+            UITheme.Stretch(_briefingWindowScroll.GetComponent<RectTransform>(), 4, 4, 4, 4);
+
+            _briefingWindow.gameObject.SetActive(false);
+        }
+
+        private void OpenBriefingWindow()
+        {
+            if (_briefingWindow == null || _gm.ActiveContract == null) return;
+            _briefingWindowText.text = TextMarkup.Format(_gm.ActiveContract.GetBriefing());
+            _briefingWindow.gameObject.SetActive(true);
+            _deck.Focus(_briefingWindow);
+            StartCoroutine(ScrollToTop(_briefingWindowScroll));
         }
 
         /// <summary>Live system state — the numeric companion to the world. Always open.</summary>
