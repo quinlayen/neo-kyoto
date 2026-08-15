@@ -87,6 +87,13 @@ namespace NeoKyoto.UI
             Rewind();
         }
 
+        /// <summary>Seconds into the splash. Read by the live city view so the camera
+        /// move rides the same clock as the beats, skip included.</summary>
+        public float Elapsed { get { return _elapsed; } }
+
+        /// <summary>True once the last beat has landed, or the player skipped.</summary>
+        public bool Finished { get { return _finished; } }
+
         private void OnEnable() { Rewind(); }
 
         private void Rewind()

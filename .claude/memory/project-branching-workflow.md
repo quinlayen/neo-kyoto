@@ -1,35 +1,30 @@
 ---
 name: project-branching-workflow
-description: "Two agents work this repo from different machines — branch convention, who owns what, and how to avoid stepping on each other"
+description: "Single machine as of 2026-08-14 — the two-agent split is over; branch convention and the one lesson worth keeping"
 metadata:
   type: project
 ---
 
-## Two agents, one repo (from 2026-08-13)
+## Single machine (from 2026-08-14)
 
-Peter runs a second Claude Code agent from another machine. Work is split by area,
-which is why merges have been clean so far:
+**The two-agent setup is over.** Peter got rid of the other computer, so the second Claude Code
+agent that owned `contracts/`, `systems/`, `main.py` and `docs/` is gone. There is no longer a
+path-ownership split, and no other writer to race with.
 
-| Area | Owner | Paths |
-|---|---|---|
-| Python prototype, design docs | the other agent | `contracts/`, `systems/`, `main.py`, `game_state.py`, `docs/` |
-| Unity port | this machine | `unity/`, `.claude/` |
+What this changes:
 
-**Always `git fetch` before starting.** Master has moved under us twice mid-session,
-once mid-push. Both times a fast-forward, because the file split holds — but check
-rather than assume.
+- **`docs/` is now freely editable from here.** It used to belong to the other agent.
+- The "always `git fetch` before starting" rule is no longer load-bearing, though it costs nothing.
+- Non-fast-forward pushes from a second writer are no longer a risk.
 
-**Branch convention:** `design/*` for prototype and design work, `unity/*` for the
-Unity port, both merging to `master`. Do not commit straight to master; the other
-agent has, and a non-fast-forward push was the result.
+**Branch convention still applies** — `design/*` for prototype and design work, `unity/*` for the
+Unity port, merging to `master`. Worth keeping for reviewable units of work, not for contention.
 
-**The real risk is design divergence, not merge conflicts.** The gamification layer
-merged cleanly as text while being pedagogically wrong for C1–C3 — the rating
-punished the exact solution the debrief teaches. Files not overlapping says nothing
-about whether the designs agree. When the other agent adds a mechanic, test it
-against the teaching arc before porting it. See [[project-gamification-status]].
+### The one lesson worth carrying forward
 
-**Verify claims in their commit messages.** One commit said it added the game-design
-skill; it contained no such files (the skill was already committed here).
+**Files not overlapping says nothing about whether the designs agree.** The gamification layer
+merged cleanly as text while being pedagogically wrong for C1–C3 — the star rating punished the
+exact solution the debrief teaches. When a mechanic lands, test it against the teaching arc rather
+than against the diff. See [[project-gamification-status]].
 
 Related: [[project-design-only-workflow]] [[project-gamification-status]]

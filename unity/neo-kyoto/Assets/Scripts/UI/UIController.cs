@@ -25,6 +25,10 @@ namespace NeoKyoto.UI
         private GameObject _titlePanel, _boardPanel, _briefingPanel, _workspacePanel, _debriefPanel;
         private Transform _boardList;
 
+        // Splash backdrop, swapped for the live city when the kit scene is available.
+        private Image _titleBackground, _splashPanorama;
+        private SplashSequence _splashSequence;
+
         private TextMeshProUGUI _debriefHeader;
         private TextMeshProUGUI _wsHeader, _wsStatus, _consoleText, _briefingText, _debriefText, _hintText;
         private TMP_InputField _codeInput, _terminalInput;
@@ -123,7 +127,8 @@ namespace NeoKyoto.UI
         /// </summary>
         private void BuildTitle(Transform parent)
         {
-            _titlePanel = UITheme.Box("TitlePanel", parent, UITheme.PanelSolid).gameObject;
+            _titleBackground = UITheme.Box("TitlePanel", parent, UITheme.PanelSolid);
+            _titlePanel = _titleBackground.gameObject;
             UITheme.Stretch(_titlePanel.GetComponent<RectTransform>());
 
             // Backdrop art rides in one group so it fades and rises together. It is
@@ -134,7 +139,7 @@ namespace NeoKyoto.UI
             UITheme.Stretch(backdrop.GetComponent<RectTransform>(), -over, -over, -over, -over);
             var backdropGroup = backdrop.AddComponent<CanvasGroup>();
 
-            UITheme.CoverImage("Panorama", backdrop.transform, UITheme.Art("ONCALL_CityPanorama"));
+            _splashPanorama = UITheme.CoverImage("Panorama", backdrop.transform, UITheme.Art("ONCALL_CityPanorama"));
 
             // The panorama is dense and brightly lit, and the logo and copy sit dead
             // centre where it is busiest. A flat scrim under the vignette pushes the
@@ -188,9 +193,27 @@ namespace NeoKyoto.UI
                 TextAlignmentOptions.Center);
             Place(hint.rectTransform, 0.5f, 0.5f, new Vector2(0, -240), new Vector2(600, 24));
 
-            var sequence = _titlePanel.AddComponent<SplashSequence>();
-            sequence.timing = splashTiming;
-            sequence.Bind(backdropGroup, splashLogo, tagGroup, actionGroup);
+            _splashSequence = _titlePanel.AddComponent<SplashSequence>();
+            _splashSequence.timing = splashTiming;
+            _splashSequence.Bind(backdropGroup, splashLogo, tagGroup, actionGroup);
+        }
+
+        /// <summary>The splash choreography, so the live city can ride the same clock.</summary>
+        public SplashSequence SplashSequence { get { return _splashSequence; } }
+
+        /// <summary>
+        /// Clears the way for the real city to show through: the solid panel behind the
+        /// splash and the painted panorama both go transparent. The scrim and vignette
+        /// stay — they were always what keeps the mark readable over a busy city, and
+        /// the live one is busier than the painting.
+        ///
+        /// Only called once the kit scene has actually loaded, so the painted backdrop
+        /// remains the fallback on a clone without the purchased assets.
+        /// </summary>
+        public void UseLiveCityBackdrop()
+        {
+            if (_titleBackground != null) _titleBackground.color = Color.clear;
+            if (_splashPanorama != null) _splashPanorama.enabled = false;
         }
 
         private void BuildBoard(Transform parent)

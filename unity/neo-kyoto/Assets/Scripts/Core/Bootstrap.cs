@@ -28,6 +28,10 @@ namespace NeoKyoto.Core
                  "it takes once it does.")]
         public SplashTiming splashTiming = new SplashTiming();
 
+        [Tooltip("Puts the real city behind the splash instead of the painted panorama. " +
+                 "Falls back to the painting if the kit scene is not available.")]
+        public SplashCitySettings splashCity = new SplashCitySettings();
+
         private void Awake()
         {
             // Created inactive on purpose: AddComponent runs Awake immediately, so a
@@ -80,8 +84,18 @@ namespace NeoKyoto.Core
             var uiGo = new GameObject("UI");
             uiGo.SetActive(false);
             uiGo.transform.SetParent(transform, false);
-            uiGo.AddComponent<UIController>().splashTiming = splashTiming;
+            var ui = uiGo.AddComponent<UIController>();
+            ui.splashTiming = splashTiming;
             uiGo.SetActive(true);
+
+            // After the UI, because it needs the splash sequence the UIController builds
+            // in Awake — and it only swaps out the painted backdrop once the city scene
+            // has actually loaded.
+            var cityGo = new GameObject("SplashCity");
+            cityGo.transform.SetParent(transform, false);
+            var cityView = cityGo.AddComponent<SplashCityView>();
+            cityView.settings = splashCity;
+            cityView.Begin(cam, ui, ui.SplashSequence);
         }
     }
 }
