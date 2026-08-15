@@ -37,6 +37,7 @@ namespace NeoKyoto.UI
 
         // The board's own backdrop. Drops to a scrim when the live city is behind it.
         private Image _boardBackdrop;
+        private TextMeshProUGUI _boardSubheading;
 
         // Splash backdrop, swapped for the live city when the kit scene is available.
         private Image _titleBackground, _splashPanorama;
@@ -249,13 +250,29 @@ namespace NeoKyoto.UI
         public void UseLiveCityBoard()
         {
             if (_boardBackdrop != null) _boardBackdrop.color = BoardScrim;
+            SetListVisible(false);
         }
 
         /// <summary>Puts the board's solid backdrop back for when there is no city behind it.</summary>
         public void UseOpaqueBoard()
         {
             if (_boardBackdrop != null) _boardBackdrop.color = UITheme.Backdrop;
+            SetListVisible(true);
         }
+
+        /// <summary>
+        /// The grouped list is the **fallback**, not the map. With the city up, districts
+        /// are markers pinned to their real positions; without it — a fresh clone with no
+        /// asset kit — there is no camera to project from, so the list is all there is.
+        /// </summary>
+        private void SetListVisible(bool visible)
+        {
+            if (_boardList != null) _boardList.gameObject.SetActive(visible);
+            if (_boardSubheading != null) _boardSubheading.gameObject.SetActive(visible);
+        }
+
+        /// <summary>Where <see cref="DistrictMarkers"/> mounts. Full-frame over the board.</summary>
+        public RectTransform MarkerLayer { get; private set; }
 
         private static readonly Color BoardScrim = new Color(0.031f, 0.039f, 0.059f, 0.55f);
 
@@ -292,6 +309,7 @@ namespace NeoKyoto.UI
 
             var sub = UITheme.Label("Sub", _boardPanel.transform,
                 "NEO-KYOTO // DISTRICTS", UITheme.SmallSize, UITheme.TextDim);
+            _boardSubheading = sub;
             var srt = sub.rectTransform;
             srt.anchorMin = new Vector2(0.5f, 1f);
             srt.anchorMax = new Vector2(0.5f, 1f);
@@ -326,6 +344,13 @@ namespace NeoKyoto.UI
             rrt.sizeDelta = new Vector2(300, 40);
             rrt.anchoredPosition = new Vector2(0, 40);
             _resetLabel = _resetButton.GetComponentInChildren<TextMeshProUGUI>();
+
+            // Markers live above everything else on the board, because the popup has to
+            // draw over the rank panel and the list. Created last so it is last in the
+            // sibling order.
+            var markerGo = UITheme.Node("MarkerLayer", _boardPanel.transform);
+            MarkerLayer = markerGo.GetComponent<RectTransform>();
+            UITheme.Stretch(MarkerLayer);
 
             _saveHint = UITheme.Label("SaveHint", _boardPanel.transform,
                 "Progress saves automatically.", UITheme.MicroSize, UITheme.TextDim,
@@ -1218,7 +1243,7 @@ namespace NeoKyoto.UI
         }
 
         /// <summary>Warm and unstable, or cool and steady — the world's own colour language.</summary>
-        private static Color DistrictColor(DistrictState state)
+        public static Color DistrictColor(DistrictState state)
         {
             switch (state)
             {

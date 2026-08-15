@@ -25,11 +25,15 @@ namespace NeoKyoto.World
 
         public float overviewYaw = 35f;
 
-        [Tooltip("Starting value 520 m. 90% of the city's renderers sit within 250 m of " +
-                 "the origin, so this frames the dense core with the skyline behind it.")]
-        public float overviewDistance = 520f;
+        [Tooltip("Starting value 340 m, revised down from 520. 520 framed the city " +
+                 "beautifully but the district anchors only span about 215 x 150 m, so all " +
+                 "five markers clumped into the middle of the frame and their plates " +
+                 "overlapped. Pull the camera in rather than spreading the anchors — the " +
+                 "anchors are real places and moving them for composition breaks the premise. " +
+                 "Test: the five markers are separable at a glance and no two plates touch.")]
+        public float overviewDistance = 340f;
 
-        public float overviewAimHeight = 40f;
+        public float overviewAimHeight = 30f;
         [Range(20f, 110f)] public float overviewFieldOfView = 55f;
 
         [Header("Flight")]

@@ -126,6 +126,12 @@ namespace NeoKyoto.Core
             overmapView.settings = overmap;
             overmapView.Begin(city, gm, ui);
 
+            // District markers pinned to their real positions over the city. Mounted on
+            // the UI's own marker layer, so they scale and clip with the rest of the board.
+            var markersGo = new GameObject("DistrictMarkers");
+            markersGo.transform.SetParent(transform, false);
+            markersGo.AddComponent<UI.DistrictMarkers>().Begin(gm, city, ui, ui.MarkerLayer);
+
             if (deckPreview) BuildDeckPreview(ui);
         }
 

@@ -95,6 +95,39 @@ else does. Sector 14 is the open one.
 | `CityView` | The city scene. **Reference-counted**, because both the title and the overmap want it — a single owner unloads it on the way from one to the other and reloads it half a second later. Also borrows and restores the camera, swaps the active scene for lighting, and hides the placeholder world |
 | `SplashCityView` | Just the title drift now. A holder, not an owner |
 | `OvermapView` | Overview framing, `FlyToDistrict`, and the atmosphere override |
+| `DistrictMarkers` | The markers themselves — a diamond per district, projected from `District.Anchor` every frame, with the hover/click popup |
+
+## The markers
+
+**Pinned to their real positions, not listed.** Each district's world anchor is projected with
+`WorldToScreenPoint` every frame, so markers stay on their places while the camera flies.
+
+The marker carries only what reads at a glance — a diamond in the district's state colour, its
+name, and either `n JOBS` or star pips. Everything else waits for a hover or a click:
+
+| | |
+|---|---|
+| **Hover** | Popup: contracts, ratings, payouts, or Voss's gate line if locked |
+| **Click** | Pins the popup *and* flies the camera down to the district. `◀ BACK TO THE CITY` returns to the overview |
+
+Three things worth keeping:
+
+- **Hit target 44 × 44, diamond 18 × 18.** WCAG 2.1 SC 2.5.5, and the doc's own note — grow the
+  hit rect, not the glyph. The marker stays small and the target stays reachable.
+- **Every marker has its own plate.** The §4 legibility floor lives inside `DeckWindow` and nothing
+  out here inherits it. The first pass put bare labels over a lit city and they were unreadable —
+  that is the failure the plates exist to prevent, not a polish item.
+- **The grouped list is the fallback, not the map.** Without the kit there is no camera to project
+  from, so a fresh clone still gets the list.
+
+## Numbers found by looking
+
+Both of these were revised after seeing them, and the reasoning matters more than the values:
+
+| Value | Was | Now | Why |
+|---|---|---|---|
+| `overviewDistance` | 520 m | **340 m** | 520 framed the city beautifully but the anchors only span ~215 × 150 m, so all five markers clumped in the middle and their plates overlapped. **Pull the camera in rather than spreading the anchors** — the anchors are real places, and moving them for composition breaks the premise the whole feature rests on |
+| Marker pips | MicroSize | **SmallSize** | At micro, a mastered district's pips rendered as a single unreadable dot — and that gap is the entire reason the pips exist |
 
 Three integration bugs came out of building it, all of the same shape — **two things owning one
 resource** — and all three are worth remembering rather than rediscovering:
