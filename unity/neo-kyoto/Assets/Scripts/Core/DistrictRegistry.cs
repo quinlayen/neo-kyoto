@@ -75,6 +75,13 @@ namespace NeoKyoto.Core
         public float WorkSiteScale = 1f;
 
         /// <summary>
+        /// Drive the city's own lights from the contract's progress, and hide the site's
+        /// placeholder geometry. For contracts whose subject *is* the lighting, the block
+        /// coming back on is a better prop than any box we could stand on the pavement.
+        /// </summary>
+        public bool WorkSiteDrivesLights;
+
+        /// <summary>
         /// False until a district has had a street found for it. Those contracts still run —
         /// they fall back to the placeholder ground, which is also the only option on a clone
         /// with no asset kit.
@@ -136,11 +143,10 @@ namespace NeoKyoto.Core
                     pitch = 10f, yaw = 352f, distance = 14f,
                     aimOffset = new Vector3(4f, 1.5f, 4f), fieldOfView = 50f },
 
-                // The site geometry is 21 x 7 x 19 m — built for the placeholder world seen
-                // from 18 m, which is a building on a pavement. Starting value 0.35: about
-                // 7 m of kerbside cabinet. Test: it reads as equipment a person could plug
-                // into, and stays clear of the window field.
-                WorkSiteScale = 0.35f,
+                // C1 is "Keep the Lights On", so the block's own lights are the prop. The
+                // placeholder cabinet is hidden and 21 real lights within 45 m carry the
+                // state instead — a third dark at load, all of them back at stable.
+                WorkSiteDrivesLights = true,
 
                 ContractIds = new[] { "contract_01" },
             },

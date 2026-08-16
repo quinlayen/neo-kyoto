@@ -31,6 +31,17 @@ namespace NeoKyoto.World
         public float workSiteDescentSeconds = 0.9f;
 
         private District _workSite;
+        private WorkSiteLights _siteLights;
+
+        /// <summary>
+        /// Hides the contract's placeholder props without tearing them down — the site
+        /// still binds, still refreshes, still drives the readout. Only its geometry goes.
+        /// </summary>
+        private void SetSiteGeometryVisible(bool visible)
+        {
+            if (_siteRoot == null) return;
+            foreach (var r in _siteRoot.GetComponentsInChildren<Renderer>(true)) r.enabled = visible;
+        }
 
         /// <summary>Left share of the screen the world occupies; the panel takes the rest.</summary>
         public float worldViewportWidth = 0.58f;
@@ -169,6 +180,16 @@ namespace NeoKyoto.World
                 _siteRoot.localScale = Vector3.one * district.WorkSiteScale;
                 city.Acquire(this);
                 if (city.IsUp) FrameWorkSite();
+
+                if (district.WorkSiteDrivesLights)
+                {
+                    // The block's own lights become the prop, so the placeholder stands down.
+                    SetSiteGeometryVisible(false);
+                    if (_siteLights == null) _siteLights = gameObject.AddComponent<WorkSiteLights>();
+                    _siteLights.enabled = true;
+                    _siteLights.Configure(district.WorkSite, gm.ActiveContract);
+                }
+                else SetSiteGeometryVisible(true);
             }
             else
             {
@@ -202,6 +223,8 @@ namespace NeoKyoto.World
                 _siteRoot.localPosition = Vector3.zero;
                 _siteRoot.localScale = Vector3.one;
             }
+            if (_siteLights != null) { _siteLights.Restore(); _siteLights.enabled = false; }
+            SetSiteGeometryVisible(true);
             if (city != null) city.Release(this);
         }
 

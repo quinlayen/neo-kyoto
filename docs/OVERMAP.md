@@ -159,6 +159,38 @@ Four things this turned up, all of which will repeat for every district:
    pushes the aim past the subject so it sits low and left. This is DECK_SPEC §2's protected
    focal region stopping being a principle and becoming a number.
 
+## The block's own lights are the prop (C1)
+
+**Confirmed by the designer 2026-08-15.** C1 is "Keep the Lights On", so the placeholder cabinet
+is gone and the street's own lighting carries the state. Voss's briefing already promised exactly
+this — *"about a third of them have no light tonight"*, and *"you'll know when it's stable. So
+will they."* A box on the pavement cannot pay that off.
+
+`Contract.ProgressFraction` (0→1) is the signal; C1 returns `PowerNode.StabilityFraction`, so it
+moves on **every** rebalance rather than only at the end. `WorkSiteLights` reads it and drives a
+45 m radius: a third of the block dark at load, the rest flickering, darkness receding outward
+from where the player is standing as the node settles.
+
+Three things this cost, and the second is the one that matters:
+
+- **Light components alone do almost nothing.** Driving them measurably worked — a spot went
+  118 → 49, six of 26 lights fully dark — and the frame barely changed. The kit lights its city
+  with **emissive materials and ambient**, not with lamps.
+- **So emission has to be driven, and only through a `MaterialPropertyBlock`.** These are shared
+  assets; writing to the material would darken every copy of that shopfront in Neo-Kyoto and
+  persist to disk. The vendor shaders do accept an MPB override of `_EmissionColor` — that was
+  the risk, and it is cleared.
+- **MPB is per-renderer unless you pass a material index.** Pushing one renderer's brightest
+  emission across all its slots lit every wall submesh and blew the street out to solid white.
+  Capture and write **per slot**, and leave non-emitting slots untouched.
+
+Vehicles, traffic lights and the metro are excluded by material name. A dark taxi or a dark
+traffic light is not "the power is out" — it is a different and more alarming message.
+
+⚠ **Open:** the HOP MORE sign reads over-bright while the rig is running, where it was crisp
+before. Most likely the kit animates that sign's emission itself and a per-frame MPB write is
+fighting it. Worth confirming before tuning `FlickerAtStart`.
+
 Three things worth keeping:
 
 - **Hit target 44 × 44, diamond 18 × 18.** WCAG 2.1 SC 2.5.5, and the doc's own note — grow the

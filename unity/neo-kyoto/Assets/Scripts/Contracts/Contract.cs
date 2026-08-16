@@ -112,6 +112,17 @@ namespace NeoKyoto.Contracts
         public abstract string GetStatusText();
         public abstract void ResetSystem();
 
+        /// <summary>
+        /// How far through the repair the system is, 0 to 1. This is what the *world*
+        /// reads — the city's own lights are driven off it — so it has to move on every
+        /// step rather than only at the end, or the player gets no feedback until they
+        /// are already finished.
+        ///
+        /// The default is a flat before/after, which is honest for systems that really
+        /// are binary. Override it wherever there is a real gradient.
+        /// </summary>
+        public virtual float ProgressFraction { get { return IsGoalMet() ? 1f : 0f; } }
+
         public virtual Dictionary<string, CommandFunc> GetCommands()
         {
             return new Dictionary<string, CommandFunc>();
