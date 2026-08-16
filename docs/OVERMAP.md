@@ -187,6 +187,31 @@ Three things this cost, and the second is the one that matters:
 Vehicles, traffic lights and the metro are excluded by material name. A dark taxi or a dark
 traffic light is not "the power is out" — it is a different and more alarming message.
 
+### Lighting the dark windows
+
+The block needs **homes** to lose power, not just street furniture. The kit ships paired window
+materials — `CP_Windows_01` with emission on, and a `CP_Windows_01_NoEm` twin with the same
+texture and the shader keyword off — and nine of the dark twins sit within reach of the site.
+
+**A property block cannot light those.** `_EMISSION` is a shader *keyword*, and keywords are
+per-material, not per-instance: `globalIlluminationFlags` on the dark twin reads `EmissiveIsBlack`
+and the branch is compiled out, so writing `_EmissionColor` does exactly nothing. The fix is a
+**material swap** — assign the lit twin to that renderer slot, record the original, put it back on
+the way out. No asset is touched.
+
+`windowLitShare` controls how many get switched on. Not all of them: a block with every window lit
+reads as a render rather than as somewhere people live at 2am. Selection is strided, not random,
+so the same windows light every run and a value found while tuning is the value seen while playing.
+
+⚠ **Restore order matters.** Glow property blocks are written against slots as they currently
+stand, so materials must be swapped back *after* the emission restore — otherwise the originals
+come back carrying a property block meant for their twin.
+
+**The framing had to change for any of this to be visible.** The first kerbside shot pitched 10°
+down at the pavement: a nice composition, and it clipped every window off the top of frame, so
+there was nothing to watch come on. It is nearly level now and aimed high. Worth generalising —
+*frame the feedback, not the prop* — because every work site will have the same question.
+
 ### Tuning it
 
 Everything is on **Bootstrap → Work Site Lights**, alongside the audio mix and the splash timing,

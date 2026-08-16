@@ -57,6 +57,21 @@ namespace NeoKyoto.World
         [Tooltip("Flicker speed. Starting value 9. Test: unsteady, not buzzing.")]
         public float flickerSpeed = 9f;
 
+        [Header("Windows")]
+        [Tooltip("Switch some of the block's dark windows on, so there are homes to lose " +
+                 "power rather than an empty facade. The kit ships paired window materials " +
+                 "— an emissive one and a '_NoEm' twin with the same texture and the shader " +
+                 "keyword turned off — and the dark twins are swapped for their lit version.\n\n" +
+                 "A property block cannot do this: _EMISSION is a shader keyword, and " +
+                 "keywords are per-material, not per-instance.")]
+        public bool lightDarkWindows = true;
+
+        [Range(0f, 1f)]
+        [Tooltip("Share of the dark windows to switch on. Starting value 0.6 — not all of " +
+                 "them, because a block with every single window lit reads as a render, not " +
+                 "as somewhere people live at 2am. Test: the facade looks occupied and uneven.")]
+        public float windowLitShare = 0.6f;
+
         [Header("Reach")]
         [Tooltip("Metres around the work site. 45 catches the street spots, the shopfronts " +
                  "and the upper-floor windows without reaching the next junction. Test: the " +
@@ -106,8 +121,16 @@ namespace NeoKyoto.World
             public float Phase;
         }
 
+        /// <summary>A renderer whose dark window material we swapped for its lit twin.</summary>
+        private struct SwappedWindow
+        {
+            public Renderer Renderer;
+            public Material[] Original;
+        }
+
         private readonly List<Captured> _lights = new List<Captured>();
         private readonly List<CapturedGlow> _glows = new List<CapturedGlow>();
+        private readonly List<SwappedWindow> _windows = new List<SwappedWindow>();
 
         private Contract _contract;
         private MaterialPropertyBlock _block;
@@ -168,7 +191,98 @@ namespace NeoKyoto.World
                     Phase = i * 7.13f,      // an irrational-ish stride, so no two share a beat
                 });
 
+            // Before the glow scan, so the windows we switch on are picked up by it and
+            // then behave like every other light on the block.
+            if (_settings.lightDarkWindows) PromoteDarkWindows();
+
             CaptureGlows();
+        }
+
+        /// <summary>
+        /// Switches some of the block's dark windows on by swapping their material for the
+        /// kit's lit twin — `CP_Windows_01_NoEm` becomes `CP_Windows_01`, same texture, same
+        /// shader, `_EMISSION` on.
+        ///
+        /// It has to be a swap rather than a property write: `_EMISSION` is a shader keyword
+        /// and keywords are per-material, so a MaterialPropertyBlock setting `_EmissionColor`
+        /// on a `_NoEm` material does precisely nothing — the branch is compiled out.
+        ///
+        /// Only the renderer's material *assignment* changes. No asset is touched, and the
+        /// originals go back in <see cref="Restore"/>.
+        /// </summary>
+        private void PromoteDarkWindows()
+        {
+            _windows.Clear();
+
+            // The lit twins available nearby, indexed by the name their dark version implies.
+            var litTwins = new Dictionary<string, Material>();
+            foreach (var r in FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
+                foreach (var m in r.sharedMaterials)
+                {
+                    if (m == null || !IsWindow(m) || !m.IsKeywordEnabled("_EMISSION")) continue;
+                    if (!litTwins.ContainsKey(m.name)) litTwins[m.name] = m;
+                }
+
+            var candidates = new List<KeyValuePair<float, Renderer>>();
+            foreach (var r in FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
+            {
+                if (PlanarDistance(r.bounds.center) > _settings.radius) continue;
+
+                bool dark = false;
+                foreach (var m in r.sharedMaterials)
+                    if (m != null && IsWindow(m) && !m.IsKeywordEnabled("_EMISSION")
+                        && litTwins.ContainsKey(LitTwinName(m))) dark = true;
+
+                if (dark) candidates.Add(
+                    new KeyValuePair<float, Renderer>(PlanarDistance(r.bounds.center), r));
+            }
+            if (candidates.Count == 0) return;
+
+            candidates.Sort((a, b) => a.Key.CompareTo(b.Key));
+
+            // Strided rather than random, so the same windows light every run and a value
+            // found while tuning is the value seen while playing.
+            int wanted = Mathf.RoundToInt(candidates.Count * Mathf.Clamp01(_settings.windowLitShare));
+            if (wanted <= 0) return;
+            float stride = (float)candidates.Count / wanted;
+
+            for (int n = 0; n < wanted; n++)
+            {
+                var r = candidates[Mathf.Min(candidates.Count - 1, Mathf.FloorToInt(n * stride))].Value;
+
+                var original = r.sharedMaterials;
+                var swapped = (Material[])original.Clone();
+                bool changed = false;
+
+                for (int s = 0; s < swapped.Length; s++)
+                {
+                    var m = swapped[s];
+                    if (m == null || !IsWindow(m) || m.IsKeywordEnabled("_EMISSION")) continue;
+
+                    Material twin;
+                    if (!litTwins.TryGetValue(LitTwinName(m), out twin)) continue;
+                    swapped[s] = twin;
+                    changed = true;
+                }
+
+                if (!changed) continue;
+                _windows.Add(new SwappedWindow { Renderer = r, Original = original });
+                r.sharedMaterials = swapped;
+            }
+        }
+
+        private static bool IsWindow(Material m)
+        {
+            return m.name.IndexOf("Window", System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        /// <summary>`CP_Windows_01_NoEm` → `CP_Windows_01`.</summary>
+        private static string LitTwinName(Material m)
+        {
+            const string suffix = "_NoEm";
+            return m.name.EndsWith(suffix)
+                ? m.name.Substring(0, m.name.Length - suffix.Length)
+                : m.name;
         }
 
         private float PlanarDistance(Vector3 p)
@@ -296,7 +410,7 @@ namespace NeoKyoto.World
             }
         }
 
-        /// <summary>Puts every light and every glow back exactly as it was found.</summary>
+        /// <summary>Puts every light, glow and window back exactly as it was found.</summary>
         public void Restore()
         {
             foreach (var c in _lights)
@@ -305,6 +419,13 @@ namespace NeoKyoto.World
             if (_block == null) _block = new MaterialPropertyBlock();
             foreach (var g in _glows)
                 if (g.Renderer != null) ApplyGlow(g, 1f);
+
+            // Materials last: the glow restore above writes property blocks against the
+            // slots as they currently stand, so swapping them back first would leave the
+            // originals carrying a block meant for their twin.
+            foreach (var w in _windows)
+                if (w.Renderer != null) w.Renderer.sharedMaterials = w.Original;
+            _windows.Clear();
         }
 
         private void OnDisable() { Restore(); }

@@ -136,12 +136,15 @@ namespace NeoKyoto.Core
                 // y=1 with nothing overhead for 40 m, because the anchor itself sits on top of
                 // a slums-block roof at y=35 and the first spot tried was a dead-end courtyard.
                 // The camera stands in the road looking back at the kerb.
-                // The aim is pushed past the kerb toward the road, so the junction box sits
-                // low and left of the deck's windows rather than behind them.
+                // Nearly level and aimed high, because the subject is the *lit facades* —
+                // C1's feedback is the block coming back on. The first pass pitched 10° down
+                // at the pavement, which composed a nice kerb and clipped every window off
+                // the top of frame, so there was nothing to watch come on. The aim is still
+                // pushed sideways so the street stays clear of the deck's windows.
                 WorkSite = new Vector3(-39f, 0f, -65f),
                 WorkFraming = new DistrictFraming {
-                    pitch = 10f, yaw = 352f, distance = 14f,
-                    aimOffset = new Vector3(4f, 1.5f, 4f), fieldOfView = 50f },
+                    pitch = 2f, yaw = 352f, distance = 14f,
+                    aimOffset = new Vector3(4f, 6f, 4f), fieldOfView = 50f },
 
                 // C1 is "Keep the Lights On", so the block's own lights are the prop. The
                 // placeholder cabinet is hidden and 21 real lights within 45 m carry the
