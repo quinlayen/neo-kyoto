@@ -24,6 +24,12 @@ namespace NeoKyoto.World
         /// </summary>
         [System.NonSerialized] public CityView city;
 
+        /// <summary>
+        /// Set by Bootstrap, and the same instance it exposes in the Inspector — so
+        /// dragging a slider mid-contract shows on the street immediately.
+        /// </summary>
+        [System.NonSerialized] public WorkSiteLightSettings lightSettings;
+
         [Tooltip("How long the camera takes to settle at street level after the dispatch " +
                  "lean. Starting value 0.9s. Test: the descent from map to kerbside reads " +
                  "as one continuous move. If it feels like two moves, the dispatch lean and " +
@@ -187,7 +193,7 @@ namespace NeoKyoto.World
                     SetSiteGeometryVisible(false);
                     if (_siteLights == null) _siteLights = gameObject.AddComponent<WorkSiteLights>();
                     _siteLights.enabled = true;
-                    _siteLights.Configure(district.WorkSite, gm.ActiveContract);
+                    _siteLights.Configure(district.WorkSite, gm.ActiveContract, lightSettings);
                 }
                 else SetSiteGeometryVisible(true);
             }

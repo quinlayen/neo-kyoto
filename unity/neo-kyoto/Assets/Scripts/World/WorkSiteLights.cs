@@ -5,6 +5,71 @@ using UnityEngine;
 namespace NeoKyoto.World
 {
     /// <summary>
+    /// How the city's own lighting reacts to a repair. Lives on Bootstrap so it can be
+    /// found live in play mode and then set in edit mode to keep it, the same way the
+    /// audio mix, the splash timing and the overmap framing already work.
+    ///
+    /// Every value is read every frame, so dragging a slider mid-contract shows
+    /// immediately. Use <see cref="previewOverride"/> to scrub the repair without
+    /// actually writing any code.
+    /// </summary>
+    [System.Serializable]
+    public class WorkSiteLightSettings
+    {
+        [Header("Preview — for tuning, not for play")]
+        [Tooltip("Ignore the contract and drive the street from the slider below. Lets the " +
+                 "broken and fixed ends be judged side by side without running twelve " +
+                 "rebalances each time. Leave OFF for real play.")]
+        public bool previewOverride;
+
+        [Range(0f, 1f)]
+        [Tooltip("0 = the moment the player arrives. 1 = node stable, block back on.")]
+        public float previewFraction;
+
+        [Header("How dark it gets")]
+        [Range(0f, 1f)]
+        [Tooltip("Share of the block that is fully out at load. Straight out of Voss's " +
+                 "briefing — \"about a third of them have no light tonight\" — so this is " +
+                 "copy-driven, and changing it means changing the copy too.")]
+        public float darkShareAtLoad = 0.34f;
+
+        [Range(0f, 1f)]
+        [Tooltip("How dim the still-lit ones sit at load, before flicker. 1 = normal " +
+                 "brightness. Starting value 0.7. Test: the street reads as browned-out " +
+                 "rather than merely patchy.")]
+        public float dimAtLoad = 0.7f;
+
+        [Range(0.5f, 3f)]
+        [Tooltip("Brightness once the node is stable, as a multiple of the street's normal " +
+                 "level. 1 = exactly as the kit ships it. Above 1 makes the fix read as an " +
+                 "improvement rather than a restoration — which is a claim about the story, " +
+                 "so raise it deliberately.")]
+        public float litLevel = 1f;
+
+        [Header("Flicker")]
+        [Range(0f, 1f)]
+        [Tooltip("How hard the lit ones flicker at load, as a share of their brightness. " +
+                 "Starting value 0.55. Test: reads as a failing supply from the kerb, not " +
+                 "as a strobe. This is a photosensitivity surface — when in doubt, come down.")]
+        public float flickerAmount = 0.55f;
+
+        [Range(0.5f, 25f)]
+        [Tooltip("Flicker speed. Starting value 9. Test: unsteady, not buzzing.")]
+        public float flickerSpeed = 9f;
+
+        [Header("Reach")]
+        [Tooltip("Metres around the work site. 45 catches the street spots, the shopfronts " +
+                 "and the upper-floor windows without reaching the next junction. Test: the " +
+                 "affected area reads as \"this block\", not \"the district\". " +
+                 "Changing this re-scans, which costs a frame — fine while tuning.")]
+        public float radius = 45f;
+
+        [Tooltip("Ignore anything below this height. The metro sits four metres under the " +
+                 "pavement; its lights are inside a station nobody can see from the kerb.")]
+        public float minHeight;
+    }
+
+    /// <summary>
     /// Drives the city's own lights from a contract's progress, so a repair shows up as
     /// the block coming back on rather than as a prop changing colour.
     ///
@@ -13,9 +78,9 @@ namespace NeoKyoto.World
     /// them have no light tonight"*, and *"you'll know when it's stable. So will they."*
     /// A placeholder box on the pavement cannot pay that off; the street's actual lights can.
     ///
-    /// Every light it touches is recorded and put back. These are the kit's lights, shared
-    /// with the rest of the city, and leaving one dimmed would quietly darken that street
-    /// for every later contract.
+    /// Everything it touches is recorded and put back. These are the kit's own lights and
+    /// materials, shared with the rest of the city, and leaving one dimmed would quietly
+    /// darken that street for every later contract.
     /// </summary>
     public class WorkSiteLights : MonoBehaviour
     {
@@ -33,9 +98,9 @@ namespace NeoKyoto.World
             /// <summary>
             /// One entry per material slot, black where that slot does not emit.
             /// Per-slot on purpose: a MaterialPropertyBlock set without a material index
-            /// applies to the whole renderer, so pushing a neon sign's emission onto a
-            /// renderer also lit every wall submesh it shared — which blew the street out
-            /// to white the first time this ran.
+            /// applies to the whole renderer, so pushing a neon sign's emission across one
+            /// also lit every wall submesh it shared — which blew the street out to solid
+            /// white the first time this ran.
             /// </summary>
             public Color[] Emission;
             public float Phase;
@@ -43,8 +108,14 @@ namespace NeoKyoto.World
 
         private readonly List<Captured> _lights = new List<Captured>();
         private readonly List<CapturedGlow> _glows = new List<CapturedGlow>();
+
         private Contract _contract;
         private MaterialPropertyBlock _block;
+        private WorkSiteLightSettings _settings = new WorkSiteLightSettings();
+
+        private Vector3 _centre;
+        private float _capturedRadius = -1f;
+        private float _capturedMinHeight = float.NaN;
 
         /// <summary>
         /// Emissive materials that are *not* on the block's supply. A dark taxi or a dark
@@ -54,61 +125,33 @@ namespace NeoKyoto.World
         private static readonly string[] NotOnThisSupply =
             { "CP_Taxi", "CP_Traffic_Light", "CP_Metro_Train", "CP_Metro_Signage" };
 
-        // ─── Starting values, all with their test ───
-
-        /// <summary>
-        /// Metres around the work site. 45 m catches the street spots, the shopfront
-        /// points and the upper-floor window lights at y=17.5 without reaching the next
-        /// junction. Test: the lit area reads as "this block" and not "the whole district".
-        /// </summary>
-        private const float Radius = 45f;
-
-        /// <summary>
-        /// Below this is the metro, four metres under the pavement. Its lights are inside
-        /// a station nobody can see from the kerb, and flickering them is wasted work.
-        /// </summary>
-        private const float MinHeight = 0f;
-
-        /// <summary>
-        /// Share of the block that is dark at load. Straight out of Voss's briefing —
-        /// "about a third of them have no light tonight" — so this is copy-driven rather
-        /// than a tuning value, and it should change only if the copy does.
-        /// </summary>
-        private const float DarkShareAtStart = 0.34f;
-
-        /// <summary>
-        /// How hard the still-lit ones flicker before any work is done, as a share of
-        /// their normal brightness. Starting value 0.55. Test: reads as a failing supply
-        /// from the kerb, not as a strobe. Too high and it becomes a hazard for
-        /// photosensitivity; if in doubt, come down.
-        /// </summary>
-        private const float FlickerAtStart = 0.55f;
-
-        /// <summary>Flicker speed. Starting value 9. Test: unsteady, not buzzing.</summary>
-        private const float FlickerSpeed = 9f;
-
-        public void Configure(Vector3 centre, Contract contract)
+        public void Configure(Vector3 centre, Contract contract, WorkSiteLightSettings settings)
         {
+            _centre = centre;
             _contract = contract;
-            Capture(centre);
+            if (settings != null) _settings = settings;
+            Capture();
         }
 
-        private void Capture(Vector3 centre)
+        // ─── Capture ───
+
+        private void Capture()
         {
             Restore();
             _lights.Clear();
-            if (_contract == null) return;
+            _capturedRadius = _settings.radius;
+            _capturedMinHeight = _settings.minHeight;
 
             var found = new List<KeyValuePair<float, Light>>();
 
             foreach (var light in FindObjectsByType<Light>(FindObjectsSortMode.None))
             {
                 if (light.type == LightType.Directional) continue;
-                if (light.transform.position.y < MinHeight) continue;
+                if (light.transform.position.y < _settings.minHeight) continue;
+                if (light.GetComponentInParent<WorkSiteLights>() != null) continue;
 
-                var p = light.transform.position;
-                float d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(centre.x, centre.z));
-                if (d > Radius) continue;
+                float d = PlanarDistance(light.transform.position);
+                if (d > _settings.radius) continue;
 
                 found.Add(new KeyValuePair<float, Light>(d, light));
             }
@@ -125,7 +168,12 @@ namespace NeoKyoto.World
                     Phase = i * 7.13f,      // an irrational-ish stride, so no two share a beat
                 });
 
-            CaptureGlows(centre);
+            CaptureGlows();
+        }
+
+        private float PlanarDistance(Vector3 p)
+        {
+            return Vector2.Distance(new Vector2(p.x, p.z), new Vector2(_centre.x, _centre.z));
         }
 
         /// <summary>
@@ -135,36 +183,32 @@ namespace NeoKyoto.World
         /// city with emission and ambient rather than with lamps.
         ///
         /// Written through a MaterialPropertyBlock, never onto the material. These are
-        /// shared assets — writing to the material would darken every copy of that shopfront
+        /// shared assets — writing the material would darken every copy of that shopfront
         /// in Neo-Kyoto and would persist into the asset on disk.
         /// </summary>
-        private void CaptureGlows(Vector3 centre)
+        private void CaptureGlows()
         {
             _glows.Clear();
             var found = new List<KeyValuePair<float, Renderer>>();
 
             foreach (var r in FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
             {
-                var c = r.bounds.center;
-                float d = Vector2.Distance(new Vector2(c.x, c.z), new Vector2(centre.x, centre.z));
-                if (d > Radius) continue;
+                if (PlanarDistance(r.bounds.center) > _settings.radius) continue;
 
-                Color emission = Color.black;
-                bool skip = false;
+                bool emits = false, excluded = false;
                 foreach (var m in r.sharedMaterials)
                 {
                     if (m == null) continue;
-                    foreach (var excluded in NotOnThisSupply)
-                        if (m.name.StartsWith(excluded)) { skip = true; break; }
-                    if (skip) break;
+                    foreach (var name in NotOnThisSupply)
+                        if (m.name.StartsWith(name)) { excluded = true; break; }
+                    if (excluded) break;
 
-                    if (!m.HasProperty("_EmissionColor")) continue;
-                    var e = m.GetColor("_EmissionColor");
-                    if (e.maxColorComponent > emission.maxColorComponent) emission = e;
+                    if (m.HasProperty("_EmissionColor")
+                        && m.GetColor("_EmissionColor").maxColorComponent > 0.01f) emits = true;
                 }
-                if (skip || emission.maxColorComponent <= 0.01f) continue;
+                if (excluded || !emits) continue;
 
-                found.Add(new KeyValuePair<float, Renderer>(d, r));
+                found.Add(new KeyValuePair<float, Renderer>(PlanarDistance(r.bounds.center), r));
             }
 
             found.Sort((a, b) => a.Key.CompareTo(b.Key));
@@ -176,38 +220,44 @@ namespace NeoKyoto.World
                 var emission = new Color[mats.Length];
 
                 for (int s = 0; s < mats.Length; s++)
-                {
-                    var m = mats[s];
-                    emission[s] = (m != null && m.HasProperty("_EmissionColor"))
-                        ? m.GetColor("_EmissionColor")
+                    emission[s] = (mats[s] != null && mats[s].HasProperty("_EmissionColor"))
+                        ? mats[s].GetColor("_EmissionColor")
                         : Color.black;
-                }
 
                 _glows.Add(new CapturedGlow { Renderer = r, Emission = emission, Phase = i * 3.77f });
             }
         }
 
+        // ─── Drive ───
+
         private void LateUpdate()
         {
-            if (_contract == null) return;
             if (_lights.Count == 0 && _glows.Count == 0) return;
             if (_block == null) _block = new MaterialPropertyBlock();
 
-            float f = Mathf.Clamp01(_contract.ProgressFraction);
-            float darkShare = Mathf.Lerp(DarkShareAtStart, 0f, f);
-            float flicker = Mathf.Lerp(FlickerAtStart, 0f, f);
+            // Re-scan if the reach was changed in the Inspector, so tuning radius is live
+            // rather than needing the contract reopened.
+            if (!Mathf.Approximately(_capturedRadius, _settings.radius) ||
+                !Mathf.Approximately(_capturedMinHeight, _settings.minHeight))
+            {
+                Capture();
+                return;
+            }
+
+            float f = _settings.previewOverride
+                ? Mathf.Clamp01(_settings.previewFraction)
+                : (_contract != null ? Mathf.Clamp01(_contract.ProgressFraction) : 1f);
+
+            float darkShare = Mathf.Lerp(_settings.darkShareAtLoad, 0f, f);
+            float level = Mathf.Lerp(_settings.dimAtLoad, _settings.litLevel, f);
+            float flicker = Mathf.Lerp(_settings.flickerAmount, 0f, f);
 
             int litLights = Mathf.CeilToInt(_lights.Count * (1f - darkShare));
             for (int i = 0; i < _lights.Count; i++)
             {
                 var c = _lights[i];
                 if (c.Light == null) continue;
-                if (i >= litLights) { c.Light.intensity = 0f; continue; }
-
-                // Perlin rather than Random: it wanders instead of strobing, which is what
-                // a failing supply looks like and what a seizure risk does not.
-                float noise = Mathf.PerlinNoise(Time.time * FlickerSpeed + c.Phase, 0f);
-                c.Light.intensity = c.Intensity * (1f - flicker * noise);
+                c.Light.intensity = i >= litLights ? 0f : c.Intensity * Scale(level, flicker, c.Phase);
             }
 
             int litGlows = Mathf.CeilToInt(_glows.Count * (1f - darkShare));
@@ -215,16 +265,19 @@ namespace NeoKyoto.World
             {
                 var g = _glows[i];
                 if (g.Renderer == null) continue;
-
-                float scale = 0f;
-                if (i < litGlows)
-                {
-                    float noise = Mathf.PerlinNoise(Time.time * FlickerSpeed + g.Phase, 0f);
-                    scale = 1f - flicker * noise;
-                }
-
-                ApplyGlow(g, scale);
+                ApplyGlow(g, i >= litGlows ? 0f : Scale(level, flicker, g.Phase));
             }
+        }
+
+        /// <summary>
+        /// Perlin rather than Random: it wanders instead of strobing, which is what a
+        /// failing supply looks like and what a seizure risk does not.
+        /// </summary>
+        private float Scale(float level, float flicker, float phase)
+        {
+            if (flicker <= 0f) return level;
+            float noise = Mathf.PerlinNoise(Time.time * _settings.flickerSpeed + phase, 0f);
+            return level * (1f - flicker * noise);
         }
 
         /// <summary>

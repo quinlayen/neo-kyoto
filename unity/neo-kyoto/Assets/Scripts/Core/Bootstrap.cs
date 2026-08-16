@@ -38,6 +38,11 @@ namespace NeoKyoto.Core
                  "Every number is a starting value — read the tooltips before changing them.")]
         public OvermapSettings overmap = new OvermapSettings();
 
+        [Tooltip("How the block's own lighting reacts to a repair — brightness, flicker, " +
+                 "reach. Tune it live in play mode; turn on Preview Override to scrub the " +
+                 "broken-to-fixed range without running the contract.")]
+        public WorkSiteLightSettings workSiteLights = new WorkSiteLightSettings();
+
         [Tooltip("Deck frame geometry and legibility. Every value is a starting value from " +
                  "docs/DECK_SPEC.md §12 with a documented test — read it before changing them.")]
         public DeckLayoutSettings deckLayout = new DeckLayoutSettings();
@@ -117,6 +122,7 @@ namespace NeoKyoto.Core
             // So a contract whose district has a real street is worked there rather than
             // over the placeholder ground.
             world.city = city;
+            world.lightSettings = workSiteLights;
 
             var splashGo = new GameObject("SplashCity");
             splashGo.transform.SetParent(transform, false);

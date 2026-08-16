@@ -187,9 +187,27 @@ Three things this cost, and the second is the one that matters:
 Vehicles, traffic lights and the metro are excluded by material name. A dark taxi or a dark
 traffic light is not "the power is out" — it is a different and more alarming message.
 
-⚠ **Open:** the HOP MORE sign reads over-bright while the rig is running, where it was crisp
-before. Most likely the kit animates that sign's emission itself and a per-frame MPB write is
-fighting it. Worth confirming before tuning `FlickerAtStart`.
+### Tuning it
+
+Everything is on **Bootstrap → Work Site Lights**, alongside the audio mix and the splash timing,
+and every value is read every frame — so dragging a slider mid-contract shows on the street
+immediately.
+
+| | |
+|---|---|
+| `previewOverride` + `previewFraction` | Scrub broken → fixed **without running the contract**. Judge both ends side by side instead of typing twelve rebalances each time. Off for real play |
+| `darkShareAtLoad` | How much of the block is fully out. Copy-driven — Voss says "about a third" |
+| `dimAtLoad` / `litLevel` | The steady level at each end. `litLevel` above 1 makes the fix an *improvement* rather than a restoration, which is a claim about the story — raise it deliberately |
+| `flickerAmount` / `flickerSpeed` | The flicker. A photosensitivity surface; when in doubt, come down |
+| `radius` / `minHeight` | Reach. Changing radius re-scans live |
+
+⚠ **Open, and narrowed but not solved:** the HOP MORE sign reads brighter with the rig running
+than it did before, even at `previewFraction` 1 with `litLevel` 1 and no flicker — where the rig
+writes back exactly the authored emission and should be a no-op. The first guess was that the kit
+animates that sign itself, but there is **no emission-animating script** anywhere on or above the
+emissive renderers near the site, so that is ruled out. Next suspect is a gamma/linear mismatch
+between `Material.GetColor` and `MaterialPropertyBlock.SetColor`. Worth settling before anyone
+tunes `flickerAmount`, because it shifts the baseline everything else is judged against.
 
 Three things worth keeping:
 
