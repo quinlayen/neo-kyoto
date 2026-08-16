@@ -137,8 +137,14 @@ namespace NeoKyoto.World
         private WorkSiteLightSettings _settings = new WorkSiteLightSettings();
 
         private Vector3 _centre;
+
+        // What the last scan was taken with. Anything here changing means re-scanning,
+        // so the reach and window sliders do something while they are being dragged
+        // rather than only on the next contract.
         private float _capturedRadius = -1f;
         private float _capturedMinHeight = float.NaN;
+        private float _capturedWindowShare = -1f;
+        private bool _capturedLightWindows;
 
         /// <summary>
         /// Emissive materials that are *not* on the block's supply. A dark taxi or a dark
@@ -164,6 +170,8 @@ namespace NeoKyoto.World
             _lights.Clear();
             _capturedRadius = _settings.radius;
             _capturedMinHeight = _settings.minHeight;
+            _capturedWindowShare = _settings.windowLitShare;
+            _capturedLightWindows = _settings.lightDarkWindows;
 
             var found = new List<KeyValuePair<float, Light>>();
 
@@ -349,10 +357,12 @@ namespace NeoKyoto.World
             if (_lights.Count == 0 && _glows.Count == 0) return;
             if (_block == null) _block = new MaterialPropertyBlock();
 
-            // Re-scan if the reach was changed in the Inspector, so tuning radius is live
-            // rather than needing the contract reopened.
+            // Re-scan if anything that changes *which* fixtures we hold was edited, so
+            // those sliders respond while being dragged rather than on the next contract.
             if (!Mathf.Approximately(_capturedRadius, _settings.radius) ||
-                !Mathf.Approximately(_capturedMinHeight, _settings.minHeight))
+                !Mathf.Approximately(_capturedMinHeight, _settings.minHeight) ||
+                !Mathf.Approximately(_capturedWindowShare, _settings.windowLitShare) ||
+                _capturedLightWindows != _settings.lightDarkWindows)
             {
                 Capture();
                 return;

@@ -142,6 +142,14 @@ namespace NeoKyoto.Core
             markersGo.transform.SetParent(transform, false);
             markersGo.AddComponent<UI.DistrictMarkers>().Begin(gm, city, ui, ui.MarkerLayer);
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            // Maximize On Play fills the editor with the game, which is exactly when the
+            // Inspector's sliders are out of reach. Put them on top of what they change.
+            var tuningGo = new GameObject("TuningOverlay");
+            tuningGo.transform.SetParent(transform, false);
+            tuningGo.AddComponent<UI.TuningOverlay>().lights = workSiteLights;
+#endif
+
             if (deckPreview) BuildDeckPreview(ui);
         }
 
