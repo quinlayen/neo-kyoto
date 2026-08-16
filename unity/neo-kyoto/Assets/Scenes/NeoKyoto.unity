@@ -186,6 +186,19 @@ MonoBehaviour:
     euler: {x: 0, y: 0, z: 0}
     fieldOfView: 80
     unloadWhenDone: 1
+  overmap:
+    enabled: 1
+    overviewAnchor: {x: 0, y: 0, z: 0}
+    overviewPitch: 40
+    overviewYaw: 35
+    overviewDistance: 520
+    overviewAimHeight: 40
+    overviewFieldOfView: 55
+    flightSeconds: 1.4
+    overrideAtmosphere: 1
+    farClipPlane: 3000
+    fogDensityScale: 0.25
+    fogEndDistance: 1400
   deckLayout:
     protectedRegion: 0.35
     rail: 0.08
