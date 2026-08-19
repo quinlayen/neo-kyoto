@@ -1,8 +1,5 @@
-using System.Collections;
 using NeoKyoto.Core;
-using NeoKyoto.UI;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace NeoKyoto.World
 {
@@ -17,9 +14,10 @@ namespace NeoKyoto.World
         [Tooltip("Off falls back to the painted panorama.")]
         public bool enabled = true;
 
-        [Tooltip("Scene loaded additively behind the splash. Lives in a purchased kit, " +
-                 "so it is absent on a fresh clone until the kit is re-imported.")]
-        public string sceneName = "CP_Demo";
+        [Tooltip("Scene loaded additively behind the splash. Our own copy of the kit's " +
+                 "demo city, so we can dress it without touching the vendor scene. The " +
+                 "scene file is in git; the assets it references are not.")]
+        public string sceneName = "NeoKyotoCity";
 
         [Tooltip("Metres the camera travels across the whole splash, relative to its own " +
                  "facing: x right, y up, z forward. Small numbers. This is a drift, not a fly-through.")]
@@ -36,189 +34,89 @@ namespace NeoKyoto.World
         public Vector3 euler;
         [Range(20f, 110f)] public float fieldOfView = 80f;
 
-        [Tooltip("Unload the city when the player leaves the title screen. Off keeps it " +
-                 "resident — useful later if the hub reuses the same view.")]
+        [Tooltip("Obsolete. The city is reference-counted now — it stays up while anything " +
+                 "still wants it, and the overmap wants it too.")]
         public bool unloadWhenDone = true;
     }
 
     /// <summary>
-    /// Puts the real city behind the splash instead of the painted panorama.
+    /// Drives the slow camera drift behind the title screen, over the live city.
     ///
-    /// The scene it loads ships inside a purchased kit, and purchased kits are
-    /// gitignored — so every failure path here is a silent fall back to the painted
-    /// art rather than an error. A fresh clone still gets a splash.
+    /// It no longer owns the city scene — <see cref="CityView"/> does, because the
+    /// overmap needs the same city and a single owner would unload it in between. This
+    /// is now purely a holder that says "the title wants the city" and then moves the
+    /// borrowed camera while the title is up.
     /// </summary>
     public class SplashCityView : MonoBehaviour
     {
         public SplashCitySettings settings = new SplashCitySettings();
 
-        private Camera _camera;
-        private UIController _ui;
-        private SplashSequence _sequence;
+        private CityView _city;
+        private UI.SplashSequence _sequence;
         private GameManager _gm;
-        private WorldController _world;
-
-        private Scene _city;
-        private bool _loaded;
-        private bool _loading;
-        private Scene _previousActive;
 
         private Vector3 _startPos;
         private Quaternion _startRot;
+        private bool _framed;
 
-        // The camera is the game's, only borrowed for the splash. Everything we change
-        // on it is recorded here and put back in Release — otherwise gameplay inherits
-        // the splash framing, and nothing else repositions the camera afterwards.
-        private CameraClearFlags _clearFlagsWas;
-        private Vector3 _camPosWas;
-        private Quaternion _camRotWas;
-        private float _fovWas;
-
-        public void Begin(Camera worldCamera, UIController ui, SplashSequence sequence,
-                          GameManager gm, WorldController world)
+        public void Begin(CityView city, UI.SplashSequence sequence, GameManager gm)
         {
-            _camera = worldCamera;
-            _ui = ui;
+            _city = city;
             _sequence = sequence;
             _gm = gm;
-            _world = world;
+
+            if (_city != null) _city.CityUp += OnCityUp;
 
             // The city is the title screen's backdrop, not the splash animation's. It
-            // stays up for as long as the player is looking at the title, and goes when
-            // they leave it — not when the beats happen to finish.
+            // stays up for as long as the player is looking at the title, and is let go
+            // when they leave it — not when the beats happen to finish.
             if (_gm != null) _gm.ScreenChanged += OnScreenChanged;
 
-            Acquire();
+            if (settings.enabled && _city != null) _city.Acquire(this);
         }
 
-        /// <summary>
-        /// Brings the city up, if it is not already. Safe to call repeatedly: the player
-        /// comes back to the title more than once — after a progress reset, or from the
-        /// board — and each return needs the backdrop again.
-        /// </summary>
-        private void Acquire()
+        private void OnScreenChanged()
         {
-            if (_loaded || _loading || !settings.enabled || _camera == null) return;
+            if (_gm == null || _city == null) return;
 
-            if (!Application.CanStreamedLevelBeLoaded(settings.sceneName))
+            if (_gm.CurrentScreen == GameScreen.Title)
             {
-                // Expected on a fresh clone: the kit has not been re-imported, or the
-                // scene was never added to Build Settings. Not an error.
-                Debug.Log("[SplashCityView] Scene '" + settings.sceneName +
-                          "' unavailable — keeping the painted panorama.");
-                return;
-            }
-
-            _loading = true;
-            StartCoroutine(LoadRoutine());
-        }
-
-        private IEnumerator LoadRoutine()
-        {
-            var op = SceneManager.LoadSceneAsync(settings.sceneName, LoadSceneMode.Additive);
-            if (op == null) { _loading = false; yield break; }
-            yield return op;
-            _loading = false;
-
-            _city = SceneManager.GetSceneByName(settings.sceneName);
-            if (!_city.IsValid() || !_city.isLoaded) yield break;
-
-            // The player may have left the title while the scene was still streaming in.
-            // Loading a city behind the workspace would be worse than not loading one.
-            if (_gm != null && _gm.CurrentScreen != GameScreen.Title)
-            {
-                SceneManager.UnloadSceneAsync(_city);
-                yield break;
-            }
-            _loaded = true;
-
-            AdoptFraming();
-            Neutralise();
-
-            // Lighting and skybox are per-scene, and the additive scene's settings are
-            // ignored unless it is the active one. Without this the city renders under
-            // NeoKyoto's flat ambient and looks nothing like the demo.
-            _previousActive = SceneManager.GetActiveScene();
-            SceneManager.SetActiveScene(_city);
-
-            _clearFlagsWas = _camera.clearFlags;
-            _camera.clearFlags = CameraClearFlags.Skybox;
-
-            // Only once the real city is definitely up. Hiding the placeholder world on a
-            // load that then failed would leave the player looking at nothing.
-            if (_world != null) _world.SetWorldVisible(false);
-
-            if (_ui != null) _ui.UseLiveCityBackdrop();
-        }
-
-        /// <summary>
-        /// Takes the shot from the scene's own camera. The kit's default framing is the
-        /// one that reads well, so copying it beats hand-entered numbers that drift out
-        /// of date the moment the vendor changes the demo.
-        /// </summary>
-        private void AdoptFraming()
-        {
-            _camPosWas = _camera.transform.position;
-            _camRotWas = _camera.transform.rotation;
-            _fovWas = _camera.fieldOfView;
-
-            if (settings.overrideFraming)
-            {
-                _camera.transform.SetPositionAndRotation(settings.position, Quaternion.Euler(settings.euler));
-                _camera.fieldOfView = settings.fieldOfView;
+                _framed = false;
+                _city.Acquire(this);
+                if (_city.IsUp) OnCityUp();
             }
             else
             {
-                Camera source = null;
-                foreach (var go in _city.GetRootGameObjects())
-                {
-                    source = go.GetComponentInChildren<Camera>(true);
-                    if (source != null) break;
-                }
-
-                if (source != null)
-                {
-                    _camera.transform.SetPositionAndRotation(source.transform.position, source.transform.rotation);
-                    _camera.fieldOfView = source.fieldOfView;
-                }
+                _city.Release(this);
             }
-
-            _startPos = _camera.transform.position;
-            _startRot = _camera.transform.rotation;
         }
 
         /// <summary>
-        /// Switches off anything in the loaded scene that would fight us: its cameras,
-        /// its audio listener, and the kit's free-fly controller — the player must not
-        /// be able to steer the splash.
-        ///
-        /// The controller is matched by type name rather than referenced directly,
-        /// because it lives in a gitignored kit and a hard reference would stop the
-        /// project compiling on a fresh clone.
+        /// Takes the shot the moment the city is live. The kit's own framing is the one
+        /// that reads well; the override exists for finding a better one by hand.
         /// </summary>
-        private void Neutralise()
+        private void OnCityUp()
         {
-            foreach (var root in _city.GetRootGameObjects())
-            {
-                foreach (var cam in root.GetComponentsInChildren<Camera>(true))
-                    cam.enabled = false;
+            if (_city == null || !_city.IsUp) return;
 
-                foreach (var listener in root.GetComponentsInChildren<AudioListener>(true))
-                    listener.enabled = false;
+            if (settings.overrideFraming)
+                _city.Frame(settings.position, Quaternion.Euler(settings.euler), settings.fieldOfView);
+            else
+                _city.Frame(_city.AdoptedPosition, _city.AdoptedRotation, _city.AdoptedFieldOfView);
 
-                foreach (var mb in root.GetComponentsInChildren<MonoBehaviour>(true))
-                {
-                    if (mb == null) continue;
-                    var n = mb.GetType().Name;
-                    if (n.IndexOf("CameraController", System.StringComparison.OrdinalIgnoreCase) >= 0)
-                        mb.enabled = false;
-                }
-            }
+            _startPos = _city.Camera.transform.position;
+            _startRot = _city.Camera.transform.rotation;
+            _framed = true;
         }
 
         private void Update()
         {
-            if (!_loaded || _camera == null || _sequence == null) return;
+            if (!_framed || _sequence == null || _city == null || !_city.IsUp) return;
+
+            // Only while the title is actually up — the overmap borrows the same camera
+            // and a drift still running underneath it would fight the district framing.
+            if (_gm != null && _gm.CurrentScreen != GameScreen.Title) return;
+            if (_city.IsFlying) return;
 
             // Driven off the sequence's own clock so the move stays locked to the beats,
             // including when the player skips and Finish() jumps the clock to the end.
@@ -226,49 +124,18 @@ namespace NeoKyoto.World
             float t = Mathf.Clamp01(_sequence.Elapsed / total);
             float eased = t * t * (3f - 2f * t);   // smoothstep, matching the UI beats
 
-            _camera.transform.position = _startPos + _startRot * settings.drift * eased;
-            _camera.transform.rotation = _startRot * Quaternion.Euler(settings.turn * eased);
+            _city.Camera.transform.position = _startPos + _startRot * settings.drift * eased;
+            _city.Camera.transform.rotation = _startRot * Quaternion.Euler(settings.turn * eased);
 
-            // No release here. The move settles at the end of its travel and the city
-            // stays live behind the title — its traffic, trains and fog keep running, so
-            // a held camera still reads as a place rather than a screenshot.
-        }
-
-        private void OnScreenChanged()
-        {
-            if (_gm == null) return;
-            if (_gm.CurrentScreen == GameScreen.Title) Acquire();
-            else if (settings.unloadWhenDone) Release();
+            // The move settles at the end of its travel and the city stays live behind
+            // the title — traffic, trains and fog keep running, so a held camera still
+            // reads as a place rather than a screenshot.
         }
 
         private void OnDestroy()
         {
             if (_gm != null) _gm.ScreenChanged -= OnScreenChanged;
-        }
-
-        /// <summary>Hands the camera back to the game and drops the city.</summary>
-        public void Release()
-        {
-            if (!_loaded) return;
-            _loaded = false;
-
-            if (_camera != null)
-            {
-                _camera.clearFlags = _clearFlagsWas;
-                _camera.transform.SetPositionAndRotation(_camPosWas, _camRotWas);
-                _camera.fieldOfView = _fovWas;
-            }
-
-            if (_world != null) _world.SetWorldVisible(true);
-
-            // Hand the painted backdrop back at the same time as the world, or the title
-            // screen is left transparent over whatever 3D is framed behind it.
-            if (_ui != null) _ui.UsePaintedBackdrop();
-
-            if (_previousActive.IsValid() && _previousActive.isLoaded)
-                SceneManager.SetActiveScene(_previousActive);
-
-            if (_city.IsValid() && _city.isLoaded) SceneManager.UnloadSceneAsync(_city);
+            if (_city != null) _city.CityUp -= OnCityUp;
         }
     }
 }

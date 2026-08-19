@@ -108,6 +108,14 @@ namespace NeoKyoto.Contracts
         public override int TwoStarCalls { get { return 16; } }
 
         public override bool IsGoalMet() { return Node.IsGoalMet(); }
+
+        /// <summary>
+        /// Walks 0 to 1 across the twelve rebalances, so Block 7's real lights come back
+        /// a little on every call rather than all at once at the end. Voss's briefing
+        /// promises this — "about a third of them have no light tonight", and "you'll
+        /// know when it's stable; so will they."
+        /// </summary>
+        public override float ProgressFraction { get { return Node.StabilityFraction; } }
         public override string GetStatusText() { return Node.GetStatusText(); }
 
         public override string StarterScript

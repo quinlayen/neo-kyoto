@@ -35,6 +35,10 @@ namespace NeoKyoto.UI
         private GameObject _titlePanel, _boardPanel, _briefingPanel, _workspacePanel, _debriefPanel;
         private Transform _boardList;
 
+        // The board's own backdrop. Drops to a scrim when the live city is behind it.
+        private Image _boardBackdrop;
+        private TextMeshProUGUI _boardSubheading;
+
         // Splash backdrop, swapped for the live city when the kit scene is available.
         private Image _titleBackground, _splashPanorama;
         private SplashSequence _splashSequence;
@@ -233,6 +237,46 @@ namespace NeoKyoto.UI
         }
 
         /// <summary>
+        /// Drops the board's own backdrop to a scrim so the live city shows through it.
+        /// Not to `Color.clear`: the §4 legibility floor is enforced inside `DeckWindow`
+        /// and a full-frame board inherits none of it, so the district headers would be
+        /// bare text over a lit city.
+        ///
+        /// **Starting value** — alpha 0.55. Test: district headers and the rank line stay
+        /// readable over the brightest quadrant. If they don't, raise the alpha before
+        /// touching the text colours; if the city disappears behind it, lower it and give
+        /// the text its own per-label scrim instead.
+        /// </summary>
+        public void UseLiveCityBoard()
+        {
+            if (_boardBackdrop != null) _boardBackdrop.color = BoardScrim;
+            SetListVisible(false);
+        }
+
+        /// <summary>Puts the board's solid backdrop back for when there is no city behind it.</summary>
+        public void UseOpaqueBoard()
+        {
+            if (_boardBackdrop != null) _boardBackdrop.color = UITheme.Backdrop;
+            SetListVisible(true);
+        }
+
+        /// <summary>
+        /// The grouped list is the **fallback**, not the map. With the city up, districts
+        /// are markers pinned to their real positions; without it — a fresh clone with no
+        /// asset kit — there is no camera to project from, so the list is all there is.
+        /// </summary>
+        private void SetListVisible(bool visible)
+        {
+            if (_boardList != null) _boardList.gameObject.SetActive(visible);
+            if (_boardSubheading != null) _boardSubheading.gameObject.SetActive(visible);
+        }
+
+        /// <summary>Where <see cref="DistrictMarkers"/> mounts. Full-frame over the board.</summary>
+        public RectTransform MarkerLayer { get; private set; }
+
+        private static readonly Color BoardScrim = new Color(0.031f, 0.039f, 0.059f, 0.55f);
+
+        /// <summary>
         /// Puts the painted backdrop back. Must exist, because the player returns to the
         /// title — after a progress reset, or from the board — and if the live city has
         /// been unloaded while this stayed transparent they look straight through the
@@ -247,7 +291,8 @@ namespace NeoKyoto.UI
 
         private void BuildBoard(Transform parent)
         {
-            _boardPanel = UITheme.Box("BoardPanel", parent, UITheme.Backdrop).gameObject;
+            _boardBackdrop = UITheme.Box("BoardPanel", parent, UITheme.Backdrop);
+            _boardPanel = _boardBackdrop.gameObject;
             UITheme.Stretch(_boardPanel.GetComponent<RectTransform>());
 
             var header = UITheme.Label("Header", _boardPanel.transform,
@@ -263,7 +308,8 @@ namespace NeoKyoto.UI
             BuildRankPanel(_boardPanel.transform);
 
             var sub = UITheme.Label("Sub", _boardPanel.transform,
-                "AVAILABLE CONTRACTS", UITheme.SmallSize, UITheme.TextDim);
+                "NEO-KYOTO // DISTRICTS", UITheme.SmallSize, UITheme.TextDim);
+            _boardSubheading = sub;
             var srt = sub.rectTransform;
             srt.anchorMin = new Vector2(0.5f, 1f);
             srt.anchorMax = new Vector2(0.5f, 1f);
@@ -298,6 +344,13 @@ namespace NeoKyoto.UI
             rrt.sizeDelta = new Vector2(300, 40);
             rrt.anchoredPosition = new Vector2(0, 40);
             _resetLabel = _resetButton.GetComponentInChildren<TextMeshProUGUI>();
+
+            // Markers live above everything else on the board, because the popup has to
+            // draw over the rank panel and the list. Created last so it is last in the
+            // sibling order.
+            var markerGo = UITheme.Node("MarkerLayer", _boardPanel.transform);
+            MarkerLayer = markerGo.GetComponent<RectTransform>();
+            UITheme.Stretch(MarkerLayer);
 
             _saveHint = UITheme.Label("SaveHint", _boardPanel.transform,
                 "Progress saves automatically.", UITheme.MicroSize, UITheme.TextDim,
@@ -1117,56 +1170,141 @@ namespace NeoKyoto.UI
             _codeInput.SetTextWithoutNotify(_gm.ActiveContract.StarterScript);
         }
 
+        /// <summary>
+        /// The board grouped by district. This is the district model rendered plainly
+        /// and on purpose (`OVERMAP.md`): the worst-case aggregation rule and the gate
+        /// lines get exercised here, before the panorama — the most expensive asset in
+        /// the feature — is worth drawing. The map replaces this view, not this model.
+        /// </summary>
         private void RebuildBoard()
         {
             RefreshRankPanel();
 
             for (int i = _boardList.childCount - 1; i >= 0; i--) Destroy(_boardList.GetChild(i).gameObject);
 
-            for (int i = 0; i < ContractRegistry.All.Count; i++)
+            foreach (var district in DistrictRegistry.All)
             {
-                var def = ContractRegistry.All[i];
-                bool completed = _gm.State.IsContractCompleted(def.Id);
-                bool available = _gm.IsAvailable(i);
-                int stars = _gm.State.StarsFor(def.Id);
+                var state = _gm.StateOf(district);
+                AddDistrictHeader(district, state);
 
-                Color color = completed ? UITheme.Good : (available ? UITheme.Accent : UITheme.TextDim);
+                // A locked district still answers, in Voss's voice. A silhouette that
+                // says nothing generates curiosity and then punishes it.
+                if (state == DistrictState.Locked) { AddLockedLine(district); continue; }
 
-                var captured = def;
-                var btn = UITheme.Button("Contract" + i, _boardList, "", color,
-                    available ? (UnityEngine.Events.UnityAction)(() => _gm.OpenContract(captured)) : null);
-                btn.interactable = available;
-
-                var le = btn.gameObject.AddComponent<LayoutElement>();
-                le.preferredHeight = 58f;
-
-                // Three anchored columns rather than one padded string, so the row stays
-                // aligned regardless of title length or a later change of font.
-                var title = btn.GetComponentInChildren<TextMeshProUGUI>();
-                title.text = "[" + (i + 1) + "]  " + def.Title;
-                title.fontSize = UITheme.BodySize;
-                title.color = color;
-                title.alignment = TextAlignmentOptions.Left;
-                title.overflowMode = TextOverflowModes.Ellipsis;
-                title.margin = new Vector4(20, 0, 8, 0);
-                Span(title.rectTransform, 0f, 0.46f);
-
-                var inner = title.transform.parent;
-
-                var loc = UITheme.Label("Location", inner, def.Location,
-                    UITheme.SmallSize, UITheme.TextDim, TextAlignmentOptions.Left);
-                loc.overflowMode = TextOverflowModes.Ellipsis;
-                loc.raycastTarget = false;
-                Span(loc.rectTransform, 0.46f, 0.72f);
-
-                var status = UITheme.Label("Status", inner,
-                    StatusMarkup(def, completed, available, stars),
-                    UITheme.BodySize, color, TextAlignmentOptions.Right);
-                status.richText = true;
-                status.margin = new Vector4(8, 0, 20, 0);
-                status.raycastTarget = false;
-                Span(status.rectTransform, 0.72f, 1f);
+                foreach (var def in district.Contracts) AddContractRow(def);
             }
+        }
+
+        private void AddDistrictHeader(District district, DistrictState state)
+        {
+            Color color = DistrictColor(state);
+
+            var row = UITheme.Node("District_" + district.Id, _boardList);
+            var le = row.AddComponent<LayoutElement>();
+            le.preferredHeight = 30f;
+
+            var name = UITheme.Label("Name", row.transform, district.Name.ToUpperInvariant(),
+                UITheme.SmallSize, color, TextAlignmentOptions.Left);
+            name.margin = new Vector4(4, 0, 8, 0);
+            name.raycastTarget = false;
+            Span(name.rectTransform, 0f, 0.5f);
+
+            var caption = UITheme.Label("State", row.transform, DistrictCaption(district, state),
+                UITheme.SmallSize, color, TextAlignmentOptions.Right);
+            caption.margin = new Vector4(8, 0, 4, 0);
+            caption.raycastTarget = false;
+            Span(caption.rectTransform, 0.5f, 1f);
+        }
+
+        /// <summary>
+        /// The aggregation rule made visible. "One job left" and "one star left" have to
+        /// be tellable apart from the district line alone — `OVERMAP.md` playtest 7.
+        /// </summary>
+        private string DistrictCaption(District district, DistrictState state)
+        {
+            int total = district.Contracts.Count;
+
+            switch (state)
+            {
+                case DistrictState.Locked:
+                    return "LOCKED";
+
+                case DistrictState.Failing:
+                    int open = DistrictRegistry.OpenCount(district, _gm.State);
+                    return open + (open == 1 ? " JOB OPEN" : " JOBS OPEN");
+
+                case DistrictState.Stabilised:
+                    return "STABILISED    "
+                         + DistrictRegistry.MasteredCount(district, _gm.State) + "/" + total + " ◆◆◆";
+
+                default:
+                    return "MASTERED    " + total + "/" + total + " ◆◆◆";
+            }
+        }
+
+        /// <summary>Warm and unstable, or cool and steady — the world's own colour language.</summary>
+        public static Color DistrictColor(DistrictState state)
+        {
+            switch (state)
+            {
+                case DistrictState.Failing:    return UITheme.Warn;
+                // Stabilised is cool but dim: fixed, functional, unremarkable.
+                case DistrictState.Stabilised: return Color.Lerp(UITheme.TextDim, UITheme.Accent, 0.55f);
+                case DistrictState.Mastered:   return UITheme.Accent;
+                default:                       return UITheme.TextDim;
+            }
+        }
+
+        private void AddLockedLine(District district)
+        {
+            var label = UITheme.Label("Locked_" + district.Id, _boardList,
+                string.IsNullOrEmpty(district.LockedLine)
+                    ? "Nothing routed to you there yet."
+                    : district.LockedLine,
+                UITheme.SmallSize, UITheme.TextDim, TextAlignmentOptions.Left);
+
+            label.margin = new Vector4(28, 0, 24, 0);
+            label.overflowMode = TextOverflowModes.Ellipsis;
+            label.raycastTarget = false;
+            label.gameObject.AddComponent<LayoutElement>().preferredHeight = 30f;
+        }
+
+        private void AddContractRow(ContractDef def)
+        {
+            int number = ContractRegistry.IndexOf(def.Id) + 1;
+            bool completed = _gm.State.IsContractCompleted(def.Id);
+            bool available = _gm.IsAvailable(def);
+            int stars = _gm.State.StarsFor(def.Id);
+
+            Color color = completed ? UITheme.Good : (available ? UITheme.Accent : UITheme.TextDim);
+
+            var captured = def;
+            var btn = UITheme.Button("Contract_" + def.Id, _boardList, "", color,
+                available ? (UnityEngine.Events.UnityAction)(() => _gm.OpenContract(captured)) : null);
+            btn.interactable = available;
+
+            var le = btn.gameObject.AddComponent<LayoutElement>();
+            le.preferredHeight = 58f;
+
+            // Two anchored columns rather than one padded string, so the row stays
+            // aligned regardless of title length or a later change of font. The location
+            // column is gone — the district header above it carries the place now.
+            var title = btn.GetComponentInChildren<TextMeshProUGUI>();
+            title.text = "[" + number + "]  " + def.Title;
+            title.fontSize = UITheme.BodySize;
+            title.color = color;
+            title.alignment = TextAlignmentOptions.Left;
+            title.overflowMode = TextOverflowModes.Ellipsis;
+            title.margin = new Vector4(36, 0, 8, 0);
+            Span(title.rectTransform, 0f, 0.66f);
+
+            var status = UITheme.Label("Status", title.transform.parent,
+                StatusMarkup(def, completed, available, stars),
+                UITheme.BodySize, color, TextAlignmentOptions.Right);
+            status.richText = true;
+            status.margin = new Vector4(8, 0, 20, 0);
+            status.raycastTarget = false;
+            Span(status.rectTransform, 0.66f, 1f);
         }
 
         /// <summary>Stretches a rect between two horizontal fractions of its parent.</summary>

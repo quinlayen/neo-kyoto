@@ -14,8 +14,40 @@ namespace NeoKyoto.World
         public Camera worldCamera;
 
         private Transform _siteRoot;
+        private Transform _environment;
         private ContractSiteView _activeSite;
         private string _activeContractId;
+
+        /// <summary>
+        /// Set by Bootstrap. When a contract's district has a work site, the contract is
+        /// worked in the real city rather than over the placeholder ground.
+        /// </summary>
+        [System.NonSerialized] public CityView city;
+
+        /// <summary>
+        /// Set by Bootstrap, and the same instance it exposes in the Inspector — so
+        /// dragging a slider mid-contract shows on the street immediately.
+        /// </summary>
+        [System.NonSerialized] public WorkSiteLightSettings lightSettings;
+
+        [Tooltip("How long the camera takes to settle at street level after the dispatch " +
+                 "lean. Starting value 0.9s. Test: the descent from map to kerbside reads " +
+                 "as one continuous move. If it feels like two moves, the dispatch lean and " +
+                 "this are fighting — shorten this before touching the lean.")]
+        public float workSiteDescentSeconds = 0.9f;
+
+        private District _workSite;
+        private WorkSiteLights _siteLights;
+
+        /// <summary>
+        /// Hides the contract's placeholder props without tearing them down — the site
+        /// still binds, still refreshes, still drives the readout. Only its geometry goes.
+        /// </summary>
+        private void SetSiteGeometryVisible(bool visible)
+        {
+            if (_siteRoot == null) return;
+            foreach (var r in _siteRoot.GetComponentsInChildren<Renderer>(true)) r.enabled = visible;
+        }
 
         /// <summary>Left share of the screen the world occupies; the panel takes the rest.</summary>
         public float worldViewportWidth = 0.58f;
@@ -37,6 +69,8 @@ namespace NeoKyoto.World
                 if (data != null) data.renderPostProcessing = true;
             }
 
+            if (city != null) city.CityUp += OnCityUp;
+
             var gm = GameManager.Instance;
             if (gm != null)
             {
@@ -47,6 +81,7 @@ namespace NeoKyoto.World
 
         private void OnDestroy()
         {
+            if (city != null) city.CityUp -= OnCityUp;
             var gm = GameManager.Instance;
             if (gm != null) gm.ScreenChanged -= OnScreenChanged;
         }
@@ -55,6 +90,7 @@ namespace NeoKyoto.World
         {
             var env = new GameObject("Environment").transform;
             env.SetParent(transform, false);
+            _environment = env;
 
             WorldBuilder.Ground(env);
             WorldBuilder.BuildSkyline(env);
@@ -117,6 +153,7 @@ namespace NeoKyoto.World
             {
                 ClearSite();
                 ApplyViewport(false);
+                ReleaseWorkSite();
                 FrameOverview();
                 return;
             }
@@ -137,7 +174,69 @@ namespace NeoKyoto.World
             // The side panel covers the right of the screen on both of these
             // screens, so the world renders into the left strip either way.
             ApplyViewport(true);
-            FrameSite();
+
+            // Worked in the real city if this district has a street to work it on;
+            // otherwise over the placeholder ground, which is still every district's
+            // fallback and the only option on a clone with no asset kit.
+            var district = DistrictRegistry.DistrictOf(gm.ActiveDef.Id);
+            if (city != null && district != null && district.HasWorkSite)
+            {
+                _workSite = district;
+                _siteRoot.position = district.WorkSite;
+                _siteRoot.localScale = Vector3.one * district.WorkSiteScale;
+                city.Acquire(this);
+                if (city.IsUp) FrameWorkSite();
+
+                if (district.WorkSiteDrivesLights)
+                {
+                    // The block's own lights become the prop, so the placeholder stands down.
+                    SetSiteGeometryVisible(false);
+                    if (_siteLights == null) _siteLights = gameObject.AddComponent<WorkSiteLights>();
+                    _siteLights.enabled = true;
+                    _siteLights.Configure(district.WorkSite, gm.ActiveContract, lightSettings);
+                }
+                else SetSiteGeometryVisible(true);
+            }
+            else
+            {
+                ReleaseWorkSite();
+                FrameSite();
+            }
+        }
+
+        /// <summary>
+        /// Settles the camera at the kerb. Arrives as a move rather than a cut, so the
+        /// dispatch lean out of the overmap and this read as one continuous descent from
+        /// the map down to the thing that is broken.
+        /// </summary>
+        private void FrameWorkSite()
+        {
+            if (_workSite == null || city == null || !city.IsUp) return;
+
+            Vector3 position; Quaternion rotation;
+            DistrictRegistry.CameraFor(_workSite.WorkSite, _workSite.WorkFraming,
+                                       out position, out rotation);
+            city.FlyTo(position, rotation, _workSite.WorkFraming.fieldOfView,
+                       workSiteDescentSeconds);
+        }
+
+        /// <summary>Hands the city back and stands the site back over the placeholder ground.</summary>
+        private void ReleaseWorkSite()
+        {
+            _workSite = null;
+            if (_siteRoot != null)
+            {
+                _siteRoot.localPosition = Vector3.zero;
+                _siteRoot.localScale = Vector3.one;
+            }
+            if (_siteLights != null) { _siteLights.Restore(); _siteLights.enabled = false; }
+            SetSiteGeometryVisible(true);
+            if (city != null) city.Release(this);
+        }
+
+        private void OnCityUp()
+        {
+            if (_workSite != null) FrameWorkSite();
         }
 
         private ContractSiteView CreateSite(string contractId)
@@ -183,8 +282,25 @@ namespace NeoKyoto.World
         /// </summary>
         public void SetWorldVisible(bool visible)
         {
-            foreach (var r in GetComponentsInChildren<Renderer>(true)) r.enabled = visible;
+            bool wasLentOut = _viewLentOut;
+            _viewLentOut = !visible;
+
+            // The *environment* only — never the site. The contract's own geometry stands
+            // in the real city now, so hiding everything under this transform would hide
+            // the very thing the player came to fix.
+            if (_environment != null)
+                foreach (var r in _environment.GetComponentsInChildren<Renderer>(true))
+                    r.enabled = visible;
+
+            // Taking the view back means re-taking the camera. CityView releases a frame
+            // before it actually tears down, so by the time this runs the screen change
+            // that prompted it has already been and gone — if this doesn't re-frame the
+            // shot, nothing will, and the contract site arrives unframed.
+            if (wasLentOut && visible) OnScreenChanged();
         }
+
+        /// <summary>True while CityView owns the camera — the splash, and the overmap.</summary>
+        private bool _viewLentOut;
 
         private void ApplyViewport(bool docked)
         {
@@ -208,6 +324,12 @@ namespace NeoKyoto.World
 
         private void Frame(Vector3 focus, float distance, float yaw)
         {
+            // Stand down while the view is lent out. CityView frames the same camera for
+            // the splash and the overmap, and both handlers run off the same ScreenChanged
+            // — without this the placeholder world's shot silently wins whichever runs last,
+            // and the overmap ends up framed 34 m off the origin looking at nothing.
+            if (_viewLentOut) return;
+
             var dir = Quaternion.Euler(24f, yaw, 0f) * Vector3.back;
             worldCamera.transform.position = focus + dir * distance;
             worldCamera.transform.rotation = Quaternion.LookRotation(focus - worldCamera.transform.position);

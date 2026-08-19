@@ -33,6 +33,16 @@ namespace NeoKyoto.Core
                  "Falls back to the painting if the kit scene is not available.")]
         public SplashCitySettings splashCity = new SplashCitySettings();
 
+        [Tooltip("The overmap: the live city seen from above with the board over it. " +
+                 "Camera framing, flight timing and the fog push-back for altitude. " +
+                 "Every number is a starting value — read the tooltips before changing them.")]
+        public OvermapSettings overmap = new OvermapSettings();
+
+        [Tooltip("How the block's own lighting reacts to a repair — brightness, flicker, " +
+                 "reach. Tune it live in play mode; turn on Preview Override to scrub the " +
+                 "broken-to-fixed range without running the contract.")]
+        public WorkSiteLightSettings workSiteLights = new WorkSiteLightSettings();
+
         [Tooltip("Deck frame geometry and legibility. Every value is a starting value from " +
                  "docs/DECK_SPEC.md §12 with a documented test — read it before changing them.")]
         public DeckLayoutSettings deckLayout = new DeckLayoutSettings();
@@ -81,7 +91,18 @@ namespace NeoKyoto.Core
                 var esGo = new GameObject("EventSystem");
                 esGo.transform.SetParent(transform, false);
                 esGo.AddComponent<EventSystem>();
-                esGo.AddComponent<InputSystemUIInputModule>();
+                var input = esGo.AddComponent<InputSystemUIInputModule>();
+
+                // Unbind Submit. It defaults to Enter, and the UI module fires it at
+                // whatever is selected — including the code editor. TMP_InputField
+                // implements ISubmitHandler by deactivating itself, so pressing Enter in
+                // the editor dropped focus instead of starting a new line: the player
+                // could type exactly one line of Python and no more.
+                //
+                // Nothing needs keyboard Submit. Buttons are clicked, the splash reads the
+                // keyboard directly, and RUN has its own button. Writing multi-line code is
+                // the entire game, so the editor wins this key.
+                input.submit = null;
             }
 
             var worldGo = new GameObject("World");
@@ -99,14 +120,46 @@ namespace NeoKyoto.Core
             ui.deckLayout = deckLayout;
             uiGo.SetActive(true);
 
-            // After the UI, because it needs the splash sequence the UIController builds
-            // in Awake — and it only swaps out the painted backdrop once the city scene
-            // has actually loaded.
-            var cityGo = new GameObject("SplashCity");
+            // After the UI, because these need the splash sequence the UIController builds
+            // in Awake — and the backdrop only swaps once the city scene has actually loaded.
+            //
+            // One city, two holders. CityView owns the scene and is reference-counted, so
+            // moving between the title and the overmap never unloads and reloads it.
+            var cityGo = new GameObject("City");
             cityGo.transform.SetParent(transform, false);
-            var cityView = cityGo.AddComponent<SplashCityView>();
-            cityView.settings = splashCity;
-            cityView.Begin(cam, ui, ui.SplashSequence, gm, world);
+            var city = cityGo.AddComponent<CityView>();
+            city.Configure(splashCity.sceneName, splashCity.enabled, cam, ui, gm, world);
+
+            // So a contract whose district has a real street is worked there rather than
+            // over the placeholder ground.
+            world.city = city;
+            world.lightSettings = workSiteLights;
+
+            var splashGo = new GameObject("SplashCity");
+            splashGo.transform.SetParent(transform, false);
+            var splashView = splashGo.AddComponent<SplashCityView>();
+            splashView.settings = splashCity;
+            splashView.Begin(city, ui.SplashSequence, gm);
+
+            var overmapGo = new GameObject("Overmap");
+            overmapGo.transform.SetParent(transform, false);
+            var overmapView = overmapGo.AddComponent<OvermapView>();
+            overmapView.settings = overmap;
+            overmapView.Begin(city, gm, ui);
+
+            // District markers pinned to their real positions over the city. Mounted on
+            // the UI's own marker layer, so they scale and clip with the rest of the board.
+            var markersGo = new GameObject("DistrictMarkers");
+            markersGo.transform.SetParent(transform, false);
+            markersGo.AddComponent<UI.DistrictMarkers>().Begin(gm, city, ui, ui.MarkerLayer);
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            // Maximize On Play fills the editor with the game, which is exactly when the
+            // Inspector's sliders are out of reach. Put them on top of what they change.
+            var tuningGo = new GameObject("TuningOverlay");
+            tuningGo.transform.SetParent(transform, false);
+            tuningGo.AddComponent<UI.TuningOverlay>().lights = workSiteLights;
+#endif
 
             if (deckPreview) BuildDeckPreview(ui);
         }
