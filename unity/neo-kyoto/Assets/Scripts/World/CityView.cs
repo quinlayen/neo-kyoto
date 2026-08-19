@@ -35,6 +35,13 @@ namespace NeoKyoto.World
         private Scene _previousActive;
         private bool _loading;
 
+        /// <summary>
+        /// False when we adopted a scene somebody else had already opened. We hand that
+        /// one back untouched rather than unloading it — it is not ours to close, and in
+        /// the editor it is the scene the developer is working in.
+        /// </summary>
+        private bool _weLoadedIt;
+
         private readonly HashSet<object> _holders = new HashSet<object>();
         private Coroutine _flight;
 
@@ -86,13 +93,6 @@ namespace NeoKyoto.World
 
             if (IsUp || _loading || !_enabled || _camera == null) return;
 
-            if (!Application.CanStreamedLevelBeLoaded(_sceneName))
-            {
-                // The scene was never added to Build Settings. Not an error.
-                Debug.Log("[CityView] Scene '" + _sceneName + "' unavailable — keeping the painted art.");
-                return;
-            }
-
             _loading = true;
             StartCoroutine(LoadRoutine());
         }
@@ -131,12 +131,51 @@ namespace NeoKyoto.World
 
         private IEnumerator LoadRoutine()
         {
+            // One frame before deciding anything. Scenes the editor had open additively
+            // are still settling during Awake, so asking "is one already loaded?" then
+            // reliably answers no — and we would load a second copy of the city on top
+            // of the developer's.
+            yield return null;
+
+            // Adopt rather than duplicate. Two overlapping cities means two audio
+            // listeners, a second camera running the kit's free-fly controller we never
+            // neutralised, and doubled geometry.
+            var existing = SceneManager.GetSceneByName(_sceneName);
+            if (existing.IsValid() && existing.isLoaded)
+            {
+                Debug.Log("[CityView] '" + _sceneName + "' was already open — adopting it "
+                        + "rather than loading a second copy.");
+                _loading = false;
+                _city = existing;
+                _weLoadedIt = false;
+                Activate();
+                yield break;
+            }
+
+            if (!Application.CanStreamedLevelBeLoaded(_sceneName))
+            {
+                // Never added to Build Settings. Not an error.
+                Debug.Log("[CityView] Scene '" + _sceneName + "' unavailable — keeping the painted art.");
+                _loading = false;
+                yield break;
+            }
+
+            // Capture the scene the loader actually produced. GetSceneByName returns the
+            // *first* match, which is the wrong one the moment a second copy exists — it
+            // had us holding, and preparing to unload, somebody else's scene.
+            var loaded = default(Scene);
+            UnityEngine.Events.UnityAction<Scene, LoadSceneMode> onLoaded =
+                (s, mode) => { if (s.name == _sceneName) loaded = s; };
+
+            SceneManager.sceneLoaded += onLoaded;
             var op = SceneManager.LoadSceneAsync(_sceneName, LoadSceneMode.Additive);
-            if (op == null) { _loading = false; yield break; }
+            if (op == null) { SceneManager.sceneLoaded -= onLoaded; _loading = false; yield break; }
             yield return op;
+            SceneManager.sceneLoaded -= onLoaded;
             _loading = false;
 
-            _city = SceneManager.GetSceneByName(_sceneName);
+            _city = loaded;
+            _weLoadedIt = true;
             if (!_city.IsValid() || !_city.isLoaded) yield break;
 
             // Everyone may have let go while the scene was streaming in. Bringing a city
@@ -160,6 +199,24 @@ namespace NeoKyoto.World
                 yield break;
             }
 
+            _weLoadedIt = true;
+            Activate();
+        }
+
+        /// <summary>
+        /// Makes a city scene ours: framed, neutralised, lit, and with the placeholder
+        /// world out of the way. Shared by the load path and the adopt path, so a scene
+        /// the editor left open gets exactly the same treatment as one we loaded.
+        /// </summary>
+        private void Activate()
+        {
+            if (CountRenderers(_city) < MinimumCityRenderers)
+            {
+                Debug.Log("[CityView] '" + _sceneName + "' is empty — the asset kit is not "
+                        + "imported. Keeping the painted art.");
+                return;
+            }
+
             IsUp = true;
 
             AdoptFraming();
@@ -169,7 +226,7 @@ namespace NeoKyoto.World
             // ignored unless it is the active one. Without this the city renders under
             // NeoKyoto's flat ambient and looks nothing like the demo.
             _previousActive = SceneManager.GetActiveScene();
-            SceneManager.SetActiveScene(_city);
+            if (_previousActive != _city) SceneManager.SetActiveScene(_city);
 
             _clearFlagsWas = _camera.clearFlags;
             _camera.clearFlags = CameraClearFlags.Skybox;
@@ -337,10 +394,13 @@ namespace NeoKyoto.World
             // is left transparent over whatever 3D happens to be framed behind it.
             if (_ui != null) _ui.UsePaintedBackdrop();
 
-            if (_previousActive.IsValid() && _previousActive.isLoaded)
+            if (_previousActive.IsValid() && _previousActive.isLoaded && _previousActive != _city)
                 SceneManager.SetActiveScene(_previousActive);
 
-            if (_city.IsValid() && _city.isLoaded) SceneManager.UnloadSceneAsync(_city);
+            // Only unload what we loaded. An adopted scene belongs to whoever opened it.
+            if (_weLoadedIt && _city.IsValid() && _city.isLoaded)
+                SceneManager.UnloadSceneAsync(_city);
+            _weLoadedIt = false;
         }
     }
 }

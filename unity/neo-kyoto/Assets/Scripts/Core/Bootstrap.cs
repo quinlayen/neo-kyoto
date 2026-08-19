@@ -91,7 +91,18 @@ namespace NeoKyoto.Core
                 var esGo = new GameObject("EventSystem");
                 esGo.transform.SetParent(transform, false);
                 esGo.AddComponent<EventSystem>();
-                esGo.AddComponent<InputSystemUIInputModule>();
+                var input = esGo.AddComponent<InputSystemUIInputModule>();
+
+                // Unbind Submit. It defaults to Enter, and the UI module fires it at
+                // whatever is selected — including the code editor. TMP_InputField
+                // implements ISubmitHandler by deactivating itself, so pressing Enter in
+                // the editor dropped focus instead of starting a new line: the player
+                // could type exactly one line of Python and no more.
+                //
+                // Nothing needs keyboard Submit. Buttons are clicked, the splash reads the
+                // keyboard directly, and RUN has its own button. Writing multi-line code is
+                // the entire game, so the editor wins this key.
+                input.submit = null;
             }
 
             var worldGo = new GameObject("World");
