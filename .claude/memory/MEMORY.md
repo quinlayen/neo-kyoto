@@ -14,3 +14,4 @@
 - [UI Rebuild Status](project-ui-rebuild-status.md) — **Start here for UI work.** Rebuilding completely onto the deck model; see docs/UI_REBUILD.md
 - [Asset Kit Status](project-asset-kit-status.md) — Cyberpunk Megapolis imported and verified; run the URP unitypackage as a separate step
 - [Vendor Shader Patch](project-vendor-shader-patch.md) — AE/Grunge emission patch; reverts on kit reimport, only copy is on D: outside git
+- [Overmap Status](project-overmap-status.md) — **Start here for overmap/world work.** Live-city map, district model, work-site lighting, and the traps each cost a round trip
