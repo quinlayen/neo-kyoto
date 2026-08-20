@@ -1,6 +1,7 @@
 # Handoff: moving machine or Claude account
 
-**Last updated**: 2026-08-14
+**Last updated**: 2026-08-16 — added the macOS section and corrected the verification steps,
+which still described the pre-overmap project.
 
 Everything needed to pick this project up somewhere else, or under a different Claude account.
 Written because the parts that break are the parts that are deliberately *not* in git.
@@ -139,13 +140,55 @@ it means emailing `art_equilibrium.studio@mail.ru`.
 
 ---
 
+## Moving to macOS specifically
+
+Nothing in the project is Windows-bound — no platform-specific code, no Windows paths, no native
+plugins outside the gitignored kits. Verified 2026-08-16. **Use the native Apple Silicon editor,
+not Unity under CrossOver/Wine.** Unity does not support Wine, and this project is GPU-constrained
+enough (4.5 M tris, 69 realtime lights, a shadow atlas that is already saturated) that a
+translation layer would make every rendering question ambiguous.
+
+Extra macOS steps, in order:
+
+1. **Git LFS must be installed before cloning**, or LFS files arrive as pointer text:
+   `brew install git-lfs && git lfs install`.
+2. Unity Hub → install **6000.5.8f1**, Apple Silicon build.
+3. **Switch build target** from `StandaloneWindows64` to `StandaloneOSX`. This triggers a full
+   reimport of the kit — long, one-time. Do it before you want to work, not when.
+4. Everything under *What is NOT in git* below still applies, and is the long pole.
+
+⚠ **Metal will not render identically to D3D11.** The exposed surface is `WorkSiteLights`, which
+drives `_EmissionColor` through `MaterialPropertyBlock`. There is an unresolved anomaly on
+Windows where writing back a material's own authored emission renders *brighter* than not writing
+it — suspected gamma/linear. If that does not reproduce on Metal, that is a strong signal about
+its cause. See `docs/OVERMAP.md` → *Tuning it*.
+
+`.mcp.json` hardcodes a Windows path to the Unity MCP server. `.claude/setup.sh` rewrites it;
+if you skip the script, edit it by hand.
+
+---
+
 ## Quick verification after a move
 
 ```bash
 git fsck                       # repo intact
-git lfs ls-files | wc -l       # expect 22 LFS objects
+git lfs ls-files | wc -l       # expect 28 LFS objects
 ```
 
-In Unity: open `Assets/Cyberpunk_Megapolis/Scenes/CP_Demo.unity`. Materials should render normally
-— **pink means the URP unitypackage step was missed**. Then drive `_EmissionColor` on any kit
-material and confirm it glows; if it doesn't, the shader patch needs reapplying.
+Then, in order — each step tells you which of the three manual restores failed:
+
+| Check | Pass | Fail means |
+|---|---|---|
+| Open `Assets/Scenes/NeoKyotoCity.unity` | Materials render normally | **Pink** → the URP unitypackage step was missed. **Empty scene** → the kit is not imported at all |
+| Drive `_EmissionColor` on any kit material | It glows | The AE/Grunge patch needs reapplying |
+| Open `Assets/Scenes/NeoKyoto.unity` and press Play | Live city behind the title | See below |
+| Click through to the board | Aerial city with district markers | A flat panel with a grouped list means the city did not load — that is the **designed fallback**, not a crash |
+| Open contract 1 | Camera descends to a street; block lights flicker | Grey boxes on a flat plane means the same |
+
+That fallback is deliberate: `CityView` counts renderers after loading and keeps the painted art
+below a threshold, because the scene file is in git but everything it references is not. A clone
+without the kit still gets a working title screen — it just is not the game.
+
+**Do not open `NeoKyotoCity.unity` additively and leave it open.** Play mode inherits editor scene
+setup; `CityView` adopts an already-open copy rather than duplicating, but the scene will be marked
+dirty by play mode and is easy to save by accident.
